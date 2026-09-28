@@ -1,0 +1,200 @@
+diff --git a/crates/rumoca-solver/src/runtime/solve_runtime/event_transactions.rs b/crates/rumoca-solver/src/runtime/solve_runtime/event_transactions.rs
+index c4cd5807..62007a5a 100644
+--- a/crates/rumoca-solver/src/runtime/solve_runtime/event_transactions.rs
++++ b/crates/rumoca-solver/src/runtime/solve_runtime/event_transactions.rs
+@@ -140,6 +140,7 @@ impl SolveRuntime {
+     pub(super) fn project_event_transaction_action_values(
+         &self,
+         time: f64,
++        row_filter: super::EventUpdateRowFilter,
+         values: &mut [f64],
+     ) -> Result<(), RuntimeSolveError> {
+         for (transaction_index, transaction) in self
+@@ -150,6 +151,14 @@ impl SolveRuntime {
+             .iter()
+             .enumerate()
+         {
++            // SOLVE-C25/C55: initialization settles unowned rows before the
++            // phase-zero clock tick. Its transaction has no predicate result
++            // until that tick executes, even though the timestamps coincide.
++            if transaction.clock_owner().is_some()
++                && !row_filter.accepts(crate::EventPreMode::EventEntry, true)
++            {
++                continue;
++            }
+             if !self.event_transaction_active_at(transaction_index, time)? {
+                 continue;
+             }
+diff --git a/crates/rumoca-solver/src/runtime/solve_runtime/relation_memory.rs b/crates/rumoca-solver/src/runtime/solve_runtime/relation_memory.rs
+index 9af27061..e43c6ef9 100644
+--- a/crates/rumoca-solver/src/runtime/solve_runtime/relation_memory.rs
++++ b/crates/rumoca-solver/src/runtime/solve_runtime/relation_memory.rs
+@@ -398,7 +398,7 @@ impl SolveRuntime {
+                 changed |= self.apply_runtime_assignments_until_stable(y, p, t, tol, max_iters)?;
+             }
+             if !changed && event_iteration_plan_settled(&self.model, y, p)? {
+-                return self.eval_event_actions(y, p, event_pre_p, t);
++                return self.eval_event_actions(y, p, event_pre_p, t, row_filter);
+             }
+         }
+         Err(RuntimeSolveError::solve_ir(format!(
+@@ -635,6 +635,7 @@ impl SolveRuntime {
+         p: &[f64],
+         event_pre_p: &[f64],
+         t: f64,
++        row_filter: EventUpdateRowFilter,
+     ) -> Result<EventActionOutcome, RuntimeSolveError> {
+         let events = &self.model.problem.events;
+         let mut action_p = event_action_params(events, p, event_pre_p)?;
+@@ -647,7 +648,10 @@ impl SolveRuntime {
+                 continue;
+             }
+             let active = match action.clock_owner {
+-                Some(owner) => self.periodic_clock_active(owner, t, "event action")?,
++                Some(owner) => {
++                    row_filter.accepts(crate::EventPreMode::EventEntry, true)
++                        && self.periodic_clock_active(owner, t, "event action")?
++                }
+                 None => true,
+             };
+             if active {
+@@ -664,7 +668,7 @@ impl SolveRuntime {
+             t,
+             &mut values,
+         )?;
+-        self.project_event_transaction_action_values(t, &mut values)?;
++        self.project_event_transaction_action_values(t, row_filter, &mut values)?;
+         match solve_eval::event_action_request_from_values(
+             events,
+             y,
+diff --git a/crates/rumoca/tests/function_spd_loop_compaction.rs b/crates/rumoca/tests/function_spd_loop_compaction.rs
+index fae46db0..b39dba32 100644
+--- a/crates/rumoca/tests/function_spd_loop_compaction.rs
++++ b/crates/rumoca/tests/function_spd_loop_compaction.rs
+@@ -9,6 +9,113 @@ use rumoca::Compiler;
+ use rumoca_ir_dae as dae;
+ use rumoca_sim::{SimOptions, eval_dae_at};
+ 
++// MLS §11.2.8.1 and SPEC_0040 SOLVE-C25/C55: a sampled call must
++// evaluate its assertion tuple before publishing the corresponding action.
++const SAMPLED_ASSERTION: &str = r#"
++function positiveVector
++  input Real p[3];
++  input Real x;
++  output Real y[3];
++algorithm
++  for i in 1:3 loop
++    assert(p[i] > 0.0, "positive vector required");
++    y[i] := p[i] * x;
++  end for;
++end positiveVector;
++model SampledAssertion
++  Real x(start=1.0, fixed=true);
++  discrete Real y[3](each start=0.0, each fixed=true);
++equation
++  der(x) = -y[1];
++algorithm
++  when sample(0.0, 0.001) then
++    y := positiveVector({0.02, 0.03, 0.04}, x);
++  end when;
++end SampledAssertion;
++"#;
++
++#[test]
++fn sampled_assertion_transaction_returns_true_predicate() {
++    let compiled = Compiler::new()
++        .model("SampledAssertion")
++        .compile_str(SAMPLED_ASSERTION, "sampled_assertion.mo")
++        .unwrap();
++    let package = rumoca_phase_solve::lower_solve_package(&compiled.dae).unwrap();
++    let transaction = &package.problem.discrete.event_transactions[0];
++    let prepared =
++        rumoca_eval_solve::PreparedEventTransactionProgram::new(transaction, &package.pure_calls)
++            .unwrap();
++    let y = vec![1.0; package.problem.layout.y_scalars()];
++    let p = vec![1.0; package.problem.layout.p_scalars()];
++    let mut outputs = Vec::new();
++    prepared
++        .eval(&package.pure_calls, &y, &p, 0.0, &mut outputs)
++        .unwrap();
++    assert_eq!(outputs, vec![0.02, 0.03, 0.04, 1.0]);
++}
++
++#[test]
++fn sampled_assertion_simulation_accepts_positive_literals() {
++    let compiled = Compiler::new()
++        .model("SampledAssertion")
++        .compile_str(SAMPLED_ASSERTION, "sampled_assertion.mo")
++        .unwrap();
++    let options = SimOptions {
++        t_end: 0.002,
++        dt: Some(0.001),
++        ..SimOptions::default()
++    };
++    rumoca_sim::simulate_dae(&compiled.dae, &options).unwrap();
++}
++
++#[test]
++fn sampled_assertion_interpreter_accepts_positive_literals() {
++    let compiled = Compiler::new()
++        .model("SampledAssertion")
++        .compile_str(SAMPLED_ASSERTION, "sampled_assertion.mo")
++        .unwrap();
++    let options = SimOptions {
++        t_end: 0.002,
++        dt: Some(0.001),
++        execution_policy: rumoca_solver::SimExecutionPolicy::Interpreter,
++        ..SimOptions::default()
++    };
++    rumoca_sim::simulate_dae(&compiled.dae, &options).unwrap();
++}
++
++#[test]
++fn sampled_assertion_still_rejects_a_later_invalid_tick() {
++    let source = SAMPLED_ASSERTION.replace(
++        "positiveVector({0.02, 0.03, 0.04}, x)",
++        "positiveVector({if time < 0.0015 then 0.02 else -0.02, 0.03, 0.04}, x)",
++    );
++    let compiled = Compiler::new()
++        .model("SampledAssertion")
++        .compile_str(&source, "sampled_assertion.mo")
++        .unwrap();
++    for solver_mode in [
++        rumoca_solver::SimSolverMode::Bdf,
++        rumoca_solver::SimSolverMode::RkLike,
++    ] {
++        for execution_policy in [
++            rumoca_solver::SimExecutionPolicy::Auto,
++            rumoca_solver::SimExecutionPolicy::Interpreter,
++        ] {
++            let options = SimOptions {
++                t_end: 0.003,
++                dt: Some(0.001),
++                solver_mode,
++                execution_policy,
++                ..SimOptions::default()
++            };
++            let error = rumoca_sim::simulate_dae(&compiled.dae, &options).unwrap_err();
++            let message = format!("{error:?}");
++            assert!(message.contains("positive vector required"), "{message}");
++            assert!(message.contains("time: 0.002"), "{message}");
++        }
++    }
++}
++
+ const MODEL: &str = r#"
+ within;
+ 
+diff --git a/flake.nix b/flake.nix
+index 8c906d82..17023f70 100644
+--- a/flake.nix
++++ b/flake.nix
+@@ -236,7 +236,7 @@
+             inherit src;
+             cargoRoot = ".";
+             name = "rumoca-${rumocaVersion}-cargo-vendor";
+-            hash = "sha256-tS1YJQiDgGITMPLDj7d560HNZfLDyWwgFcYLNjVWy1k=";
++            hash = "sha256-mxdYllug5q0FaplS6w5XGCuy0IO4igPc3J/U7X4fT0c=";
+           };
+           nativeBuildInputs = [
+             rustToolchain

@@ -34,7 +34,11 @@ let
         printf '%s\n\n' \
           ${lib.escapeShellArg "========== ACQUIRED REPOSITORY LOCK: ${repository} =========="} >&2
       fi
-      ${command}
+      # Keep the lock in this waiting parent, not in background descendants
+      # such as the compiler-cache server started by a build.
+      (
+        ${command}
+      ) 9>&-
     '';
   task = repository: description: command: {
     _sourceRepository = repository;
@@ -160,12 +164,14 @@ let
     {
       name = "rumoca";
       url = "https://github.com/CogniPilot/rumoca.git";
-      branch = "workspace/rdd2-integration";
+      # Match the compiler pinned by the RDD2 integration firmware.
+      revision = "4d0e521d9a0bd2527808dbce2c5689834d1a0349";
     }
     {
       name = "modelica_models";
       url = "https://github.com/CogniPilot/modelica_models.git";
-      branch = "rumoca-efmu-update";
+      # Match modelica_models in the RDD2 integration firmware's west.yml.
+      revision = "a41f7c0c00b55c1bf54f03c9b66b901ba8e43c6f";
     }
     {
       name = "csyn";
@@ -240,6 +246,7 @@ let
             git clone --branch ${branch} --single-branch \
               ${repository.url} src/${repository.name}
             ${lib.optionalString (revision != null) ''
+              git -C src/${repository.name} fetch origin ${revision}
               git -C src/${repository.name} switch --detach ${revision}
             ''}
             ${lib.optionalString (repository.submodules or false) ''
@@ -866,9 +873,8 @@ let
 
       "rdd2:simulation:sil:build" =
         (task "cerebri_rdd2" "Build the 64-bit RDD2 native simulator against local generated packages." ''
-          nix run .#build-native-sim -- -p auto -- \
-            "-DEXTRA_CONF_FILE=$PWD/tests/zephyr/native_sil.conf" \
-            -DRDD2_RUMOCA_VERSION=workspace \
+          RDD2_RUMOCA_EXECUTABLE_SHA256="$(sha256sum ${resultRoot}/rumoca/bin/rumoca | cut -d ' ' -f 1)" \
+          nix run .#build-native-sim -- -p always -- \
             "-DRDD2_RUMOCA_EXECUTABLE=${resultRoot}/rumoca/bin/rumoca" \
             "-DRDD2_CEREBRI_MODULES_ROOT=${source "cerebri_modules"}" \
             "-DRDD2_ZROS_ROOT=${source "zros"}" \
@@ -898,9 +904,8 @@ let
         (task "cerebri_rdd2" "Build the 32-bit RDD2 native simulator against local generated packages." ''
           RDD2_NATIVE_SIM_BOARD=native_sim \
           RDD2_NATIVE_SIM_BUILD_DIR="$PWD/build-native_sim32" \
-            nix run .#build-native-sim -- -p auto -- \
-              "-DEXTRA_CONF_FILE=$PWD/tests/zephyr/native_sil.conf" \
-              -DRDD2_RUMOCA_VERSION=workspace \
+          RDD2_RUMOCA_EXECUTABLE_SHA256="$(sha256sum ${resultRoot}/rumoca/bin/rumoca | cut -d ' ' -f 1)" \
+            nix run .#build-native-sim -- -p always -- \
               "-DRDD2_RUMOCA_EXECUTABLE=${resultRoot}/rumoca/bin/rumoca" \
               "-DRDD2_CEREBRI_MODULES_ROOT=${source "cerebri_modules"}" \
               "-DRDD2_ZROS_ROOT=${source "zros"}" \
@@ -922,26 +927,27 @@ let
         };
 
       "rdd2:simulation:sil:test" =
-        (task "FastDyn" "Run the RDD2 native simulator against its Rumoca-generated FMI 3 plant." ''
-          cargo build --release --locked \
-            --manifest-path ${source "cerebri_rdd2"}/tools/fastdyn_mission/Cargo.toml
-          exec ${source "cerebri_rdd2"}/tools/fastdyn_mission/target/release/cerebri-rdd2-mission \
-            --native-sim ${source "cerebri_rdd2"}/build-native_sim/zephyr/zephyr.exe \
-            --shared-memory ${root}/.devenv/state/rdd2-sil-lockstep.bin \
-            --plant-library "$RDD2_RUMOCA_PLANT_LIBRARY" \
-            --plant-description "$RDD2_RUMOCA_PLANT_DESCRIPTION" \
-            --report ${source "cerebri_rdd2"}/artifacts/sil/mission.json \
-            --trajectory ${source "cerebri_rdd2"}/artifacts/sil/mission-trajectory.csv
+        (task "cerebri_rdd2" "Run the RDD2 native simulator against its Rumoca-generated FMI 3 plant." ''
+          RDD2_RUMOCA_EXECUTABLE_SHA256="$(sha256sum "$RDD2_RUMOCA_EXECUTABLE" | cut -d ' ' -f 1)" \
+            nix run .#sil-ci -- \
+              --report "$PWD/artifacts/sil/mission.json" \
+              --trajectory "$PWD/artifacts/sil/mission-trajectory.csv"
         '')
         // {
           after = [
-            "modelica-models:rdd2:export-plant"
-            "rdd2:simulation:sil:build"
+            "rdd2:workspace:ready"
+            "rumoca:compiler"
+            "synapse-fbs:build"
           ];
-          env = {
-            RDD2_RUMOCA_PLANT_DESCRIPTION = "${source "modelica_models"}/artifacts/vehicles/rdd2/plant/modelDescription.xml";
-            RDD2_RUMOCA_PLANT_LIBRARY = "${source "modelica_models"}/artifacts/vehicles/rdd2/plant/binaries/x86_64-linux/Vehicles_Rdd2_AvionicsPlant.so";
-          };
+          env = rdd2ProviderEnv;
+        };
+
+      "rdd2:benchmark:test" =
+        (task "cerebri_rdd2" "Test the common lockstep boundary and CogniPilot adapter." ''
+          cargo test --locked --package cerebri-rdd2-xtask
+        '')
+        // {
+          after = [ "sources:ensure:cerebri_rdd2" ];
         };
 
       "rdd2:simulation:modelica:test" =
@@ -952,7 +958,9 @@ let
         '')
         // {
           after = [
-            "modelica-models:build"
+            # The qualification app needs Rumoca, not the default checker
+            # whose closure also builds OpenModelica.
+            "rumoca:compiler"
             "rumoca:python"
           ];
         };
@@ -1020,16 +1028,28 @@ let
         };
 
       "rdd2:simulation:compare" =
-        (task "cerebri_rdd2" "Compare RDD2 mission logs across all configured execution paths." ''
-          exec nix run .#trajectory-compare
+        (task "modelica_models" "Compare a matched canonical reference trajectory with RDD2 SIL." ''
+          if [ -z "''${RDD2_TRAJECTORY_REFERENCE:-}" ]; then
+            echo 'Set RDD2_TRAJECTORY_REFERENCE to a canonical log from the same mission as SIL.' >&2
+            echo 'The pinned Modelica qualifier uses a 4 m box over 45 s; SIL uses a 0.5 m box over 44 s.' >&2
+            echo 'These defaults cannot establish tracking parity. BIL is a separate optional workflow.' >&2
+            exit 1
+          fi
+          # The project app owns Python 3.12; the workspace's Python 3.13
+          # site-packages must not shadow its NumPy extension modules.
+          unset PYTHONPATH PYTHONHOME
+          exec nix run .#trajectory-compare -- \
+            --reference "''${RDD2_TRAJECTORY_REFERENCE_LABEL:-reference}=$RDD2_TRAJECTORY_REFERENCE" \
+            --candidate "sil=''${RDD2_TRAJECTORY_SIL:-${source "cerebri_rdd2"}/artifacts/sil/mission-trajectory.csv}" \
+            --output "''${RDD2_TRAJECTORY_OUTPUT:-${source "cerebri_rdd2"}/artifacts/trajectory-comparison}" \
+            --duration-delta-max-s "''${RDD2_TRAJECTORY_DURATION_DELTA_MAX_S:-0.03}" \
+            --position-rmse-max-m "''${RDD2_TRAJECTORY_POSITION_RMSE_MAX_M:-3.75}" \
+            --position-p95-max-m "''${RDD2_TRAJECTORY_POSITION_P95_MAX_M:-10.0}" \
+            --altitude-rmse-max-m "''${RDD2_TRAJECTORY_ALTITUDE_RMSE_MAX_M:-0.02}" \
+            --attitude-p95-max-deg "''${RDD2_TRAJECTORY_ATTITUDE_P95_MAX_DEG:-5.0}"
         '')
         // {
-          after = [
-            "rdd2:simulation:bil:test"
-            "rdd2:simulation:modelica:test"
-            "rdd2:simulation:sil:test"
-          ];
-          env = rdd2WestEnv;
+          after = [ "sources:ensure:modelica_models" ];
         };
 
       "rdd2:firmware:build" =

@@ -1,0 +1,29 @@
+diff --git a/Vehicles/Rdd2/Test/run_waypoint_qualification.py b/Vehicles/Rdd2/Test/run_waypoint_qualification.py
+index 365b7e7..6e8fcc5 100644
+--- a/Vehicles/Rdd2/Test/run_waypoint_qualification.py
++++ b/Vehicles/Rdd2/Test/run_waypoint_qualification.py
+@@ -79,10 +79,10 @@ def columns(result: "rum.Result") -> dict[str, list[float]]:
+     """Copy only qualification signals, then release Rumoca's full trace."""
+     values = {"time": [float(value) for value in result.time]}
+     for requested in TRACE_NAMES:
+-        matches = [
++        matches = [requested] if requested in result.names else [
+             name
+             for name in result.names
+-            if name == requested or name.endswith(f".{requested}")
++            if name.endswith(f".{requested}")
+         ]
+         if len(matches) != 1:
+             raise KeyError(
+@@ -369,9 +369,9 @@ def main() -> None:
+                 "sha256": source_digest(MODEL_DIR / "WaypointMission.mo"),
+             },
+             "guidance": {
+-                "path": "Control/Multirotor/Navigation/package.mo",
++                "path": "Vehicles/Rdd2/GuidanceController.mo",
+                 "sha256": source_digest(
+-                    ROOT / "Control" / "Multirotor" / "Navigation" / "package.mo"
++                    ROOT / "Vehicles" / "Rdd2" / "GuidanceController.mo"
+                 ),
+             },
+             "geodesy": {

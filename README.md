@@ -1,5 +1,7 @@
 # CogniPilot development workspace
 
+For this repository's ADR benchmark work, start with the [common benchmark guide](docs/common-benchmark.md), [dependency patch instructions](patches/README.md), and [verified results and remaining blockers](docs/rdd2-validation.md). CogniPilot SIL works; the other three adapters are not yet implemented.
+
 This is the canonical [Devenv](https://devenv.sh/) workspace for editable
 CogniPilot development. Devenv selects tool environments, schedules the task
 DAG, supervises processes, installs workspace hooks, and integrates the public
