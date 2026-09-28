@@ -1,9 +1,181 @@
-# CogniPilot development workspace
+# Autonomous Drone Racing Benchmark
 
-For this repository's ADR benchmark work, start with the [common benchmark guide](docs/common-benchmark.md), [dependency patch instructions](patches/README.md), and [verified results and remaining blockers](docs/rdd2-validation.md). CogniPilot SIL works; [ArduPilot completes a bounded Guided flight diagnostic](docs/ardupilot-adapter.md). Betaflight and PX4 are not yet connected.
+A software-in-the-loop benchmark for comparing **Betaflight, CogniPilot, PX4,
+and ArduPilot** on the same simulated racing drone.
 
-This is the canonical [Devenv](https://devenv.sh/) workspace for editable
-CogniPilot development. Devenv selects tool environments, schedules the task
+The research question is: **how accurately and consistently can each flight
+stack follow the same trajectory under the same conditions?** The semester
+focus is a working software simulation benchmark. Hardware-in-the-loop is a
+stretch goal, using as much of the same infrastructure as possible.
+
+**Current milestone:** CogniPilot and ArduPilot both fly using the same
+Rumoca-generated quadrotor physics model. ArduPilot completes a bounded square
+flight and produces tracking measurements. The command schedules and sensor
+paths are not yet identical, so these runs do **not** establish which stack
+performs best.
+
+## What this project does
+
+The simulator acts as the drone: it produces sensor readings, receives motor
+commands from the flight software, and calculates the resulting motion. The
+runner records the flight so performance can be measured and experiments can
+be repeated.
+
+```mermaid
+flowchart LR
+    R[Trajectory and experiment settings] --> B[Benchmark runner]
+    B --> A[Flight-stack adapter]
+    A --> F[Selected flight stack]
+    F --> M[Motor commands]
+    M --> P[Shared quadrotor physics]
+    P --> S[Sensor observations]
+    S --> A
+    P --> L[Recorded motion and metrics]
+    B --> L
+```
+
+One stack runs at a time. The intended adapters select Betaflight, CogniPilot,
+PX4 or ArduPilot while retaining the same plant and experiment definition.
+The current CogniPilot and ArduPilot connections implement the beginning of
+this architecture; the other two adapters remain to be built.
+
+The eventual comparison must hold these conditions constant:
+
+- Trajectory, starting position and attitude, and control level being tested.
+- Quadrotor dynamics, motor order, actuator limits and command interpretation.
+- Sensor models, update rates, noise, delays and disturbances.
+- Simulation clock, logging definitions and evaluation windows.
+
+Shared physics is already working for two stacks. Shared commands and sensor
+conditions remain an active development milestone.
+
+## Current implementation
+
+| Flight stack | Implemented and exercised | Remaining work |
+| --- | --- | --- |
+| **CogniPilot** | Zephyr `native_sim` firmware, shared-memory lockstep, common FMI plant, existing 44-second flight qualification | Connect the new common reference; remove or standardize simulator-assisted takeoff for comparison |
+| **ArduPilot** | Copter 4.7.1 JSON SITL adapter, disarmed connection probe, MAVLink Guided commands, 145-second bounded flight diagnostic | Align sensors, command timing and actuator interpretation with the other stacks |
+| **PX4** | Architecture candidate identified | Implement and validate adapter |
+| **Betaflight** | Architecture candidate identified | Implement and validate adapter at an appropriate common control level |
+
+The project builds on the **CogniPilot development workspace**. Modelica defines
+the plant, Rumoca compiles it into an FMI simulation artifact with generated C,
+and the native Rust runner exchanges sensor and actuator data with flight
+software. Devenv coordinates dependencies and tasks; each source repository
+retains its own native build workflow.
+
+## Results demonstrated so far
+
+These are recorded simulation results, not physical flight measurements.
+
+| Evidence | Observed result |
+| --- | --- |
+| CogniPilot baseline | 44 simulated seconds; takeoff, square flight, landing and disarming pass |
+| CogniPilot regression | Recorded trajectory remains byte-identical after adding the ArduPilot diagnostic |
+| ArduPilot connection probe | 8,000 contiguous steps at 1,600 Hz, with no motor actuation |
+| ArduPilot Guided flight | 232,000 contiguous steps over 145 simulated seconds; takeoff, square, landing and disarming pass |
+| ArduPilot position tracking | 0.06252 m RMS error; 0.09441 m maximum error over the 25-second square-and-hold window |
+| Motor response checks | All four rotors produce the expected roll, pitch and yaw response signs |
+| Native unit/protocol tests | 35 tests pass; the separate firmware integration test is not included in that count |
+
+The ArduPilot reference is a **0.5 m square at 1.5 m altitude**, with four
+five-second minimum-jerk edges and a five-second hold. Its 145-second run
+includes a 90-second estimator warmup. Normal arming checks remain enabled.
+Simulation seconds describe the vehicle's simulated clock, not the computer's
+execution time.
+
+The tracking figures are 3D distances between plant position and the continuous
+commanded reference, sampled during simulation time 110–135 seconds. They are
+single-run diagnostic measurements, not comparative scores. CogniPilot's
+existing baseline uses its own planner and a simulator-assisted takeoff law;
+its navigation-estimate error is a different measurement and must not be
+compared with ArduPilot's trajectory-tracking RMS error.
+
+The pure Modelica qualification is still blocked by a packaged-runtime crash
+and separate estimator qualification failures. Passing SIL does not resolve
+those issues. See [verified results and limitations](docs/rdd2-validation.md).
+
+## Run the work
+
+The exercised environment is an Ubuntu 24.04 ARM64 Linux VM. Start from this
+repository, rather than cloning another CogniPilot workspace inside it:
+
+```sh
+git clone https://github.com/An1Sura/autonomous-drone-bench.git
+cd autonomous-drone-bench
+./setup rdd2
+```
+
+On a **fresh checkout**, first follow the [dependency patch instructions](patches/README.md)
+to obtain the tested source revisions and apply the benchmark changes. The
+editable dependencies live under `src/`; this repository preserves the native
+runner changes as patches against documented commits. The existing development
+VM already has those patches applied.
+
+Inside the configured RDD2 environment:
+
+```sh
+# Exercise the shared boundary, protocol and reference tests.
+devenv -P rdd2 tasks run rdd2:benchmark:test
+
+# Run the existing CogniPilot simulated flight.
+devenv -P rdd2 tasks run rdd2:simulation:sil:test
+```
+
+Build the pinned ArduPilot binary using the [ArduPilot setup guide](docs/ardupilot-adapter.md),
+then run:
+
+```sh
+# Runs CogniPilot SIL, the disarmed connection probe, then the Guided flight.
+devenv -P rdd2 tasks run rdd2:benchmark:ardupilot:flight
+```
+
+Run one ArduPilot diagnostic at a time. The native Cargo and Waf workflows are
+also documented in the guide; Devenv does not replace those project tools.
+
+### Where the results go
+
+| Location | Contents |
+| --- | --- |
+| `src/cerebri_rdd2/artifacts/sil/` | CogniPilot report and recorded flight trajectory |
+| `src/cerebri_rdd2/artifacts/ardupilot-probe/run-*/` | Disarmed probe report and firmware log |
+| `src/cerebri_rdd2/artifacts/ardupilot-flight/run-*/` | Flight report, measured trajectory, commanded trajectory, firmware log and exact parameters |
+
+Each flight report records plant and executable fingerprints, simulation step
+counts, exchange timing and completion or failure information. The trajectory
+CSV contains time, position and orientation. Raw run artifacts and generated
+binaries remain local; they are not committed as source code.
+
+## What comes next
+
+1. Feed the same time-indexed reference into CogniPilot and ArduPilot, with a
+   clearly stated common control level.
+2. Align sensor injection, noise, delay, initial conditions and actuator
+   interpretation; standardize takeoff and landing behavior.
+3. Implement and validate PX4 and Betaflight adapters without introducing
+   separate physics models.
+4. Run repeatable experiments and gain sweeps, reporting trajectory error,
+   overshoot, settling time, actuator saturation, latency and jitter.
+5. Add completion time and racing trajectories, then explore hardware-in-the-loop
+   and motion-capture validation as later milestones.
+
+Current exchange timing includes transport and host scheduling. Isolated
+controller execution time, configurable shared disturbances, and a qualified
+four-stack ranking remain future work.
+
+## Project guides
+
+- [Common benchmark architecture and interface](docs/common-benchmark.md)
+- [ArduPilot setup, commands and diagnostic limits](docs/ardupilot-adapter.md)
+- [Verified results and unresolved blockers](docs/rdd2-validation.md)
+- [Tested dependency revisions and patches](patches/README.md)
+- [RDD2 workflow reference](docs/rdd2.md)
+
+<details>
+<summary>Underlying CogniPilot workspace reference: profiles, tools and maintenance</summary>
+
+This repository is based on the [Devenv](https://devenv.sh/) workspace for
+editable CogniPilot development. Devenv selects tool environments, schedules the task
 DAG, supervises processes, installs workspace hooks, and integrates the public
 Cachix caches. Each repository continues to own its Cargo, npm, CMake, West,
 colcon, Meson, and Nix behavior.
@@ -392,3 +564,5 @@ The `cognipilot` and `ros` Cachix caches provide Nix-built environments and
 packages. Native editable outputs are intentionally not Cachix artifacts.
 `CACHIX_AUTH_TOKEN` is a CI write credential only and is not required for public
 cache downloads.
+
+</details>
