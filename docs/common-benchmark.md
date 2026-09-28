@@ -2,7 +2,7 @@
 
 The first implementation extracts a common lockstep boundary from the working
 CogniPilot mission. CogniPilot is the only stack with a validated flight mission.
-[ArduPilot now has a disarmed connection test](ardupilot-adapter.md); Betaflight
+[ArduPilot now completes a bounded Guided flight diagnostic](ardupilot-adapter.md); Betaflight
 and PX4 remain integration targets.
 
 ## What runs now
@@ -79,8 +79,11 @@ that reads plant altitude. It is a regression fixture, not yet an identical
 time-indexed trajectory for four controllers. The pure Modelica qualifier has
 a different mission, so its default trace is not a matching reference.
 
-The next slice must define one time-indexed position/velocity/attitude
-reference, initial state and sensor configuration. Select and record a common
+The `enu-square-diagnostic-v1` reference now defines time-indexed ENU position,
+velocity and yaw independently of the adapter. ArduPilot consumes it through
+Guided mode; CogniPilot still uses its original regression mission. The next
+slice must connect the same reference to CogniPilot and align initial state and
+sensor configuration. Select and record a common
 control level: a shared outer controller feeding body-rate/thrust commands,
 or each stack's own supported navigation controller. These are different
 experiments and must not be mixed in one ranking. Remove or standardize the
@@ -93,7 +96,7 @@ baseline truth-assisted takeoff law before claiming a fair comparison.
 | CogniPilot | Existing shared-memory lockstep | Connected; original mission retained |
 | Betaflight | Native SITL simulator sensor/PWM interface | Not connected; pin a revision and validate signs, units, motor order and clock behavior |
 | PX4 | MAVLink simulator interface | Not connected; validate sensor coverage and lockstep actuator response at a pinned revision |
-| ArduPilot | External JSON SITL backend | Connected at Copter-4.7.1 for a disarmed 8,000-step probe; flight and sensor parity remain unqualified |
+| ArduPilot | External JSON SITL backend | Copter-4.7.1 passes the disarmed probe and a 145-second Guided diagnostic; shared sensor parity remains unqualified |
 
 Official references reviewed for the next implementation:
 

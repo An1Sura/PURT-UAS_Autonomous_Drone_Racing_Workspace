@@ -1,6 +1,6 @@
 # CogniPilot development workspace
 
-For this repository's ADR benchmark work, start with the [common benchmark guide](docs/common-benchmark.md), [dependency patch instructions](patches/README.md), and [verified results and remaining blockers](docs/rdd2-validation.md). CogniPilot SIL works; [ArduPilot has a disarmed connection test](docs/ardupilot-adapter.md). Betaflight and PX4 are not yet connected.
+For this repository's ADR benchmark work, start with the [common benchmark guide](docs/common-benchmark.md), [dependency patch instructions](patches/README.md), and [verified results and remaining blockers](docs/rdd2-validation.md). CogniPilot SIL works; [ArduPilot completes a bounded Guided flight diagnostic](docs/ardupilot-adapter.md). Betaflight and PX4 are not yet connected.
 
 This is the canonical [Devenv](https://devenv.sh/) workspace for editable
 CogniPilot development. Devenv selects tool environments, schedules the task

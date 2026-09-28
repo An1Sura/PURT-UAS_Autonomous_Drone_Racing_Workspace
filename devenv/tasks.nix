@@ -978,6 +978,18 @@ let
           ];
         };
 
+      "rdd2:benchmark:ardupilot:flight" =
+        (task "cerebri_rdd2" "Run the bounded ArduPilot Guided flight diagnostic against the shared plant." ''
+          cargo run --release --locked --package cerebri-rdd2-xtask -- ardupilot-probe \
+            --flight-diagnostic \
+            --executable ${source "ardupilot"}/build/sitl/bin/arducopter \
+            --plant-directory ${source "modelica_models"}/artifacts/vehicles/rdd2/plant/Vehicles_Rdd2_Plant \
+            --output "$PWD/artifacts/ardupilot-flight"
+        '')
+        // {
+          after = [ "rdd2:benchmark:ardupilot:probe" ];
+        };
+
       "rdd2:simulation:modelica:test" =
         (task "modelica_models" "Run the pure Modelica RDD2 controller and physics mission with Rumoca." ''
           MODELICA_MODELS_ROOT="$PWD" \

@@ -1,19 +1,23 @@
 diff --git a/xtask/src/main.rs b/xtask/src/main.rs
-index e11a7c8..65e6f89 100644
+index e11a7c8..f60999c 100644
 --- a/xtask/src/main.rs
 +++ b/xtask/src/main.rs
-@@ -1,5 +1,10 @@
+@@ -1,7 +1,14 @@
 +mod ardupilot;
 +mod ardupilot_probe;
 +mod benchmark;
 +mod cognipilot;
  mod fastdyn_ci;
++mod flight_link;
  mod format;
 +mod mission;
  mod physics;
  mod protocol;
++mod reference;
  mod shared_memory;
-@@ -13,24 +18,13 @@ use std::thread;
+ 
+ use std::env;
+@@ -13,24 +20,13 @@ use std::thread;
  use std::time::{Duration, Instant};
  
  use anyhow::{Context, Result, anyhow, bail};
@@ -41,7 +45,7 @@ index e11a7c8..65e6f89 100644
  const PLANNER_CORNER_TOLERANCE_M: f64 = 0.12;
  const VEHICLE_CORNER_TOLERANCE_M: f64 = 0.25;
  
-@@ -52,6 +46,9 @@ struct Options {
+@@ -52,6 +48,9 @@ struct Options {
  
  #[derive(Debug, Default, Serialize)]
  struct Report {
@@ -51,7 +55,7 @@ index e11a7c8..65e6f89 100644
      passed: bool,
      /// Which providers produced the firmware under test. A pass built from
      /// caller-selected sources is not a qualifying result, and the report
-@@ -108,7 +105,7 @@ fn options(args: impl IntoIterator<Item = String>) -> Result<Options> {
+@@ -108,7 +107,7 @@ fn options(args: impl IntoIterator<Item = String>) -> Result<Options> {
      let mut trajectory = env::var_os("RDD2_MISSION_TRAJECTORY")
          .map(PathBuf::from)
          .unwrap_or_else(|| PathBuf::from("out/mission-trajectory.csv"));
@@ -60,7 +64,7 @@ index e11a7c8..65e6f89 100644
      let mut timeout_ms = 2_000_u64;
      let mut controller_benchmark = env::var("RDD2_FASTDYN_CONTROLLER_BENCHMARK_S")
          .ok()
-@@ -128,6 +125,16 @@ fn options(args: impl IntoIterator<Item = String>) -> Result<Options> {
+@@ -128,6 +127,16 @@ fn options(args: impl IntoIterator<Item = String>) -> Result<Options> {
      while let Some(arg) = args.next() {
          let value = || anyhow!("{arg} requires a value");
          match arg.as_str() {
@@ -77,7 +81,7 @@ index e11a7c8..65e6f89 100644
              "--report" => report = args.next().ok_or_else(value)?.into(),
              "--trajectory" => trajectory = args.next().ok_or_else(value)?.into(),
              "--duration" => duration = args.next().ok_or_else(value)?.parse()?,
-@@ -145,15 +152,18 @@ fn options(args: impl IntoIterator<Item = String>) -> Result<Options> {
+@@ -145,15 +154,18 @@ fn options(args: impl IntoIterator<Item = String>) -> Result<Options> {
              "--minimum-speedup" => minimum_speedup = args.next().ok_or_else(value)?.parse()?,
              "-h" | "--help" => {
                  println!(
@@ -99,7 +103,7 @@ index e11a7c8..65e6f89 100644
      }
      if !minimum_speedup.is_finite() || minimum_speedup < 0.0 {
          bail!("--minimum-speedup must be finite and non-negative");
-@@ -171,29 +181,29 @@ fn options(args: impl IntoIterator<Item = String>) -> Result<Options> {
+@@ -171,29 +183,29 @@ fn options(args: impl IntoIterator<Item = String>) -> Result<Options> {
              .context("--plant-library or RDD2_RUMOCA_PLANT_LIBRARY is required")?,
          plant_description: plant_description
              .context("--plant-description or RDD2_RUMOCA_PLANT_DESCRIPTION is required")?,
@@ -139,7 +143,7 @@ index e11a7c8..65e6f89 100644
  }
  
  fn rc_channels(mission_time: Option<f64>, plant: &Plant) -> [i32; 16] {
-@@ -204,15 +214,16 @@ fn rc_channels(mission_time: Option<f64>, plant: &Plant) -> [i32; 16] {
+@@ -204,15 +216,16 @@ fn rc_channels(mission_time: Option<f64>, plant: &Plant) -> [i32; 16] {
          channels[5] = 1000;
          return channels;
      };
@@ -164,7 +168,7 @@ index e11a7c8..65e6f89 100644
      if throttle_must_be_low(time) {
          channels[2] = 1000;
      } else {
-@@ -381,8 +392,7 @@ fn evaluate(report: &mut Report) {
+@@ -381,8 +394,7 @@ fn evaluate(report: &mut Report) {
              .push("vehicle had excessive vertical speed at completion".into());
      }
      report.passed = report.failures.is_empty();
@@ -174,7 +178,7 @@ index e11a7c8..65e6f89 100644
  }
  
  fn advance_square_corner(
-@@ -448,7 +458,11 @@ where
+@@ -448,7 +460,11 @@ where
      let warmup_target_ns = 5_000_000_u64;
      let ready_deadline = Instant::now() + Duration::from_secs(60);
      loop {
@@ -187,7 +191,7 @@ index e11a7c8..65e6f89 100644
          let inputs = protocol::lockstep_inputs(
              gyro,
              accel,
-@@ -466,7 +480,8 @@ where
+@@ -466,7 +482,8 @@ where
      }
  
      let target_ns = warmup_target_ns + (benchmark_seconds * 1.0e9).round() as u64;
@@ -197,7 +201,7 @@ index e11a7c8..65e6f89 100644
      let inputs = protocol::lockstep_inputs(
          gyro,
          accel,
-@@ -491,6 +506,7 @@ where
+@@ -491,6 +508,7 @@ where
  {
      let mut plant = Plant::open(&options.plant_library, &options.plant_description)?;
      let mut report = Report {
@@ -205,7 +209,7 @@ index e11a7c8..65e6f89 100644
          position_mission_continuous: true,
          mission_status_current: true,
          navigation_estimate_finite: true,
-@@ -500,7 +516,12 @@ where
+@@ -500,7 +518,12 @@ where
      let wall_start = Instant::now();
      let mut firmware_ready = false;
      let mut synthetic_gnss = SyntheticGnss::default();
@@ -219,7 +223,7 @@ index e11a7c8..65e6f89 100644
      let mut plan_sent = false;
      let mut mission_epoch = None;
      let mut last_outputs: Option<LockstepOutputs> = None;
-@@ -529,26 +550,37 @@ where
+@@ -529,26 +552,37 @@ where
          let channels = rc_channels(mission_time, &plant);
          let (gyro, accel) = plant.imu_flu();
          let target_time = ((simulated_time + options.plant_dt) * 1.0e9).round() as u64;
@@ -271,7 +275,7 @@ index e11a7c8..65e6f89 100644
          simulated_time += options.plant_dt;
          report.plant_steps += 1;
          let state = outputs.flight_state;
-@@ -619,7 +651,8 @@ where
+@@ -619,7 +653,8 @@ where
              .all(f32::is_finite);
          report.fresh_planner_reference_observed |= reference_current;
          if mission_time.is_some_and(|time| {
@@ -281,7 +285,7 @@ index e11a7c8..65e6f89 100644
          }) {
              let required = MissionStatusWire::SOURCE_READY
                  | MissionStatusWire::ORIGIN_VALID
-@@ -641,14 +674,14 @@ where
+@@ -641,14 +676,14 @@ where
                  &mut report.planner_corners_reached,
                  planner_origin_value,
                  planner_position,
@@ -298,7 +302,7 @@ index e11a7c8..65e6f89 100644
                  VEHICLE_CORNER_TOLERANCE_M,
              );
          }
-@@ -671,7 +704,8 @@ where
+@@ -671,7 +706,8 @@ where
          if mission_epoch.is_none() && status.mission_state == 1 {
              mission_epoch = Some(simulated_time);
          }
@@ -308,7 +312,7 @@ index e11a7c8..65e6f89 100644
              report.firmware_disarmed_after_flight = true;
          }
  
-@@ -708,6 +742,7 @@ where
+@@ -708,6 +744,7 @@ where
          last_outputs = Some(outputs);
      }
  
@@ -316,7 +320,7 @@ index e11a7c8..65e6f89 100644
      report.simulated_seconds = report.plant_steps as f64 * options.plant_dt;
      report.wall_seconds = wall_start.elapsed().as_secs_f64();
      report.speedup_over_realtime = report.simulated_seconds / report.wall_seconds;
-@@ -812,7 +847,7 @@ fn run_fastdyn_mission(args: impl IntoIterator<Item = String>) -> Result<()> {
+@@ -812,7 +849,7 @@ fn run_fastdyn_mission(args: impl IntoIterator<Item = String>) -> Result<()> {
  
  fn print_help() {
      println!(
@@ -325,7 +329,7 @@ index e11a7c8..65e6f89 100644
      );
  }
  
-@@ -824,6 +859,7 @@ fn main() -> Result<()> {
+@@ -824,6 +861,7 @@ fn main() -> Result<()> {
      };
  
      match command.to_string_lossy().as_ref() {
@@ -333,7 +337,7 @@ index e11a7c8..65e6f89 100644
          "fastdyn-ci" => fastdyn_ci::run(),
          "fastdyn-mission" => {
              let args = args
-@@ -870,7 +906,7 @@ mod tests {
+@@ -870,7 +908,7 @@ mod tests {
              vehicle_corners_reached: 5,
              navigation_estimate_finite: true,
              max_navigation_horizontal_error_m: 0.1,
@@ -342,7 +346,7 @@ index e11a7c8..65e6f89 100644
              maximum_gnss_generation: 441,
              maximum_reference_generation: 100,
              maximum_plan_generation: 1,
-@@ -904,16 +940,19 @@ mod tests {
+@@ -904,16 +942,19 @@ mod tests {
  
      #[test]
      fn takeoff_schedule_preserves_a_low_throttle_arming_window() {
@@ -369,7 +373,7 @@ index e11a7c8..65e6f89 100644
          );
      }
  
-@@ -926,7 +965,7 @@ mod tests {
+@@ -926,7 +967,7 @@ mod tests {
              &mut progress,
              origin,
              origin,
@@ -378,7 +382,7 @@ index e11a7c8..65e6f89 100644
              VEHICLE_CORNER_TOLERANCE_M,
          );
          assert_eq!(progress, 1);
-@@ -934,15 +973,15 @@ mod tests {
+@@ -934,15 +975,15 @@ mod tests {
              &mut progress,
              origin,
              origin,
@@ -397,7 +401,7 @@ index e11a7c8..65e6f89 100644
              VEHICLE_CORNER_TOLERANCE_M,
          );
          assert_eq!(progress, 2);
-@@ -1063,7 +1102,7 @@ mod tests {
+@@ -1063,7 +1104,7 @@ mod tests {
          let result = (|| -> Result<()> {
              for _ in 0..4_000 {
                  target_ns += 625_000;
@@ -406,7 +410,7 @@ index e11a7c8..65e6f89 100644
                  let inputs = protocol::lockstep_inputs(
                      [0.0; 3],
                      [0.0, 0.0, 9.806_65],
-@@ -1096,7 +1135,7 @@ mod tests {
+@@ -1096,7 +1137,7 @@ mod tests {
              let mut last_quality = 0_i8;
              for _ in 0..320 {
                  target_ns += 625_000;
@@ -415,7 +419,7 @@ index e11a7c8..65e6f89 100644
                  let inputs = protocol::lockstep_inputs(
                      [0.0; 3],
                      [0.0, 0.0, 9.806_65],
-@@ -1125,7 +1164,7 @@ mod tests {
+@@ -1125,7 +1166,7 @@ mod tests {
              let mut last_flight_armed = false;
              for _ in 0..1_600 {
                  target_ns += 625_000;
@@ -1344,10 +1348,10 @@ index 0000000..fdae852
 +}
 diff --git a/xtask/src/ardupilot_probe.rs b/xtask/src/ardupilot_probe.rs
 new file mode 100644
-index 0000000..9ce576d
+index 0000000..ee854dd
 --- /dev/null
 +++ b/xtask/src/ardupilot_probe.rs
-@@ -0,0 +1,254 @@
+@@ -0,0 +1,415 @@
 +//! Bounded, disarmed real-ArduPilot connection test against the shared FMI plant.
 +use std::ffi::OsString;
 +use std::fs::{self, File};
@@ -1394,9 +1398,18 @@ index 0000000..9ce576d
 +    motor_actuation_observed: bool,
 +    exchange_metrics: ExchangeMetrics,
 +    error: Option<String>,
++    flight_status: Option<crate::flight_link::Status>,
++    reference_id: Option<String>,
++    maximum_altitude_m: f64,
++    reference_samples: u64,
++    position_rmse_m: Option<f64>,
++    position_max_error_m: f64,
++    final_position_enu_m: [f64; 3],
++    motor_impulse_signs_passed: bool,
 +}
 +
 +pub fn run(args: impl IntoIterator<Item = OsString>) -> Result<()> {
++    let mut flight = false;
 +    let mut executable = None;
 +    let mut library = None;
 +    let mut description = None;
@@ -1405,9 +1418,13 @@ index 0000000..9ce576d
 +    let mut args = args.into_iter();
 +    while let Some(arg) = args.next() {
 +        let name = arg.to_str().context("argument must be UTF-8")?;
++        if name == "--flight-diagnostic" {
++            flight = true;
++            continue;
++        }
 +        if name == "--help" {
 +            println!(
-+                "cargo xtask ardupilot-probe --executable PATH (--plant-directory PATH | --plant-library PATH --plant-description PATH) [--output DIRECTORY]\nRuns 5 simulated seconds, disarmed, with a new result directory per run."
++                "cargo xtask ardupilot-probe --executable PATH (--plant-directory PATH | --plant-library PATH --plant-description PATH) [--output DIRECTORY]\nRuns 5 simulated seconds disarmed; --flight-diagnostic runs a bounded 145-second Guided experiment. Each run uses a fresh result directory."
 +            );
 +            return Ok(());
 +        }
@@ -1458,6 +1475,9 @@ index 0000000..9ce576d
 +    let description = description
 +        .context("--plant-description is required")?
 +        .canonicalize()?;
++    if flight {
++        validate_motor_signs(&library, &description)?;
++    }
 +    let mut plant = Plant::open(&library, &description)?;
 +    let mut adapter = ArduPilotAdapter::bind()?;
 +    let port = adapter.address()?.port();
@@ -1473,6 +1493,15 @@ index 0000000..9ce576d
 +        &defaults,
 +        include_str!("../missions/ardupilot-json-probe.parm"),
 +    )?;
++    if flight {
++        use std::io::Write;
++        writeln!(
++            std::fs::OpenOptions::new().append(true).open(&defaults)?,
++            "SERIAL0_PROTOCOL 1"
++        )?;
++    }
++    let mut link = crate::flight_link::FlightLink::bind()?;
++    let endpoint = format!("udpclient:127.0.0.1:{}", link.port()?);
 +    let log = File::create(run_directory.join("ardupilot.log"))?;
 +    let child = Command::new(&executable)
 +        .current_dir(&run_directory)
@@ -1486,7 +1515,7 @@ index 0000000..9ce576d
 +            "--sim-port-out",
 +        ])
 +        .arg(port.to_string())
-+        .args(["--serial0", "udpclient:127.0.0.1:14650", "--defaults"])
++        .args(["--serial0", &endpoint, "--defaults"])
 +        .arg(&defaults)
 +        .stdin(Stdio::null())
 +        .stdout(log.try_clone()?)
@@ -1507,6 +1536,25 @@ index 0000000..9ce576d
 +    let mut trajectory =
 +        BufWriter::new(File::create(run_directory.join("mission-trajectory.csv"))?);
 +    writeln!(trajectory, "time_s,x_m,y_m,z_m,roll_rad,pitch_rad,yaw_rad")?;
++    let steps = if flight { 145 * 1600 } else { STEPS };
++    if flight {
++        report.qualification =
++            "experimental guided flight diagnostic; not sensor-parity or four-stack qualification"
++                .into();
++        report.reference_id = Some(crate::reference::ID.into());
++    }
++    let mut references = BufWriter::new(File::create(
++        run_directory.join("commanded-trajectory.csv"),
++    )?);
++    writeln!(
++        references,
++        "time_s,x_m,y_m,z_m,vx_m_s,vy_m_s,vz_m_s,yaw_rad"
++    )?;
++    report.motor_impulse_signs_passed = flight;
++    let mut position_error_squared_sum = 0.;
++    let mut takeoff_sent = false;
++    let mut heartbeat_count = 0;
++    let mut last_heartbeat_s = 0.;
 +    let result = (|| -> Result<()> {
 +        let mut gnss = SyntheticGnss::default();
 +        let mut channels_us = [1500; 16];
@@ -1516,7 +1564,62 @@ index 0000000..9ce576d
 +            channels_us,
 +            square_plan: None,
 +        };
-+        for step in 1..=STEPS {
++        for step in 1..=steps {
++            let time_s = step as f64 * 0.000625;
++            link.poll()?;
++            if link.status.heartbeat_count != heartbeat_count {
++                heartbeat_count = link.status.heartbeat_count;
++                last_heartbeat_s = time_s;
++            }
++            if flight && time_s > 10. && time_s - last_heartbeat_s > 3. {
++                bail!("MAVLink heartbeat stale");
++            }
++            if flight && step % 1600 == 0 {
++                if time_s >= 10. && !link.status.heartbeat_seen {
++                    bail!("no validated MAVLink heartbeat by 10 seconds");
++                }
++                if link.status.heartbeat_seen {
++                    link.heartbeat()?;
++                    link.request_status()?;
++                }
++                if (90.0..100.0).contains(&time_s) && link.status.heartbeat_seen {
++                    if link.status.mode != 4 {
++                        link.guided()?;
++                    } else if !link.status.armed {
++                        link.command(400, [1., 0., 0., 0., 0., 0., 0.])?;
++                    }
++                }
++                if time_s >= 100. && !takeoff_sent {
++                    if !link.status.armed || link.status.mode != 4 {
++                        bail!(
++                            "Guided arming did not complete by 100 seconds; inspect flight_status"
++                        );
++                    }
++                    link.command(22, [0., 0., 0., 0., 0., 0., 1.5])?;
++                    takeoff_sent = true;
++                }
++                if time_s >= 135. {
++                    link.command(21, [0.; 7])?;
++                }
++            }
++            if flight && (110.0..135.0).contains(&time_s) && step % 80 == 0 {
++                if !link.status.armed || link.status.mode != 4 {
++                    bail!("lost armed Guided mode during reference");
++                }
++                let r = crate::reference::sample(time_s - 110.);
++                link.reference((time_s * 1000.) as u32, r)?;
++                writeln!(
++                    references,
++                    "{time_s},{},{},{},{},{},{},{}",
++                    r.position_enu_m[0],
++                    r.position_enu_m[1],
++                    r.position_enu_m[2],
++                    r.velocity_enu_m_s[0],
++                    r.velocity_enu_m_s[1],
++                    r.velocity_enu_m_s[2],
++                    r.yaw_enu_rad
++                )?;
++            }
 +            let target_time_ns = step * STEP_NS;
 +            let (gyro, accel) = plant.imu_flu();
 +            let sensors = SensorFrame {
@@ -1535,13 +1638,37 @@ index 0000000..9ce576d
 +                benchmark::exchange(&mut adapter, &sensors, &command, timeout)?;
 +            if response.motors.iter().any(|&x| x != 0.) {
 +                report.motor_actuation_observed = true;
-+                bail!("unexpected motor actuation during disarmed probe");
++                if !flight {
++                    bail!("unexpected motor actuation during disarmed probe");
++                }
 +            }
 +            benchmark::commit(&mut plant, &response, 0.000625)?;
 +            let p = plant.position();
 +            let e = plant.euler();
++            report.final_position_enu_m = p;
++            if flight && (110.0..135.0).contains(&time_s) {
++                let reference = crate::reference::sample(time_s - 110.);
++                let error_squared: f64 = p
++                    .iter()
++                    .zip(reference.position_enu_m)
++                    .map(|(x, r)| (x - r).powi(2))
++                    .sum();
++                position_error_squared_sum += error_squared;
++                report.position_max_error_m = report.position_max_error_m.max(error_squared.sqrt());
++                report.reference_samples += 1;
++            }
 +            if !p.iter().chain(e.iter()).all(|x| x.is_finite()) {
 +                bail!("nonfinite plant state");
++            }
++            report.maximum_altitude_m = report.maximum_altitude_m.max(p[2]);
++            if flight
++                && (p[0].abs() > 5.
++                    || p[1].abs() > 5.
++                    || p[2] > 4.
++                    || e[0].abs() > 0.8
++                    || e[1].abs() > 0.8)
++            {
++                bail!("flight diagnostic exceeded position/tilt bounds");
 +            }
 +            writeln!(
 +                trajectory,
@@ -1560,16 +1687,27 @@ index 0000000..9ce576d
 +            report.last_frame = Some(response.diagnostics.frame_count);
 +            report
 +                .exchange_metrics
-+                .record(elapsed, response.motors, false);
++                .record(elapsed, response.motors, link.status.armed);
 +            report.steps = step;
++        }
++        if flight
++            && (report.maximum_altitude_m < 1. || plant.position()[2] > 0.2 || link.status.armed)
++        {
++            bail!("flight did not demonstrate takeoff and disarmed landing");
 +        }
 +        Ok(())
 +    })();
 +    trajectory.flush()?;
++    references.flush()?;
++    report.flight_status = Some(link.status);
 +    report.duplicates_ignored = adapter.duplicates_ignored;
 +    report.simulated_seconds = report.steps as f64 * 0.000625;
 +    report.exchange_metrics.finish();
-+    report.passed = result.is_ok() && report.steps == STEPS;
++    if report.reference_samples > 0 {
++        report.position_rmse_m =
++            Some((position_error_squared_sum / report.reference_samples as f64).sqrt());
++    }
++    report.passed = result.is_ok() && report.steps == steps;
 +    report.error = result.as_ref().err().map(|e| format!("{e:#}"));
 +    fs::write(
 +        run_directory.join("report.json"),
@@ -1602,25 +1740,366 @@ index 0000000..9ce576d
 +    }
 +    Ok(value)
 +}
-diff --git a/xtask/missions/rdd2-square-baseline-v1.json b/xtask/missions/rdd2-square-baseline-v1.json
++
++/// Independent plant instances: lift symmetrically, then perturb each rotor.
++fn validate_motor_signs(library: &std::path::Path, description: &std::path::Path) -> Result<()> {
++    let signs = [[-1., -1., -1.], [-1., 1., 1.], [1., 1., -1.], [1., -1., 1.]];
++    for (motor, expected) in signs.iter().enumerate() {
++        let mut plant = Plant::open(library, description)?;
++        for _ in 0..640 {
++            plant.step([0.8; 4], 0.000625)?;
++        }
++        let initial = plant.imu_flu().0;
++        let mut command = [0.8; 4];
++        command[motor] = 0.9;
++        for _ in 0..64 {
++            plant.step(command, 0.000625)?;
++        }
++        let gyro = plant.imu_flu().0;
++        for axis in 0..3 {
++            if !gyro[axis].is_finite() || (gyro[axis] - initial[axis]) * expected[axis] <= 1e-4 {
++                bail!(
++                    "motor {motor} axis {axis} failed physical impulse sign validation: {gyro:?}"
++                );
++            }
++        }
++        println!("MOTOR_IMPULSE motor={motor} gyro_flu={gyro:?}");
++    }
++    Ok(())
++}
+diff --git a/xtask/src/flight_link.rs b/xtask/src/flight_link.rs
 new file mode 100644
-index 0000000..bd64da4
+index 0000000..354873d
 --- /dev/null
-+++ b/xtask/missions/rdd2-square-baseline-v1.json
-@@ -0,0 +1,14 @@
-+{
-+  "id": "rdd2-square-baseline-v1",
-+  "controller_dt": 0.000625,
-+  "takeoff_altitude_m": 1.5,
-+  "mission_side_m": 0.5,
-+  "mission_speed_m_s": 0.1,
-+  "mission_arm_delay_s": 0.5,
-+  "mission_takeoff_start_s": 1.0,
-+  "mission_takeoff_end_s": 4.0,
-+  "mission_position_start_s": 8.0,
-+  "mission_position_end_s": 34.0,
-+  "mission_disarm_s": 40.0,
-+  "default_mission_duration_s": 44.0
++++ b/xtask/src/flight_link.rs
+@@ -0,0 +1,267 @@
++//! Narrow MAVLink 1 diagnostic client. Layouts/CRC extras from the pinned common dialect.
++//! Loopback only; no force-arm, parameter writes, or arming-check overrides.
++use crate::reference::Reference;
++use anyhow::{Result, bail};
++use serde::Serialize;
++use std::io::ErrorKind;
++use std::net::{SocketAddr, UdpSocket};
++fn crc(bytes: &[u8], extra: u8) -> u16 {
++    let mut crc = 0xffffu16;
++    for &b in bytes.iter().chain(std::iter::once(&extra)) {
++        let mut tmp = b ^ crc as u8;
++        tmp ^= tmp << 4;
++        crc = (crc >> 8) ^ ((tmp as u16) << 8) ^ ((tmp as u16) << 3) ^ ((tmp as u16) >> 4);
++    }
++    crc
++}
++fn packet(seq: u8, id: u8, extra: u8, payload: &[u8]) -> Vec<u8> {
++    let mut b = vec![0xfe, payload.len() as u8, seq, 255, 190, id];
++    b.extend_from_slice(payload);
++    b.extend_from_slice(&crc(&b[1..], extra).to_le_bytes());
++    b
++}
++#[derive(Default, Serialize)]
++pub struct Status {
++    pub heartbeat_seen: bool,
++    pub heartbeat_count: u64,
++    pub armed: bool,
++    pub mode: u32,
++    pub ekf_flags: Option<u16>,
++    pub gps_fix: Option<u8>,
++    pub gps_satellites: Option<u8>,
++    pub acknowledgements: Vec<(u16, u8)>,
++    pub messages: Vec<String>,
++}
++pub struct FlightLink {
++    socket: UdpSocket,
++    peer: Option<SocketAddr>,
++    seq: u8,
++    pub status: Status,
++}
++impl FlightLink {
++    pub fn bind() -> Result<Self> {
++        let socket = UdpSocket::bind("127.0.0.1:0")?;
++        socket.set_nonblocking(true)?;
++        Ok(Self {
++            socket,
++            peer: None,
++            seq: 0,
++            status: Status::default(),
++        })
++    }
++    pub fn port(&self) -> Result<u16> {
++        Ok(self.socket.local_addr()?.port())
++    }
++    pub fn poll(&mut self) -> Result<()> {
++        let mut bytes = [0; 65535];
++        loop {
++            let (n, peer) = match self.socket.recv_from(&mut bytes) {
++                Ok(x) => x,
++                Err(e) if e.kind() == ErrorKind::WouldBlock => break,
++                Err(e) => return Err(e.into()),
++            };
++            if !peer.ip().is_loopback() || self.peer.is_some_and(|p| p != peer) {
++                continue;
++            }
++            let mut i = 0;
++            while i + 8 <= n {
++                if bytes[i] != 0xfe {
++                    i += 1;
++                    continue;
++                }
++                let size = bytes[i + 1] as usize;
++                if i + size + 8 > n {
++                    break;
++                }
++                let frame = &bytes[i..i + size + 8];
++                i += size + 8;
++                let extra = match frame[5] {
++                    0 => 50,
++                    77 => 143,
++                    253 => 83,
++                    193 => 71,
++                    24 => 24,
++                    _ => continue,
++                };
++                if crc(&frame[1..size + 6], extra)
++                    != u16::from_le_bytes([frame[size + 6], frame[size + 7]])
++                {
++                    continue;
++                }
++                if frame[3] != 1 || frame[4] != 1 {
++                    continue;
++                }
++                self.peer = Some(peer);
++                let p = &frame[6..6 + size];
++                match frame[5] {
++                    0 if size == 9 => {
++                        self.status.heartbeat_seen = true;
++                        self.status.heartbeat_count += 1;
++                        self.status.mode = u32::from_le_bytes(p[..4].try_into().unwrap());
++                        self.status.armed = p[6] & 128 != 0;
++                    }
++                    193 if size >= 22 => {
++                        self.status.ekf_flags = Some(u16::from_le_bytes([p[20], p[21]]))
++                    }
++                    24 if size >= 30 => {
++                        self.status.gps_fix = Some(p[28]);
++                        self.status.gps_satellites = Some(p[29]);
++                    }
++                    77 if size >= 3 => self
++                        .status
++                        .acknowledgements
++                        .push((u16::from_le_bytes([p[0], p[1]]), p[2])),
++                    253 if size >= 51 => {
++                        let text = String::from_utf8_lossy(&p[1..51])
++                            .trim_end_matches('\0')
++                            .to_string();
++                        if self.status.messages.last() != Some(&text) {
++                            self.status.messages.push(text);
++                        }
++                    }
++                    _ => {}
++                }
++            }
++        }
++        Ok(())
++    }
++    fn send(&mut self, id: u8, extra: u8, payload: &[u8]) -> Result<()> {
++        let peer = self
++            .peer
++            .ok_or_else(|| anyhow::anyhow!("no validated MAVLink peer"))?;
++        let b = packet(self.seq, id, extra, payload);
++        self.seq = self.seq.wrapping_add(1);
++        self.socket.send_to(&b, peer)?;
++        Ok(())
++    }
++    pub fn request_status(&mut self) -> Result<()> {
++        self.send(66, 148, &[4, 0, 1, 1, 0, 1])
++    }
++    pub fn heartbeat(&mut self) -> Result<()> {
++        self.send(0, 50, &[0, 0, 0, 0, 6, 8, 0, 4, 3])
++    }
++    pub fn command(&mut self, id: u16, params: [f32; 7]) -> Result<()> {
++        if !params.iter().all(|x| x.is_finite()) {
++            bail!("nonfinite command");
++        }
++        let mut p = Vec::new();
++        for v in params {
++            p.extend_from_slice(&v.to_le_bytes());
++        }
++        p.extend_from_slice(&id.to_le_bytes());
++        p.extend_from_slice(&[1, 1, 0]);
++        self.send(76, 152, &p)
++    }
++    pub fn guided(&mut self) -> Result<()> {
++        let mut p = 4u32.to_le_bytes().to_vec();
++        p.extend_from_slice(&[1, 1]);
++        self.send(11, 89, &p)
++    }
++    pub fn reference(&mut self, time_ms: u32, r: Reference) -> Result<()> {
++        if !r
++            .position_enu_m
++            .iter()
++            .chain(r.velocity_enu_m_s.iter())
++            .chain(std::iter::once(&r.yaw_enu_rad))
++            .all(|x| x.is_finite() && x.abs() < 10000.)
++        {
++            bail!("invalid flight reference");
++        }
++        let mut p = time_ms.to_le_bytes().to_vec();
++        // MAV_FRAME_LOCAL_NED, position + velocity + yaw; ignore acceleration/yaw rate.
++        for v in [
++            r.position_enu_m[1],
++            r.position_enu_m[0],
++            -r.position_enu_m[2],
++            r.velocity_enu_m_s[1],
++            r.velocity_enu_m_s[0],
++            -r.velocity_enu_m_s[2],
++            0.,
++            0.,
++            0.,
++            std::f64::consts::FRAC_PI_2 - r.yaw_enu_rad,
++            0.,
++        ] {
++            p.extend_from_slice(&(v as f32).to_le_bytes());
++        }
++        p.extend_from_slice(&2496u16.to_le_bytes());
++        p.extend_from_slice(&[1, 1, 1]);
++        self.send(84, 143, &p)
++    }
++}
++#[cfg(test)]
++mod tests {
++    use super::*;
++    #[test]
++    fn heartbeat_matches_dialect_fixture() {
++        // Generated with pinned ArduPilot mavlink_msg_heartbeat_pack_chan (MAVLink 1).
++        let b = packet(0, 0, 50, &[0, 0, 0, 0, 6, 8, 0, 4, 3]);
++        assert_eq!(
++            b,
++            [
++                0xfe, 9, 0, 255, 190, 0, 0, 0, 0, 0, 6, 8, 0, 4, 3, 0x49, 0x21
++            ]
++        );
++    }
++}
++
++#[cfg(test)]
++mod wire_tests {
++    use super::*;
++    fn hex(b: &[u8]) -> String {
++        b.iter().map(|x| format!("{x:02x}")).collect()
++    }
++    #[test]
++    fn commands_match_generated_c_dialect_packets() {
++        let mut link = FlightLink::bind().unwrap();
++        let peer = UdpSocket::bind("127.0.0.1:0").unwrap();
++        peer.set_read_timeout(Some(std::time::Duration::from_secs(1)))
++            .unwrap();
++        link.peer = Some(peer.local_addr().unwrap());
++        let mut b = [0; 300];
++        link.guided().unwrap();
++        let n = peer.recv(&mut b).unwrap();
++        assert_eq!(hex(&b[..n]), "fe0600ffbe0b040000000101afeb");
++        link.seq = 0;
++        link.command(400, [1., 0., 0., 0., 0., 0., 0.]).unwrap();
++        let n = peer.recv(&mut b).unwrap();
++        assert_eq!(
++            hex(&b[..n]),
++            "fe2100ffbe4c0000803f0000000000000000000000000000000000000000000000009001010100390a"
++        );
++        link.seq = 0;
++        link.reference(50000, crate::reference::sample(0.)).unwrap();
++        let n = peer.recv(&mut b).unwrap();
++        // IEEE negative zero from ENU -> NED is equivalent but byte-distinct.
++        assert_eq!(b[6..10], 50000u32.to_le_bytes());
++        assert_eq!(f32::from_le_bytes(b[18..22].try_into().unwrap()), -1.5);
++        assert_eq!(&b[54..59], &[0xc0, 9, 1, 1, 1]);
++        assert_eq!(n, 61);
++        let mut invalid = crate::reference::sample(0.);
++        invalid.position_enu_m[0] = f64::NAN;
++        assert!(link.reference(0, invalid).is_err());
++    }
++    #[test]
++    fn telemetry_requires_valid_crc_and_autopilot_identity() {
++        let mut link = FlightLink::bind().unwrap();
++        let peer = UdpSocket::bind("127.0.0.1:0").unwrap();
++        let mut b = packet(0, 0, 50, &[4, 0, 0, 0, 2, 3, 128, 4, 3]);
++        peer.send_to(&b, link.socket.local_addr().unwrap()).unwrap();
++        link.poll().unwrap();
++        assert!(!link.status.heartbeat_seen); // wrong system/component
++        b[3] = 1;
++        b[4] = 1;
++        let c = crc(&b[1..15], 50);
++        b[15..].copy_from_slice(&c.to_le_bytes());
++        b[15] ^= 1;
++        peer.send_to(&b, link.socket.local_addr().unwrap()).unwrap();
++        link.poll().unwrap();
++        assert!(!link.status.heartbeat_seen);
++        b[15] ^= 1;
++        peer.send_to(&b, link.socket.local_addr().unwrap()).unwrap();
++        link.poll().unwrap();
++        assert!(link.status.armed);
++        assert_eq!(link.status.mode, 4);
++        assert_eq!(link.status.heartbeat_count, 1);
++    }
++}
+diff --git a/xtask/src/reference.rs b/xtask/src/reference.rs
+new file mode 100644
+index 0000000..cd93247
+--- /dev/null
++++ b/xtask/src/reference.rs
+@@ -0,0 +1,55 @@
++//! Stack-independent diagnostic reference; not the legacy RDD2 qualification.
++use serde::Serialize;
++#[derive(Clone, Copy, Debug, Serialize)]
++pub struct Reference {
++    pub position_enu_m: [f64; 3],
++    pub velocity_enu_m_s: [f64; 3],
++    pub yaw_enu_rad: f64,
++}
++pub const ID: &str = "enu-square-diagnostic-v1";
++/// Four 5-second, minimum-jerk edges, followed by a hold. Time is mission-relative.
++pub fn sample(time_s: f64) -> Reference {
++    let corners = [
++        [0., 0., 1.5],
++        [0.5, 0., 1.5],
++        [0.5, 0.5, 1.5],
++        [0., 0.5, 1.5],
++        [0., 0., 1.5],
++    ];
++    assert!(time_s.is_finite());
++    let t = time_s.clamp(0., 20.);
++    let edge = ((t / 5.).floor() as usize).min(3);
++    let u = (t - edge as f64 * 5.) / 5.;
++    let s = u * u * u * (10. + u * (-15. + 6. * u));
++    let ds = 30. * u * u * (1. - u) * (1. - u) / 5.;
++    Reference {
++        position_enu_m: std::array::from_fn(|i| {
++            corners[edge][i] + s * (corners[edge + 1][i] - corners[edge][i])
++        }),
++        velocity_enu_m_s: std::array::from_fn(|i| ds * (corners[edge + 1][i] - corners[edge][i])),
++        yaw_enu_rad: 0.,
++    }
++}
++#[cfg(test)]
++mod tests {
++    use super::*;
++    #[test]
++    fn corners_hold_and_derivative() {
++        for (t, p) in [
++            (0., [0., 0., 1.5]),
++            (5., [0.5, 0., 1.5]),
++            (10., [0.5, 0.5, 1.5]),
++            (15., [0., 0.5, 1.5]),
++            (20., [0., 0., 1.5]),
++            (99., [0., 0., 1.5]),
++        ] {
++            assert_eq!(sample(t).position_enu_m, p);
++            assert_eq!(sample(t).velocity_enu_m_s, [0.; 3]);
++        }
++        let t = 2.1;
++        let h = 1e-5;
++        let derivative =
++            (sample(t + h).position_enu_m[0] - sample(t - h).position_enu_m[0]) / (2. * h);
++        assert!((derivative - sample(t).velocity_enu_m_s[0]).abs() < 1e-9);
++    }
 +}
 diff --git a/xtask/missions/ardupilot-json-probe.parm b/xtask/missions/ardupilot-json-probe.parm
 new file mode 100644
@@ -1641,3 +2120,23 @@ index 0000000..e8f1cdc
 +SERVO4_FUNCTION 36
 +AHRS_EKF_TYPE 3
 +LOG_BACKEND_TYPE 0
+diff --git a/xtask/missions/rdd2-square-baseline-v1.json b/xtask/missions/rdd2-square-baseline-v1.json
+new file mode 100644
+index 0000000..bd64da4
+--- /dev/null
++++ b/xtask/missions/rdd2-square-baseline-v1.json
+@@ -0,0 +1,14 @@
++{
++  "id": "rdd2-square-baseline-v1",
++  "controller_dt": 0.000625,
++  "takeoff_altitude_m": 1.5,
++  "mission_side_m": 0.5,
++  "mission_speed_m_s": 0.1,
++  "mission_arm_delay_s": 0.5,
++  "mission_takeoff_start_s": 1.0,
++  "mission_takeoff_end_s": 4.0,
++  "mission_position_start_s": 8.0,
++  "mission_position_end_s": 34.0,
++  "mission_disarm_s": 40.0,
++  "default_mission_duration_s": 44.0
++}

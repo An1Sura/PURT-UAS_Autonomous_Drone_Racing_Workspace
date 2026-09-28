@@ -48,14 +48,16 @@ was not run. Compiler-wide validation remains outstanding.
 ## What remains for the benchmark
 
 Betaflight and PX4 adapters are not implemented. ArduPilot now passes a
-[disarmed connection probe](ardupilot-adapter.md), but has no benchmark flight
-or shared-sensor qualification. The retained
+[disarmed connection probe and 145-second Guided flight diagnostic](ardupilot-adapter.md),
+but has no shared-sensor qualification. The diagnostic completed 232,000 steps,
+takeoff, a time-indexed square, landing and disarming. Its 3D tracking RMSE was
+0.06252 m in one run; this is not a controller comparison. The retained
 CogniPilot mission uses stack-specific planning and truth-assisted takeoff;
-it is a regression baseline. A shared time-indexed reference and agreed control
-level are required before comparing controllers fairly. Default Modelica and
+it is a regression baseline. The new shared time-indexed reference must also be connected to CogniPilot,
+and a common control level established before comparing controllers fairly. Default Modelica and
 SIL missions differ and must not be compared as if they were identical.
 
 Reported exchange timing includes transport and host scheduling; it is not
 isolated controller execution latency. Configurable shared noise, delays,
-disturbances, tracking metrics, overshoot and settling analysis remain future
+disturbances, comparative tracking metrics, overshoot and settling analysis remain future
 work. See [the implementation guide](common-benchmark.md).

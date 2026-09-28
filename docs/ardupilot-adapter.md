@@ -1,8 +1,8 @@
-# ArduPilot JSON adapter: connection qualification
+# ArduPilot JSON adapter: connection and flight diagnostics
 
 ArduPilot is now connected to the same Rumoca-generated FMI plant as CogniPilot.
-This is a **disarmed transport test**, not an autonomous flight or a controller
-comparison. Betaflight and PX4 remain unimplemented.
+It passes a disarmed transport test and an experimental Guided flight. Neither
+is a qualified four-stack comparison. Betaflight and PX4 remain unimplemented.
 
 The tested release is `Copter-4.7.1`, commit
 `dbe792162d06cab66c3475fd5556bf7a120f119e`. ArduPilot source is unmodified.
@@ -31,7 +31,9 @@ launches the previously built ArduCopter binary for 8,000 exchanges at 1600 Hz
 Run one probe at a time: parallel allocation of the remaining SITL serial ports
 is not yet implemented. The child process is stopped when the test finishes or fails. Physics only
 advances after a valid response. Nonzero motor output fails before plant commit.
-No arming command is sent, and flight commands are rejected by this adapter.
+The default probe sends no arming command. Manual RC and RDD2 square-plan
+commands remain rejected; the opt-in flight diagnostic uses a separate MAVLink
+command link.
 
 ## Reproduce on a fresh Linux checkout
 
@@ -128,9 +130,10 @@ and estimator behavior have not been harmonized. Shared physics alone does not
 establish sensor parity. `no_lockstep` stays false; the test does not enable
 truth-as-estimator or bypass arming checks.
 
-Before flight comparison: validate motor-response signs with impulse tests,
-resolve shared sensor injection, define the common commanded trajectory/control
-level, and implement arming/mode/setpoint mapping. `fastdyn-mission --stack
+Before flight comparison: resolve shared sensor injection and connect the
+common commanded trajectory/control level to the other stacks. Motor impulse
+signs and ArduPilot arming/mode/setpoint mapping are now exercised by the
+opt-in diagnostic below. `fastdyn-mission --stack
 ardupilot` still fails deliberately; this probe is a separate, explicitly
 limited qualification command.
 
@@ -144,3 +147,54 @@ packets, bootstrap negotiation, rate changes, duplicate frames, frame gaps,
 missing peers, and rejection of armed commands. The separate native CogniPilot firmware integration test also passes (32 tests
 exercised in total). CogniPilot's full trajectory remains byte-identical to the
 previous baseline.
+
+
+## Opt-in Guided flight diagnostic
+
+```sh
+# Workspace root; runs CogniPilot SIL and the disarmed probe first:
+devenv -P rdd2 tasks run rdd2:benchmark:ardupilot:flight
+
+# Native runner, after building the common plant and ArduCopter:
+cd src/cerebri_rdd2
+cargo xtask ardupilot-probe --flight-diagnostic \
+  --executable ../ardupilot/build/sitl/bin/arducopter \
+  --plant-directory ../modelica_models/artifacts/vehicles/rdd2/plant/Vehicles_Rdd2_Plant \
+  --output artifacts/ardupilot-flight
+```
+
+The diagnostic first checks each rotor's roll, pitch and yaw response using
+independent instances of the same plant. It then runs 145 simulated seconds:
+90 seconds for estimator initialization, normal Guided arming during 90–100 s,
+takeoff to 1.5 m at 100 s, reference commands during 110–135 s, and landing.
+Normal arming checks remain enabled; no force-arm or truth estimator is used.
+An earlier 30–40 s arming window failed with `Need Position Estimate`, despite
+a GPS fix. The longer fixed warmup allows EKF3 to start using GPS.
+
+`reference.rs` defines `enu-square-diagnostic-v1`: a 0.5 m ENU square at 1.5 m,
+four 5-second minimum-jerk edges followed by a five-second hold, yaw zero ENU.
+Position and velocity feedforward plus yaw are sent at 20 Hz in local NED.
+This fixture differs from the legacy CogniPilot mission and is not used to rank
+the controllers. It is the first shared reference API for further adapters.
+
+The loopback MAVLink 1 client uses the pinned generated dialect layouts;
+heartbeat, mode and arm packets are checked against generated C fixtures.
+It records command acknowledgements, GPS fix and EKF flags, rejects stale
+heartbeats, and requires armed Guided mode throughout reference delivery.
+The diagnostic stops on nonfinite state, horizontal displacement above 5 m,
+altitude above 4 m, or roll/pitch above 0.8 rad. Completion requires observed
+takeoff, altitude below 0.2 m and disarmed status. These are diagnostic bounds,
+not tracking-accuracy acceptance criteria. The child is stopped on every exit.
+
+Each flight folder also contains `commanded-trajectory.csv` with the actual
+20 Hz references sent. The report identifies the reference and records 3D
+position RMSE and maximum error against the continuous reference over
+110–135 s, plus final position and motor impulse check status. Exchange timing
+still includes transport and scheduling. Sensor noise/delay parity and motor
+thrust-curve equivalence remain unqualified.
+
+The validated run completed all **232,000** contiguous steps with no duplicates,
+normal arm/takeoff/land acknowledgements and final disarmed status. Tracking
+RMSE was **0.06252 m**, maximum error **0.09441 m** over 40,000 physics samples;
+maximum flight altitude was **1.70516 m**. These are single-run diagnostics,
+not comparative benchmark scores. Unit/protocol/reference tests: **35 passed**.
