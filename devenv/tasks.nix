@@ -990,6 +990,20 @@ let
           after = [ "rdd2:benchmark:ardupilot:probe" ];
         };
 
+      "rdd2:benchmark:cognipilot:reference" =
+        (task "cerebri_rdd2" "Fly CogniPilot with the shared time-indexed square reference." ''
+          cargo run --release --locked --package cerebri-rdd2-xtask -- fastdyn-mission \
+            --external-reference \
+            --native-sim "$PWD/build-native_sim/zephyr/zephyr.exe" \
+            --shared-memory "$PWD/artifacts/cognipilot-reference/lockstep.bin" \
+            --plant-directory ${source "modelica_models"}/artifacts/vehicles/rdd2/plant/Vehicles_Rdd2_Plant \
+            --report "$PWD/artifacts/cognipilot-reference/report.json" \
+            --trajectory "$PWD/artifacts/cognipilot-reference/mission-trajectory.csv"
+        '')
+        // {
+          after = [ "rdd2:simulation:sil:test" ];
+        };
+
       "rdd2:simulation:modelica:test" =
         (task "modelica_models" "Run the pure Modelica RDD2 controller and physics mission with Rumoca." ''
           MODELICA_MODELS_ROOT="$PWD" \

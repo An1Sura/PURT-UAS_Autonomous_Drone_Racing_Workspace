@@ -12,7 +12,10 @@ changes, without vendoring their build trees or changing upstream repositories.
 
 The firmware patch adds the shared sensor/actuator boundary, CogniPilot adapter,
 mission fixtures, metrics, tests, the ArduPilot JSON connection probe, and a
-bounded Guided flight diagnostic with a stack-independent reference.
+bounded Guided flight diagnostic with a stack-independent reference. It also
+adds CogniPilot external-reference ingress, estimator-origin metadata, and the
+matching native diagnostic; rebuild runner and firmware together after applying
+this ABI-changing patch. See [shared-reference validation](../docs/shared-reference.md).
 The ArduPilot source itself is unmodified; see [its build and usage guide](../docs/ardupilot-adapter.md). The compiler patch fixes deferred clock
 assertion evaluation and the Python package vendor hash. The model patch fixes
 signal selection and report provenance paths. Physics, controller gains and

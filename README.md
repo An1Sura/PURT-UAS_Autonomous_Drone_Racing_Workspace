@@ -10,8 +10,8 @@ stretch goal, using as much of the same infrastructure as possible.
 
 **Current milestone:** CogniPilot and ArduPilot both fly using the same
 Rumoca-generated quadrotor physics model. ArduPilot completes a bounded square
-flight and produces tracking measurements. The command schedules and sensor
-paths are not yet identical, so these runs do **not** establish which stack
+flight and produces tracking measurements. Both stacks now consume the same timed square reference. Takeoff/landing and
+sensor paths still differ, so these runs do **not** establish which stack
 performs best.
 
 ## What this project does
@@ -46,14 +46,14 @@ The eventual comparison must hold these conditions constant:
 - Sensor models, update rates, noise, delays and disturbances.
 - Simulation clock, logging definitions and evaluation windows.
 
-Shared physics is already working for two stacks. Shared commands and sensor
-conditions remain an active development milestone.
+Shared physics and square-reference commands are working for two stacks.
+Matching sensor conditions and takeoff/landing remain active development work.
 
 ## Current implementation
 
 | Flight stack | Implemented and exercised | Remaining work |
 | --- | --- | --- |
-| **CogniPilot** | Zephyr `native_sim` firmware, shared-memory lockstep, common FMI plant, existing 44-second flight qualification | Connect the new common reference; remove or standardize simulator-assisted takeoff for comparison |
+| **CogniPilot** | Zephyr `native_sim` firmware, shared-memory lockstep, common FMI plant, existing 44-second flight qualification | Shared reference now connected; remove or standardize simulator-assisted takeoff for comparison |
 | **ArduPilot** | Copter 4.7.1 JSON SITL adapter, disarmed connection probe, MAVLink Guided commands, 145-second bounded flight diagnostic | Align sensors, command timing and actuator interpretation with the other stacks |
 | **PX4** | Architecture candidate identified | Implement and validate adapter |
 | **Betaflight** | Architecture candidate identified | Implement and validate adapter at an appropriate common control level |
@@ -76,7 +76,8 @@ These are recorded simulation results, not physical flight measurements.
 | ArduPilot Guided flight | 232,000 contiguous steps over 145 simulated seconds; takeoff, square, landing and disarming pass |
 | ArduPilot position tracking | 0.06252 m RMS error; 0.09441 m maximum error over the 25-second square-and-hold window |
 | Motor response checks | All four rotors produce the expected roll, pitch and yaw response signs |
-| Native unit/protocol tests | 35 tests pass; the separate firmware integration test is not included in that count |
+| Shared-reference diagnostic | Both stacks receive 500 matching position/velocity/yaw samples; CogniPilot RMS error 0.04715 m, ArduPilot 0.06252 m; sensor parity remains unqualified |
+| Native unit/protocol tests | 37 tests pass, plus two explicitly run native firmware integration tests |
 
 The ArduPilot reference is a **0.5 m square at 1.5 m altitude**, with four
 five-second minimum-jerk edges and a five-second hold. Its 145-second run
@@ -86,7 +87,10 @@ execution time.
 
 The tracking figures are 3D distances between plant position and the continuous
 commanded reference, sampled during simulation time 110–135 seconds. They are
-single-run diagnostic measurements, not comparative scores. CogniPilot's
+single-run diagnostic measurements, not comparative scores. The new
+[shared-reference diagnostic](docs/shared-reference.md) scores both stacks over
+the same 25-second reference, with estimator-origin conversion for CogniPilot.
+CogniPilot's
 existing baseline uses its own planner and a simulator-assisted takeoff law;
 its navigation-estimate error is a different measurement and must not be
 compared with ArduPilot's trajectory-tracking RMS error.
@@ -146,10 +150,13 @@ counts, exchange timing and completion or failure information. The trajectory
 CSV contains time, position and orientation. Raw run artifacts and generated
 binaries remain local; they are not committed as source code.
 
+To run both stacks on the shared square reference, see the
+[shared-reference guide and recorded results](docs/shared-reference.md).
+
 ## What comes next
 
-1. Feed the same time-indexed reference into CogniPilot and ArduPilot, with a
-   clearly stated common control level.
+1. Extend the shared-reference diagnostic toward a qualified navigation-control
+   experiment with matched sensor delivery and documented frame semantics.
 2. Align sensor injection, noise, delay, initial conditions and actuator
    interpretation; standardize takeoff and landing behavior.
 3. Implement and validate PX4 and Betaflight adapters without introducing
@@ -165,6 +172,7 @@ four-stack ranking remain future work.
 
 ## Project guides
 
+- [Shared-reference flights and results](docs/shared-reference.md)
 - [Common benchmark architecture and interface](docs/common-benchmark.md)
 - [ArduPilot setup, commands and diagnostic limits](docs/ardupilot-adapter.md)
 - [Verified results and unresolved blockers](docs/rdd2-validation.md)

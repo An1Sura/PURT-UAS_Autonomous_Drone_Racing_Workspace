@@ -53,8 +53,10 @@ but has no shared-sensor qualification. The diagnostic completed 232,000 steps,
 takeoff, a time-indexed square, landing and disarming. Its 3D tracking RMSE was
 0.06252 m in one run; this is not a controller comparison. The retained
 CogniPilot mission uses stack-specific planning and truth-assisted takeoff;
-it is a regression baseline. The new shared time-indexed reference must also be connected to CogniPilot,
-and a common control level established before comparing controllers fairly. Default Modelica and
+it is a regression baseline. The shared time-indexed reference is now connected to both stacks; see
+[the new diagnostic](shared-reference.md). CogniPilot RMS error is 0.04715 m and
+ArduPilot 0.06252 m over matching 25-second square windows. Sensor conditions
+and takeoff/landing must still be aligned before comparing controllers fairly. Default Modelica and
 SIL missions differ and must not be compared as if they were identical.
 
 Reported exchange timing includes transport and host scheduling; it is not

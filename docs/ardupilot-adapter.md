@@ -174,8 +174,10 @@ a GPS fix. The longer fixed warmup allows EKF3 to start using GPS.
 `reference.rs` defines `enu-square-diagnostic-v1`: a 0.5 m ENU square at 1.5 m,
 four 5-second minimum-jerk edges followed by a five-second hold, yaw zero ENU.
 Position and velocity feedforward plus yaw are sent at 20 Hz in local NED.
-This fixture differs from the legacy CogniPilot mission and is not used to rank
-the controllers. It is the first shared reference API for further adapters.
+This fixture differs from the legacy CogniPilot mission. A new
+[CogniPilot external-reference diagnostic](shared-reference.md) now uses the
+same reference. Sensor conditions remain unmatched, so neither run establishes
+a controller ranking.
 
 The loopback MAVLink 1 client uses the pinned generated dialect layouts;
 heartbeat, mode and arm packets are checked against generated C fixtures.
