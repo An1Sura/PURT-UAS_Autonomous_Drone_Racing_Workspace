@@ -11,7 +11,8 @@ changes, without vendoring their build trees or changing upstream repositories.
 | `CogniPilot/modelica_models` | `a41f7c0c00b55c1bf54f03c9b66b901ba8e43c6f` | `modelica-report-fixes.patch` |
 
 The firmware patch adds the shared sensor/actuator boundary, CogniPilot adapter,
-mission fixture, metrics, and tests. The compiler patch fixes deferred clock
+mission fixture, metrics, tests, and the ArduPilot JSON connection probe.
+The ArduPilot source itself is unmodified; see [its build and usage guide](../docs/ardupilot-adapter.md). The compiler patch fixes deferred clock
 assertion evaluation and the Python package vendor hash. The model patch fixes
 signal selection and report provenance paths. Physics, controller gains and
 acceptance thresholds are unchanged.

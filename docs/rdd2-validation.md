@@ -47,7 +47,9 @@ was not run. Compiler-wide validation remains outstanding.
 
 ## What remains for the benchmark
 
-Betaflight, PX4 and ArduPilot adapters are not implemented. The retained
+Betaflight and PX4 adapters are not implemented. ArduPilot now passes a
+[disarmed connection probe](ardupilot-adapter.md), but has no benchmark flight
+or shared-sensor qualification. The retained
 CogniPilot mission uses stack-specific planning and truth-assisted takeoff;
 it is a regression baseline. A shared time-indexed reference and agreed control
 level are required before comparing controllers fairly. Default Modelica and

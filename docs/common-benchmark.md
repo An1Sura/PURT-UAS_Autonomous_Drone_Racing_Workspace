@@ -1,8 +1,9 @@
 # Common flight-stack benchmark: first implementation
 
 The first implementation extracts a common lockstep boundary from the working
-CogniPilot mission. CogniPilot is the only connected flight stack. Betaflight,
-PX4, and ArduPilot are integration targets, not completed adapters.
+CogniPilot mission. CogniPilot is the only stack with a validated flight mission.
+[ArduPilot now has a disarmed connection test](ardupilot-adapter.md); Betaflight
+and PX4 remain integration targets.
 
 ## What runs now
 
@@ -23,7 +24,8 @@ For each 625 microsecond interval, the runner samples the shared plant's IMU
 and held GNSS observation, sends a command through the adapter, checks the
 response timestamp and motor values, then advances physics once. Failed or
 stale exchanges cannot advance physics. The adapter receives sensor samples,
-not a handle to the plant. The existing initialization and readiness sequence
+not a handle to the plant. ArduPilot explicitly opts into simulator state for
+its internal sensor generation; that path is not sensor-parity qualified. The existing initialization and readiness sequence
 is preserved.
 
 The neutral record specifies body FLU angular velocity in rad/s and specific
@@ -91,7 +93,7 @@ baseline truth-assisted takeoff law before claiming a fair comparison.
 | CogniPilot | Existing shared-memory lockstep | Connected; original mission retained |
 | Betaflight | Native SITL simulator sensor/PWM interface | Not connected; pin a revision and validate signs, units, motor order and clock behavior |
 | PX4 | MAVLink simulator interface | Not connected; validate sensor coverage and lockstep actuator response at a pinned revision |
-| ArduPilot | External JSON SITL backend | Not connected; validate timestamps, frame counter and PWM conversion at a pinned revision |
+| ArduPilot | External JSON SITL backend | Connected at Copter-4.7.1 for a disarmed 8,000-step probe; flight and sensor parity remain unqualified |
 
 Official references reviewed for the next implementation:
 

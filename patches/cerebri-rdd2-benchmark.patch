@@ -1,8 +1,10 @@
 diff --git a/xtask/src/main.rs b/xtask/src/main.rs
-index e11a7c8..0ef9114 100644
+index e11a7c8..65e6f89 100644
 --- a/xtask/src/main.rs
 +++ b/xtask/src/main.rs
-@@ -1,5 +1,8 @@
+@@ -1,5 +1,10 @@
++mod ardupilot;
++mod ardupilot_probe;
 +mod benchmark;
 +mod cognipilot;
  mod fastdyn_ci;
@@ -11,7 +13,7 @@ index e11a7c8..0ef9114 100644
  mod physics;
  mod protocol;
  mod shared_memory;
-@@ -13,24 +16,13 @@ use std::thread;
+@@ -13,24 +18,13 @@ use std::thread;
  use std::time::{Duration, Instant};
  
  use anyhow::{Context, Result, anyhow, bail};
@@ -39,7 +41,7 @@ index e11a7c8..0ef9114 100644
  const PLANNER_CORNER_TOLERANCE_M: f64 = 0.12;
  const VEHICLE_CORNER_TOLERANCE_M: f64 = 0.25;
  
-@@ -52,6 +44,9 @@ struct Options {
+@@ -52,6 +46,9 @@ struct Options {
  
  #[derive(Debug, Default, Serialize)]
  struct Report {
@@ -49,7 +51,7 @@ index e11a7c8..0ef9114 100644
      passed: bool,
      /// Which providers produced the firmware under test. A pass built from
      /// caller-selected sources is not a qualifying result, and the report
-@@ -108,7 +103,7 @@ fn options(args: impl IntoIterator<Item = String>) -> Result<Options> {
+@@ -108,7 +105,7 @@ fn options(args: impl IntoIterator<Item = String>) -> Result<Options> {
      let mut trajectory = env::var_os("RDD2_MISSION_TRAJECTORY")
          .map(PathBuf::from)
          .unwrap_or_else(|| PathBuf::from("out/mission-trajectory.csv"));
@@ -58,7 +60,7 @@ index e11a7c8..0ef9114 100644
      let mut timeout_ms = 2_000_u64;
      let mut controller_benchmark = env::var("RDD2_FASTDYN_CONTROLLER_BENCHMARK_S")
          .ok()
-@@ -128,6 +123,16 @@ fn options(args: impl IntoIterator<Item = String>) -> Result<Options> {
+@@ -128,6 +125,16 @@ fn options(args: impl IntoIterator<Item = String>) -> Result<Options> {
      while let Some(arg) = args.next() {
          let value = || anyhow!("{arg} requires a value");
          match arg.as_str() {
@@ -75,7 +77,7 @@ index e11a7c8..0ef9114 100644
              "--report" => report = args.next().ok_or_else(value)?.into(),
              "--trajectory" => trajectory = args.next().ok_or_else(value)?.into(),
              "--duration" => duration = args.next().ok_or_else(value)?.parse()?,
-@@ -145,15 +150,18 @@ fn options(args: impl IntoIterator<Item = String>) -> Result<Options> {
+@@ -145,15 +152,18 @@ fn options(args: impl IntoIterator<Item = String>) -> Result<Options> {
              "--minimum-speedup" => minimum_speedup = args.next().ok_or_else(value)?.parse()?,
              "-h" | "--help" => {
                  println!(
@@ -97,7 +99,7 @@ index e11a7c8..0ef9114 100644
      }
      if !minimum_speedup.is_finite() || minimum_speedup < 0.0 {
          bail!("--minimum-speedup must be finite and non-negative");
-@@ -171,29 +179,29 @@ fn options(args: impl IntoIterator<Item = String>) -> Result<Options> {
+@@ -171,29 +181,29 @@ fn options(args: impl IntoIterator<Item = String>) -> Result<Options> {
              .context("--plant-library or RDD2_RUMOCA_PLANT_LIBRARY is required")?,
          plant_description: plant_description
              .context("--plant-description or RDD2_RUMOCA_PLANT_DESCRIPTION is required")?,
@@ -137,7 +139,7 @@ index e11a7c8..0ef9114 100644
  }
  
  fn rc_channels(mission_time: Option<f64>, plant: &Plant) -> [i32; 16] {
-@@ -204,15 +212,16 @@ fn rc_channels(mission_time: Option<f64>, plant: &Plant) -> [i32; 16] {
+@@ -204,15 +214,16 @@ fn rc_channels(mission_time: Option<f64>, plant: &Plant) -> [i32; 16] {
          channels[5] = 1000;
          return channels;
      };
@@ -162,7 +164,7 @@ index e11a7c8..0ef9114 100644
      if throttle_must_be_low(time) {
          channels[2] = 1000;
      } else {
-@@ -381,8 +390,7 @@ fn evaluate(report: &mut Report) {
+@@ -381,8 +392,7 @@ fn evaluate(report: &mut Report) {
              .push("vehicle had excessive vertical speed at completion".into());
      }
      report.passed = report.failures.is_empty();
@@ -172,7 +174,7 @@ index e11a7c8..0ef9114 100644
  }
  
  fn advance_square_corner(
-@@ -448,7 +456,11 @@ where
+@@ -448,7 +458,11 @@ where
      let warmup_target_ns = 5_000_000_u64;
      let ready_deadline = Instant::now() + Duration::from_secs(60);
      loop {
@@ -185,7 +187,7 @@ index e11a7c8..0ef9114 100644
          let inputs = protocol::lockstep_inputs(
              gyro,
              accel,
-@@ -466,7 +478,8 @@ where
+@@ -466,7 +480,8 @@ where
      }
  
      let target_ns = warmup_target_ns + (benchmark_seconds * 1.0e9).round() as u64;
@@ -195,7 +197,7 @@ index e11a7c8..0ef9114 100644
      let inputs = protocol::lockstep_inputs(
          gyro,
          accel,
-@@ -491,6 +504,7 @@ where
+@@ -491,6 +506,7 @@ where
  {
      let mut plant = Plant::open(&options.plant_library, &options.plant_description)?;
      let mut report = Report {
@@ -203,7 +205,7 @@ index e11a7c8..0ef9114 100644
          position_mission_continuous: true,
          mission_status_current: true,
          navigation_estimate_finite: true,
-@@ -500,7 +514,12 @@ where
+@@ -500,7 +516,12 @@ where
      let wall_start = Instant::now();
      let mut firmware_ready = false;
      let mut synthetic_gnss = SyntheticGnss::default();
@@ -217,7 +219,7 @@ index e11a7c8..0ef9114 100644
      let mut plan_sent = false;
      let mut mission_epoch = None;
      let mut last_outputs: Option<LockstepOutputs> = None;
-@@ -529,26 +548,36 @@ where
+@@ -529,26 +550,37 @@ where
          let channels = rc_channels(mission_time, &plant);
          let (gyro, accel) = plant.imu_flu();
          let target_time = ((simulated_time + options.plant_dt) * 1.0e9).round() as u64;
@@ -227,6 +229,7 @@ index e11a7c8..0ef9114 100644
 -        } else {
 -            WaypointPlanWire::default()
 +        let sensors = SensorFrame {
++            simulator_state: None,
 +            target_time_ns: target_time,
 +            gyro_flu_rad_s: gyro,
 +            specific_force_flu_m_s2: accel,
@@ -268,7 +271,7 @@ index e11a7c8..0ef9114 100644
          simulated_time += options.plant_dt;
          report.plant_steps += 1;
          let state = outputs.flight_state;
-@@ -619,7 +648,8 @@ where
+@@ -619,7 +651,8 @@ where
              .all(f32::is_finite);
          report.fresh_planner_reference_observed |= reference_current;
          if mission_time.is_some_and(|time| {
@@ -278,7 +281,7 @@ index e11a7c8..0ef9114 100644
          }) {
              let required = MissionStatusWire::SOURCE_READY
                  | MissionStatusWire::ORIGIN_VALID
-@@ -641,14 +671,14 @@ where
+@@ -641,14 +674,14 @@ where
                  &mut report.planner_corners_reached,
                  planner_origin_value,
                  planner_position,
@@ -295,7 +298,7 @@ index e11a7c8..0ef9114 100644
                  VEHICLE_CORNER_TOLERANCE_M,
              );
          }
-@@ -671,7 +701,8 @@ where
+@@ -671,7 +704,8 @@ where
          if mission_epoch.is_none() && status.mission_state == 1 {
              mission_epoch = Some(simulated_time);
          }
@@ -305,7 +308,7 @@ index e11a7c8..0ef9114 100644
              report.firmware_disarmed_after_flight = true;
          }
  
-@@ -708,6 +739,7 @@ where
+@@ -708,6 +742,7 @@ where
          last_outputs = Some(outputs);
      }
  
@@ -313,7 +316,24 @@ index e11a7c8..0ef9114 100644
      report.simulated_seconds = report.plant_steps as f64 * options.plant_dt;
      report.wall_seconds = wall_start.elapsed().as_secs_f64();
      report.speedup_over_realtime = report.simulated_seconds / report.wall_seconds;
-@@ -870,7 +902,7 @@ mod tests {
+@@ -812,7 +847,7 @@ fn run_fastdyn_mission(args: impl IntoIterator<Item = String>) -> Result<()> {
+ 
+ fn print_help() {
+     println!(
+-        "cargo xtask <command>\n\nCommands:\n  fastdyn-ci       Launch FastDyn and validate the complete CI mission\n  fastdyn-mission  Run the FMI plant and firmware lockstep mission\n  fmt              Format tracked C/C++ sources with Zephyr style"
++        "cargo xtask <command>\n\nCommands:\n  ardupilot-probe  Check ArduPilot JSON lockstep against the FMI plant (disarmed)\n  fastdyn-ci       Launch FastDyn and validate the complete CI mission\n  fastdyn-mission  Run the FMI plant and firmware lockstep mission\n  fmt              Format tracked C/C++ sources with Zephyr style"
+     );
+ }
+ 
+@@ -824,6 +859,7 @@ fn main() -> Result<()> {
+     };
+ 
+     match command.to_string_lossy().as_ref() {
++        "ardupilot-probe" => ardupilot_probe::run(args),
+         "fastdyn-ci" => fastdyn_ci::run(),
+         "fastdyn-mission" => {
+             let args = args
+@@ -870,7 +906,7 @@ mod tests {
              vehicle_corners_reached: 5,
              navigation_estimate_finite: true,
              max_navigation_horizontal_error_m: 0.1,
@@ -322,7 +342,7 @@ index e11a7c8..0ef9114 100644
              maximum_gnss_generation: 441,
              maximum_reference_generation: 100,
              maximum_plan_generation: 1,
-@@ -904,16 +936,19 @@ mod tests {
+@@ -904,16 +940,19 @@ mod tests {
  
      #[test]
      fn takeoff_schedule_preserves_a_low_throttle_arming_window() {
@@ -349,7 +369,7 @@ index e11a7c8..0ef9114 100644
          );
      }
  
-@@ -926,7 +961,7 @@ mod tests {
+@@ -926,7 +965,7 @@ mod tests {
              &mut progress,
              origin,
              origin,
@@ -358,7 +378,7 @@ index e11a7c8..0ef9114 100644
              VEHICLE_CORNER_TOLERANCE_M,
          );
          assert_eq!(progress, 1);
-@@ -934,15 +969,15 @@ mod tests {
+@@ -934,15 +973,15 @@ mod tests {
              &mut progress,
              origin,
              origin,
@@ -377,7 +397,7 @@ index e11a7c8..0ef9114 100644
              VEHICLE_CORNER_TOLERANCE_M,
          );
          assert_eq!(progress, 2);
-@@ -1063,7 +1098,7 @@ mod tests {
+@@ -1063,7 +1102,7 @@ mod tests {
          let result = (|| -> Result<()> {
              for _ in 0..4_000 {
                  target_ns += 625_000;
@@ -386,7 +406,7 @@ index e11a7c8..0ef9114 100644
                  let inputs = protocol::lockstep_inputs(
                      [0.0; 3],
                      [0.0, 0.0, 9.806_65],
-@@ -1096,7 +1131,7 @@ mod tests {
+@@ -1096,7 +1135,7 @@ mod tests {
              let mut last_quality = 0_i8;
              for _ in 0..320 {
                  target_ns += 625_000;
@@ -395,7 +415,7 @@ index e11a7c8..0ef9114 100644
                  let inputs = protocol::lockstep_inputs(
                      [0.0; 3],
                      [0.0, 0.0, 9.806_65],
-@@ -1125,7 +1160,7 @@ mod tests {
+@@ -1125,7 +1164,7 @@ mod tests {
              let mut last_flight_armed = false;
              for _ in 0..1_600 {
                  target_ns += 625_000;
@@ -570,10 +590,10 @@ index f5c82b8..10bff2c 100644
          );
 diff --git a/xtask/src/benchmark.rs b/xtask/src/benchmark.rs
 new file mode 100644
-index 0000000..16deee7
+index 0000000..81f958b
 --- /dev/null
 +++ b/xtask/src/benchmark.rs
-@@ -0,0 +1,283 @@
+@@ -0,0 +1,294 @@
 +//! Stack-neutral lockstep boundary. The runner owns time, sensors and physics.
 +use std::time::{Duration, Instant};
 +
@@ -628,12 +648,22 @@ index 0000000..16deee7
 +}
 +
 +#[derive(Clone, Copy, Debug)]
++pub struct SimulatorState {
++    pub position_enu_m: [f64; 3],
++    pub velocity_enu_m_s: [f64; 3],
++    pub euler_flu_enu_rad: [f64; 3],
++}
++
++#[derive(Clone, Copy, Debug)]
 +pub struct SensorFrame {
 +    /// End of this controller interval. Physics advances only after a response.
 +    pub target_time_ns: u64,
 +    pub gyro_flu_rad_s: [f32; 3],
 +    pub specific_force_flu_m_s2: [f32; 3],
 +    pub gnss: GnssObservation,
++    /// Explicit opt-in for simulator backends that generate sensors internally.
++    /// This is ground truth, not an estimated navigation measurement.
++    pub simulator_state: Option<SimulatorState>,
 +}
 +
 +/// Initial qualification command interface; not a shared position controller.
@@ -786,6 +816,7 @@ index 0000000..16deee7
 +    #[test]
 +    fn failed_or_stale_exchange_never_advances_physics() {
 +        let sensors = SensorFrame {
++            simulator_state: None,
 +            target_time_ns: 625_000,
 +            gyro_flu_rad_s: [0.; 3],
 +            specific_force_flu_m_s2: [0.; 3],
@@ -951,6 +982,626 @@ index 0000000..037c2ad
 +        assert!(m.mission_disarm_s + 2.0 <= m.default_mission_duration_s);
 +    }
 +}
+diff --git a/xtask/src/ardupilot.rs b/xtask/src/ardupilot.rs
+new file mode 100644
+index 0000000..fdae852
+--- /dev/null
++++ b/xtask/src/ardupilot.rs
+@@ -0,0 +1,354 @@
++//! ArduPilot Copter-4.7.1 JSON SITL protocol (little-endian Linux host).
++//! Connection qualification only: arming and mission commands are rejected.
++use std::net::{SocketAddr, UdpSocket};
++use std::time::{Duration, Instant};
++
++use anyhow::{Context, Result, bail};
++use serde::Serialize;
++
++use crate::benchmark::{ActuatorFrame, FlightStackAdapter, PilotCommand, SensorFrame};
++
++pub const REVISION: &str = "dbe792162d06cab66c3475fd5556bf7a120f119e";
++pub const RATE_HZ: u16 = 1600;
++
++#[derive(Debug, Serialize)]
++pub struct ServoFrame {
++    pub frame_count: u32,
++    pub frame_rate_hz: u16,
++    pub motors: [f32; 4],
++}
++
++pub fn decode(bytes: &[u8]) -> Result<ServoFrame> {
++    if bytes.len() < 8 {
++        bail!("truncated ArduPilot servo packet");
++    }
++    let magic = u16::from_le_bytes([bytes[0], bytes[1]]);
++    let expected = match magic {
++        18458 => 40,
++        29569 => 72,
++        _ => bail!("unknown ArduPilot packet magic {magic}"),
++    };
++    if bytes.len() != expected {
++        bail!("ArduPilot servo packet length mismatch");
++    }
++    let frame_rate_hz = u16::from_le_bytes([bytes[2], bytes[3]]);
++    if frame_rate_hz == 0 {
++        bail!("ArduPilot advertises a zero frame rate");
++    }
++    let frame_count = u32::from_le_bytes(bytes[4..8].try_into().unwrap());
++    let mut motors = [0.; 4];
++    // AP quad-X channels: FR, BL, FL, BR. FMI command order: FR, BR, BL, FL.
++    for (motor, channel) in motors.iter_mut().zip([0, 3, 1, 2]) {
++        let offset = 8 + channel * 2;
++        let pwm = u16::from_le_bytes([bytes[offset], bytes[offset + 1]]);
++        *motor = match pwm {
++            0 => 0., // disabled servo output
++            1000..=2000 => (f32::from(pwm) - 1000.) / 1000.,
++            _ => bail!("unexpected motor PWM {pwm}; expected 0 or 1000..2000 us"),
++        };
++    }
++    Ok(ServoFrame {
++        frame_count,
++        frame_rate_hz,
++        motors,
++    })
++}
++
++fn ned(enu: [f64; 3]) -> [f64; 3] {
++    [enu[1], enu[0], -enu[2]]
++}
++fn frd(flu: [f32; 3]) -> [f32; 3] {
++    [flu[0], -flu[1], -flu[2]]
++}
++
++pub fn encode(sensors: &SensorFrame, command: &PilotCommand) -> Result<Vec<u8>> {
++    if command.square_plan.is_some()
++        || command.channels_us[4] >= 1500
++        || command.channels_us[2] != 1000
++    {
++        bail!("ArduPilot adapter is disarmed-probe only; flight commands are not implemented");
++    }
++    let state = sensors.simulator_state.context("ArduPilot JSON requires explicit simulator ground truth; sensor parity is not yet qualified")?;
++    if !state
++        .position_enu_m
++        .iter()
++        .chain(state.velocity_enu_m_s.iter())
++        .chain(state.euler_flu_enu_rad.iter())
++        .all(|x| x.is_finite())
++        || !sensors
++            .gyro_flu_rad_s
++            .iter()
++            .chain(sensors.specific_force_flu_m_s2.iter())
++            .all(|x| x.is_finite())
++    {
++        bail!("nonfinite simulator state");
++    }
++    let [roll, pitch, yaw] = state.euler_flu_enu_rad;
++    let payload = serde_json::json!({
++        "timestamp": sensors.target_time_ns as f64 * 1e-9,
++        "imu": {"gyro": frd(sensors.gyro_flu_rad_s), "accel_body": frd(sensors.specific_force_flu_m_s2)},
++        "position": ned(state.position_enu_m),
++        "velocity": ned(state.velocity_enu_m_s),
++        "attitude": [roll,-pitch,std::f64::consts::FRAC_PI_2-yaw],
++        // No arming channel mapping is enabled in this connection test.
++        "rc": {"rc_1":1500,"rc_2":1500,"rc_3":1000,"rc_4":1500,"rc_5":1000,"rc_6":1000,"rc_7":1000,"rc_8":1000},
++        "no_lockstep": false
++    });
++    let mut bytes = vec![b'\n'];
++    serde_json::to_writer(&mut bytes, &payload)?;
++    bytes.push(b'\n');
++    Ok(bytes)
++}
++
++pub struct ArduPilotAdapter {
++    socket: UdpSocket,
++    peer: Option<SocketAddr>,
++    last_frame: Option<u32>,
++    last_time_ns: u64,
++    pub duplicates_ignored: u64,
++}
++
++impl ArduPilotAdapter {
++    pub fn bind() -> Result<Self> {
++        Ok(Self {
++            socket: UdpSocket::bind("127.0.0.1:0")?,
++            peer: None,
++            last_frame: None,
++            last_time_ns: 0,
++            duplicates_ignored: 0,
++        })
++    }
++    pub fn address(&self) -> Result<SocketAddr> {
++        Ok(self.socket.local_addr()?)
++    }
++    fn receive(&self, deadline: Instant) -> Result<(ServoFrame, SocketAddr)> {
++        loop {
++            let remaining = deadline
++                .checked_duration_since(Instant::now())
++                .context("ArduPilot response deadline expired")?;
++            if remaining.is_zero() {
++                bail!("ArduPilot response deadline expired");
++            }
++            self.socket.set_read_timeout(Some(remaining))?;
++            let mut bytes = [0u8; 73];
++            let (size, peer) = self
++                .socket
++                .recv_from(&mut bytes)
++                .context("waiting for ArduPilot servo frame")?;
++            if !peer.ip().is_loopback() || self.peer.is_some_and(|known| known != peer) {
++                continue;
++            }
++            return Ok((decode(&bytes[..size])?, peer));
++        }
++    }
++}
++
++impl FlightStackAdapter for ArduPilotAdapter {
++    type Diagnostics = ServoFrame;
++    fn step(
++        &mut self,
++        sensors: &SensorFrame,
++        command: &PilotCommand,
++        timeout: Duration,
++    ) -> Result<ActuatorFrame<ServoFrame>> {
++        if sensors.target_time_ns != self.last_time_ns + 625_000 {
++            bail!("ArduPilot probe requires contiguous 625000 ns steps");
++        }
++        let payload = encode(sensors, command)?;
++        let deadline = Instant::now() + timeout;
++        if self.peer.is_none() {
++            let (initial, peer) = self.receive(deadline)?;
++            if initial.motors.iter().any(|&x| x != 0.) {
++                bail!("ArduPilot probe received active motors at startup");
++            }
++            self.peer = Some(peer);
++            // SIM_JSON starts at its default rate before seeing simulator time.
++            // Bootstrap does not advance physics; subsequent replies must be 1600 Hz.
++            self.last_frame = Some(initial.frame_count);
++        }
++        self.socket.send_to(&payload, self.peer.unwrap())?;
++        loop {
++            let (frame, _) = self.receive(deadline)?;
++            let previous = self.last_frame.unwrap();
++            if frame.frame_count == previous {
++                self.duplicates_ignored += 1;
++                continue;
++            }
++            if frame.frame_count != previous.wrapping_add(1) {
++                bail!(
++                    "ArduPilot frame gap/reset: expected {}, got {}",
++                    previous.wrapping_add(1),
++                    frame.frame_count
++                );
++            }
++            if frame.frame_rate_hz != RATE_HZ {
++                bail!(
++                    "ArduPilot reports {} Hz after clock negotiation; expected {RATE_HZ}",
++                    frame.frame_rate_hz
++                );
++            }
++            self.last_frame = Some(frame.frame_count);
++            self.last_time_ns = sensors.target_time_ns;
++            // JSON has no response timestamp: correlate via contiguous frame count.
++            return Ok(ActuatorFrame {
++                target_time_ns: sensors.target_time_ns,
++                motors: frame.motors,
++                diagnostics: frame,
++            });
++        }
++    }
++}
++
++#[cfg(test)]
++mod tests {
++    use super::*;
++    use crate::benchmark::{GnssObservation, SimulatorState};
++    fn packet(count: u32, pwm: [u16; 4]) -> Vec<u8> {
++        let mut bytes = vec![0; 40];
++        bytes[..2].copy_from_slice(&18458u16.to_le_bytes());
++        bytes[2..4].copy_from_slice(&RATE_HZ.to_le_bytes());
++        bytes[4..8].copy_from_slice(&count.to_le_bytes());
++        for (i, x) in pwm.iter().enumerate() {
++            bytes[8 + 2 * i..10 + 2 * i].copy_from_slice(&x.to_le_bytes());
++        }
++        bytes
++    }
++    fn input() -> (SensorFrame, PilotCommand) {
++        let sensors = SensorFrame {
++            target_time_ns: 625_000,
++            gyro_flu_rad_s: [1., 2., 3.],
++            specific_force_flu_m_s2: [0., 0., 9.80665],
++            gnss: GnssObservation::default(),
++            simulator_state: Some(SimulatorState {
++                position_enu_m: [1., 2., 3.],
++                velocity_enu_m_s: [4., 5., 6.],
++                euler_flu_enu_rad: [0.2, 0.3, 0.],
++            }),
++        };
++        let mut channels_us = [1500; 16];
++        channels_us[2] = 1000;
++        channels_us[4] = 1000;
++        (
++            sensors,
++            PilotCommand {
++                channels_us,
++                square_plan: None,
++            },
++        )
++    }
++    #[test]
++    fn axes_and_gravity_are_converted_to_ned_frd() {
++        let (s, c) = input();
++        let b = encode(&s, &c).unwrap();
++        assert_eq!(b[0], b'\n');
++        assert_eq!(*b.last().unwrap(), b'\n');
++        let j: serde_json::Value = serde_json::from_slice(&b).unwrap();
++        assert_eq!(j["position"], serde_json::json!([2., 1., -3.]));
++        assert_eq!(j["velocity"], serde_json::json!([5., 4., -6.]));
++        assert_eq!(j["imu"]["gyro"], serde_json::json!([1., -2., -3.]));
++        assert!(j["imu"]["accel_body"][2].as_f64().unwrap() < -9.8);
++        assert_eq!(
++            j["attitude"],
++            serde_json::json!([0.2, -0.3, std::f64::consts::FRAC_PI_2])
++        );
++    }
++    #[test]
++    fn servo_order_lengths_and_limits_are_checked() {
++        assert_eq!(
++            decode(&packet(1, [1100, 1200, 1300, 1400])).unwrap().motors,
++            [0.1, 0.4, 0.2, 0.3]
++        );
++        assert!(decode(&packet(0, [999, 0, 0, 0])).is_err());
++        assert!(decode(&[0; 40]).is_err());
++        assert!(decode(&packet(0, [0; 4])[..39]).is_err());
++        let mut b = packet(0, [0; 4]);
++        b[..2].copy_from_slice(&29569u16.to_le_bytes());
++        b.resize(72, 0);
++        assert!(decode(&b).is_ok());
++        b[2..4].copy_from_slice(&0u16.to_le_bytes());
++        assert!(decode(&b).is_err());
++    }
++    #[test]
++    fn armed_or_nonfinite_inputs_are_rejected() {
++        let (mut s, mut c) = input();
++        c.channels_us[4] = 2000;
++        assert!(encode(&s, &c).is_err());
++        c.channels_us[4] = 1000;
++        s.simulator_state.as_mut().unwrap().position_enu_m[0] = f64::NAN;
++        assert!(encode(&s, &c).is_err());
++    }
++    #[test]
++    fn response_rate_change_is_rejected_after_bootstrap() {
++        let mut adapter = ArduPilotAdapter::bind().unwrap();
++        let address = adapter.address().unwrap();
++        let peer = std::thread::spawn(move || {
++            let socket = UdpSocket::bind("127.0.0.1:0").unwrap();
++            socket
++                .set_read_timeout(Some(Duration::from_secs(2)))
++                .unwrap();
++            socket.send_to(&packet(0, [0; 4]), address).unwrap();
++            socket.recv_from(&mut [0; 4096]).unwrap();
++            let mut reply = packet(1, [1000; 4]);
++            reply[2..4].copy_from_slice(&800u16.to_le_bytes());
++            socket.send_to(&reply, address).unwrap();
++        });
++        let (sensors, command) = input();
++        let error = adapter
++            .step(&sensors, &command, Duration::from_secs(2))
++            .err()
++            .unwrap();
++        assert!(error.to_string().contains("clock negotiation"));
++        assert_eq!(adapter.last_time_ns, 0);
++        peer.join().unwrap();
++    }
++
++    #[test]
++    fn missing_peer_expires_without_advancing_adapter_time() {
++        let mut adapter = ArduPilotAdapter::bind().unwrap();
++        let (sensors, command) = input();
++        assert!(
++            adapter
++                .step(&sensors, &command, Duration::from_millis(10))
++                .is_err()
++        );
++        assert_eq!(adapter.last_time_ns, 0);
++        assert!(adapter.last_frame.is_none());
++    }
++
++    #[test]
++    fn udp_handshake_ignores_duplicates_and_rejects_frame_gaps() {
++        let mut adapter = ArduPilotAdapter::bind().unwrap();
++        let address = adapter.address().unwrap();
++        let server = std::thread::spawn(move || {
++            let socket = UdpSocket::bind("127.0.0.1:0").unwrap();
++            socket
++                .set_read_timeout(Some(Duration::from_secs(2)))
++                .unwrap();
++            let mut bootstrap = packet(0, [0; 4]);
++            bootstrap[2..4].copy_from_slice(&1200u16.to_le_bytes());
++            socket.send_to(&bootstrap, address).unwrap();
++            let mut bytes = [0; 4096];
++            socket.recv_from(&mut bytes).unwrap();
++            socket.send_to(&packet(0, [0; 4]), address).unwrap();
++            socket.send_to(&packet(1, [1000; 4]), address).unwrap();
++            socket.recv_from(&mut bytes).unwrap();
++            socket.send_to(&packet(3, [1000; 4]), address).unwrap();
++        });
++        let (mut sensors, command) = input();
++        let out = adapter
++            .step(&sensors, &command, Duration::from_secs(2))
++            .unwrap();
++        assert_eq!(out.diagnostics.frame_count, 1);
++        assert_eq!(adapter.duplicates_ignored, 1);
++        sensors.target_time_ns += 625_000;
++        assert!(
++            adapter
++                .step(&sensors, &command, Duration::from_secs(2))
++                .err()
++                .unwrap()
++                .to_string()
++                .contains("gap/reset")
++        );
++        server.join().unwrap();
++    }
++}
+diff --git a/xtask/src/ardupilot_probe.rs b/xtask/src/ardupilot_probe.rs
+new file mode 100644
+index 0000000..9ce576d
+--- /dev/null
++++ b/xtask/src/ardupilot_probe.rs
+@@ -0,0 +1,254 @@
++//! Bounded, disarmed real-ArduPilot connection test against the shared FMI plant.
++use std::ffi::OsString;
++use std::fs::{self, File};
++use std::io::{BufWriter, Write};
++use std::path::PathBuf;
++use std::process::{Child, Command, Stdio};
++use std::time::{Duration, SystemTime, UNIX_EPOCH};
++
++use anyhow::{Context, Result, bail};
++use serde::Serialize;
++
++use crate::ardupilot::{ArduPilotAdapter, REVISION};
++use crate::benchmark::{
++    self, ExchangeMetrics, PilotCommand, SensorFrame, SimulatorState, SyntheticGnss,
++};
++use crate::physics::Plant;
++
++const STEP_NS: u64 = 625_000;
++const STEPS: u64 = 8000;
++
++struct ChildGuard(Child);
++impl Drop for ChildGuard {
++    fn drop(&mut self) {
++        let _ = self.0.kill();
++        let _ = self.0.wait();
++    }
++}
++
++#[derive(Default, Serialize)]
++struct ProbeReport {
++    passed: bool,
++    qualification: String,
++    expected_ardupilot_revision: String,
++    executable_sha256: String,
++    plant_sha256: String,
++    description_sha256: String,
++    plant_library: String,
++    plant_description: String,
++    steps: u64,
++    simulated_seconds: f64,
++    first_frame: Option<u32>,
++    last_frame: Option<u32>,
++    duplicates_ignored: u64,
++    motor_actuation_observed: bool,
++    exchange_metrics: ExchangeMetrics,
++    error: Option<String>,
++}
++
++pub fn run(args: impl IntoIterator<Item = OsString>) -> Result<()> {
++    let mut executable = None;
++    let mut library = None;
++    let mut description = None;
++    let mut plant_directory = None;
++    let mut output = PathBuf::from("artifacts/ardupilot-probe");
++    let mut args = args.into_iter();
++    while let Some(arg) = args.next() {
++        let name = arg.to_str().context("argument must be UTF-8")?;
++        if name == "--help" {
++            println!(
++                "cargo xtask ardupilot-probe --executable PATH (--plant-directory PATH | --plant-library PATH --plant-description PATH) [--output DIRECTORY]\nRuns 5 simulated seconds, disarmed, with a new result directory per run."
++            );
++            return Ok(());
++        }
++        let value = args
++            .next()
++            .with_context(|| format!("{name} requires a value"))?;
++        match name {
++            "--executable" => executable = Some(PathBuf::from(value)),
++            "--plant-library" => library = Some(PathBuf::from(value)),
++            "--plant-description" => description = Some(PathBuf::from(value)),
++            "--plant-directory" => plant_directory = Some(PathBuf::from(value)),
++            "--output" => output = PathBuf::from(value),
++            _ => bail!("unknown probe argument {name}"),
++        }
++    }
++    let executable = executable
++        .context("--executable is required")?
++        .canonicalize()?;
++    if let Some(directory) = plant_directory {
++        if library.is_some() || description.is_some() {
++            bail!("--plant-directory cannot be combined with explicit library/description paths");
++        }
++        if std::env::consts::OS != "linux" {
++            bail!("ArduPilot probe currently supports Linux hosts only");
++        }
++        let xml_path = directory.join("modelDescription.xml");
++        let xml = fs::read_to_string(&xml_path)?;
++        let doc = roxmltree::Document::parse(&xml)?;
++        let id = doc
++            .descendants()
++            .find(|n| n.has_tag_name("CoSimulation"))
++            .and_then(|n| n.attribute("modelIdentifier"))
++            .context("FMI CoSimulation model identifier missing")?;
++        if id.is_empty() || !id.chars().all(|c| c.is_ascii_alphanumeric() || c == '_') {
++            bail!("invalid FMI model identifier");
++        }
++        library = Some(
++            directory
++                .join("binaries")
++                .join(format!("{}-linux", std::env::consts::ARCH))
++                .join(format!("{id}.so")),
++        );
++        description = Some(xml_path);
++    }
++    let library = library
++        .context("--plant-library is required")?
++        .canonicalize()?;
++    let description = description
++        .context("--plant-description is required")?
++        .canonicalize()?;
++    let mut plant = Plant::open(&library, &description)?;
++    let mut adapter = ArduPilotAdapter::bind()?;
++    let port = adapter.address()?.port();
++    fs::create_dir_all(&output)?;
++    let run_directory = output.canonicalize()?.join(format!(
++        "run-{}-{}",
++        SystemTime::now().duration_since(UNIX_EPOCH)?.as_nanos(),
++        std::process::id()
++    ));
++    fs::create_dir(&run_directory)?;
++    let defaults = run_directory.join("probe.parm");
++    fs::write(
++        &defaults,
++        include_str!("../missions/ardupilot-json-probe.parm"),
++    )?;
++    let log = File::create(run_directory.join("ardupilot.log"))?;
++    let child = Command::new(&executable)
++        .current_dir(&run_directory)
++        .args([
++            "--model",
++            "JSON:127.0.0.1",
++            "--home",
++            "40.4237,-86.9212,200,90",
++            "--speedup",
++            "5",
++            "--sim-port-out",
++        ])
++        .arg(port.to_string())
++        .args(["--serial0", "udpclient:127.0.0.1:14650", "--defaults"])
++        .arg(&defaults)
++        .stdin(Stdio::null())
++        .stdout(log.try_clone()?)
++        .stderr(log)
++        .spawn()
++        .with_context(|| format!("launch ArduPilot {}", executable.display()))?;
++    let _child = ChildGuard(child);
++    let mut report = ProbeReport {
++        qualification: "transport-only; no flight or shared-sensor-parity claim".into(),
++        expected_ardupilot_revision: REVISION.into(),
++        executable_sha256: sha256(&executable)?,
++        plant_sha256: sha256(&library)?,
++        description_sha256: sha256(&description)?,
++        plant_library: library.display().to_string(),
++        plant_description: description.display().to_string(),
++        ..ProbeReport::default()
++    };
++    let mut trajectory =
++        BufWriter::new(File::create(run_directory.join("mission-trajectory.csv"))?);
++    writeln!(trajectory, "time_s,x_m,y_m,z_m,roll_rad,pitch_rad,yaw_rad")?;
++    let result = (|| -> Result<()> {
++        let mut gnss = SyntheticGnss::default();
++        let mut channels_us = [1500; 16];
++        channels_us[2] = 1000;
++        channels_us[4] = 1000;
++        let command = PilotCommand {
++            channels_us,
++            square_plan: None,
++        };
++        for step in 1..=STEPS {
++            let target_time_ns = step * STEP_NS;
++            let (gyro, accel) = plant.imu_flu();
++            let sensors = SensorFrame {
++                target_time_ns,
++                gyro_flu_rad_s: gyro,
++                specific_force_flu_m_s2: accel,
++                gnss: gnss.sample(plant.position(), plant.velocity(), target_time_ns),
++                simulator_state: Some(SimulatorState {
++                    position_enu_m: plant.position(),
++                    velocity_enu_m_s: plant.velocity(),
++                    euler_flu_enu_rad: plant.euler(),
++                }),
++            };
++            let timeout = Duration::from_secs(if step == 1 { 30 } else { 2 });
++            let (response, elapsed) =
++                benchmark::exchange(&mut adapter, &sensors, &command, timeout)?;
++            if response.motors.iter().any(|&x| x != 0.) {
++                report.motor_actuation_observed = true;
++                bail!("unexpected motor actuation during disarmed probe");
++            }
++            benchmark::commit(&mut plant, &response, 0.000625)?;
++            let p = plant.position();
++            let e = plant.euler();
++            if !p.iter().chain(e.iter()).all(|x| x.is_finite()) {
++                bail!("nonfinite plant state");
++            }
++            writeln!(
++                trajectory,
++                "{:.9},{:.9},{:.9},{:.9},{:.9},{:.9},{:.9}",
++                target_time_ns as f64 * 1e-9,
++                p[0],
++                p[1],
++                p[2],
++                e[0],
++                e[1],
++                e[2]
++            )?;
++            report
++                .first_frame
++                .get_or_insert(response.diagnostics.frame_count);
++            report.last_frame = Some(response.diagnostics.frame_count);
++            report
++                .exchange_metrics
++                .record(elapsed, response.motors, false);
++            report.steps = step;
++        }
++        Ok(())
++    })();
++    trajectory.flush()?;
++    report.duplicates_ignored = adapter.duplicates_ignored;
++    report.simulated_seconds = report.steps as f64 * 0.000625;
++    report.exchange_metrics.finish();
++    report.passed = result.is_ok() && report.steps == STEPS;
++    report.error = result.as_ref().err().map(|e| format!("{e:#}"));
++    fs::write(
++        run_directory.join("report.json"),
++        serde_json::to_vec_pretty(&report)?,
++    )?;
++    println!(
++        "ARDUPILOT_PROBE passed={} steps={} report={}",
++        report.passed,
++        report.steps,
++        run_directory.join("report.json").display()
++    );
++    result
++}
++
++fn sha256(path: &std::path::Path) -> Result<String> {
++    let output = Command::new("sha256sum")
++        .arg(path)
++        .output()
++        .context("sha256sum is required for probe provenance")?;
++    if !output.status.success() {
++        bail!("cannot hash {}", path.display());
++    }
++    let value = String::from_utf8(output.stdout)?
++        .split_whitespace()
++        .next()
++        .context("missing hash")?
++        .to_owned();
++    if value.len() != 64 || !value.chars().all(|x| x.is_ascii_hexdigit()) {
++        bail!("invalid SHA-256 output");
++    }
++    Ok(value)
++}
 diff --git a/xtask/missions/rdd2-square-baseline-v1.json b/xtask/missions/rdd2-square-baseline-v1.json
 new file mode 100644
 index 0000000..bd64da4
@@ -971,3 +1622,22 @@ index 0000000..bd64da4
 +  "mission_disarm_s": 40.0,
 +  "default_mission_duration_s": 44.0
 +}
+diff --git a/xtask/missions/ardupilot-json-probe.parm b/xtask/missions/ardupilot-json-probe.parm
+new file mode 100644
+index 0000000..e8f1cdc
+--- /dev/null
++++ b/xtask/missions/ardupilot-json-probe.parm
+@@ -0,0 +1,13 @@
++# Connection-only baseline for ArduCopter Copter-4.7.1. No arming commands.
++# The shared plant owns the 1600 Hz physics step; the autopilot keeps its loop rate.
++SIM_RATE_HZ 1600
++FRAME_CLASS 1
++FRAME_TYPE 1
++MOT_PWM_MIN 1000
++MOT_PWM_MAX 2000
++SERVO1_FUNCTION 33
++SERVO2_FUNCTION 34
++SERVO3_FUNCTION 35
++SERVO4_FUNCTION 36
++AHRS_EKF_TYPE 3
++LOG_BACKEND_TYPE 0
