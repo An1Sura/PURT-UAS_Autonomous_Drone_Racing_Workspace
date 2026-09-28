@@ -209,6 +209,12 @@ let
       branch = "workspace/rdd2-integration";
     }
     {
+      name = "betaflight";
+      url = "https://github.com/betaflight/betaflight.git";
+      branch = "master";
+      revision = "744f95fa31542c4c906f18072348a366ab11b6b7";
+    }
+    {
       name = "ardupilot";
       url = "https://github.com/ArduPilot/ardupilot.git";
       branch = "master";
@@ -989,6 +995,31 @@ let
         // {
           after = [ "rdd2:benchmark:ardupilot:probe" ];
         };
+
+      "rdd2:benchmark:betaflight:build" =
+        (task "betaflight" "Build the pinned Betaflight SITL with native flight planning." ''
+          test "$(git rev-parse HEAD)" = 744f95fa31542c4c906f18072348a366ab11b6b7
+          make TARGET=SITL EXTRA_FLAGS=-DENABLE_FLIGHT_PLANNING=1 -j1
+        '') // { after = [ "sources:ensure:betaflight" ]; };
+
+      "rdd2:benchmark:betaflight:figure-eight" =
+        (task "cerebri_rdd2" "Exercise Betaflight native figure-eight mode on the common FMI plant." ''
+          cargo run --release --locked --package cerebri-rdd2-xtask -- betaflight-probe \
+            ${source "betaflight"}/obj/main/betaflight_SITL.elf \
+            ${source "modelica_models"}/artifacts/vehicles/rdd2/plant/Vehicles_Rdd2_Plant \
+            "$PWD/artifacts/betaflight-figure-eight/run-$(date +%s%N)"
+        '') // { after = [ "rdd2:benchmark:betaflight:build" "rdd2:simulation:sil:test" ]; };
+
+      "rdd2:benchmark:cognipilot:figure-eight" =
+        (task "cerebri_rdd2" "Fly CogniPilot with the shared timed figure-eight reference." ''
+          cargo run --release --locked --package cerebri-rdd2-xtask -- fastdyn-mission \
+            --figure-eight \
+            --native-sim "$PWD/build-native_sim/zephyr/zephyr.exe" \
+            --shared-memory "$PWD/artifacts/cognipilot-figure-eight/lockstep.bin" \
+            --plant-directory ${source "modelica_models"}/artifacts/vehicles/rdd2/plant/Vehicles_Rdd2_Plant \
+            --report "$PWD/artifacts/cognipilot-figure-eight/report.json" \
+            --trajectory "$PWD/artifacts/cognipilot-figure-eight/mission-trajectory.csv"
+        '') // { after = [ "rdd2:simulation:sil:test" ]; };
 
       "rdd2:benchmark:cognipilot:reference" =
         (task "cerebri_rdd2" "Fly CogniPilot with the shared time-indexed square reference." ''

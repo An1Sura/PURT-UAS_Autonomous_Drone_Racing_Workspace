@@ -1,18 +1,22 @@
 # Autonomous Drone Racing Benchmark
 
-A software-in-the-loop benchmark for comparing **Betaflight, CogniPilot, PX4,
-and ArduPilot** on the same simulated racing drone.
+The semester goal is to fly **two identical drones autonomously through a
+figure eight**, one running **Betaflight** and one running **CogniPilot**, and
+compare their tracking and timing performance. Simulation develops the waypoint,
+control-input and measurement software before physical flight tests.
 
-The research question is: **how accurately and consistently can each flight
-stack follow the same trajectory under the same conditions?** The semester
-focus is a working software simulation benchmark. Hardware-in-the-loop is a
-stretch goal, using as much of the same infrastructure as possible.
+**Current milestone:** both real flight-stack executables have flown a figure
+eight on the same Rumoca-generated quadrotor model. CogniPilot follows the shared
+timed reference; Betaflight currently uses its native figure-eight planner.
+Their timing, sensor paths and takeoff/landing differ, so these runs are
+integration evidence, **not a performance ranking**. See [the figure-eight
+results and run instructions](docs/figure-eight.md).
 
-**Current milestone:** CogniPilot and ArduPilot both fly using the same
-Rumoca-generated quadrotor physics model. ArduPilot completes a bounded square
-flight and produces tracking measurements. Both stacks now consume the same timed square reference. Takeoff/landing and
-sensor paths still differ, so these runs do **not** establish which stack
-performs best.
+The physical drones are intended to be identical. The current RDD2 model is a
+shared test vehicle, not yet a measured calibration of those drones. Hardware
+firmware versions and the source of autonomous position feedback still need to
+be identified. Assembling the CogniPilot drone and validating its timing/drivers
+remain hardware work alongside this software effort.
 
 ## What this project does
 
@@ -34,10 +38,9 @@ flowchart LR
     B --> L
 ```
 
-One stack runs at a time. The intended adapters select Betaflight, CogniPilot,
-PX4 or ArduPilot while retaining the same plant and experiment definition.
-The current CogniPilot and ArduPilot connections implement the beginning of
-this architecture; the other two adapters remain to be built.
+One stack runs at a time. Betaflight and CogniPilot are the current priority.
+The previous ArduPilot square-flight work remains available as background;
+PX4 is outside the semester scope.
 
 The eventual comparison must hold these conditions constant:
 
@@ -46,17 +49,17 @@ The eventual comparison must hold these conditions constant:
 - Sensor models, update rates, noise, delays and disturbances.
 - Simulation clock, logging definitions and evaluation windows.
 
-Shared physics and square-reference commands are working for two stacks.
+Shared physics now supports Betaflight and CogniPilot figure-eight diagnostics.
 Matching sensor conditions and takeoff/landing remain active development work.
 
 ## Current implementation
 
 | Flight stack | Implemented and exercised | Remaining work |
 | --- | --- | --- |
-| **CogniPilot** | Zephyr `native_sim` firmware, shared-memory lockstep, common FMI plant, existing 44-second flight qualification | Shared reference now connected; remove or standardize simulator-assisted takeoff for comparison |
-| **ArduPilot** | Copter 4.7.1 JSON SITL adapter, disarmed connection probe, MAVLink Guided commands, 145-second bounded flight diagnostic | Align sensors, command timing and actuator interpretation with the other stacks |
-| **PX4** | Architecture candidate identified | Implement and validate adapter |
-| **Betaflight** | Architecture candidate identified | Implement and validate adapter at an appropriate common control level |
+| **CogniPilot** | Real Zephyr firmware, shared physics, timed figure eight, landed after a 44-second run; 13.0 cm RMS tracking error | Standardize takeoff, sensors and timing; connect the selected hardware feedback system |
+| **Betaflight** | Pinned development SITL, streamed sensors/motors, native autonomous figure-eight flight on the same physics | Accept the exact timed common reference; standardize sensors, timing and landing; verify hardware firmware support |
+| **ArduPilot** | Earlier square-flight adapter and measurements | Retained background work |
+| **PX4** | Architecture candidate | Outside current semester scope |
 
 The project builds on the **CogniPilot development workspace**. Modelica defines
 the plant, Rumoca compiles it into an FMI simulation artifact with generated C,
@@ -64,7 +67,16 @@ and the native Rust runner exchanges sensor and actuator data with flight
 software. Devenv coordinates dependencies and tasks; each source repository
 retains its own native build workflow.
 
-## Results demonstrated so far
+## Current figure-eight results
+
+CogniPilot completed a 44-second run, including takeoff, a 20-second figure eight,
+a five-second hold and landing. Its 3D tracking RMS error was **0.12990 m**, with
+**0.32333 m** maximum error over the 25-second scored window. Betaflight completed
+a 25-second autonomous pattern window on the same plant, with native HOLD mode
+confirmed in 119 telemetry samples. Betaflight has no comparable timed tracking
+score yet. See [full results and limitations](docs/figure-eight.md).
+
+## Earlier square-flight evidence
 
 These are recorded simulation results, not physical flight measurements.
 
@@ -116,6 +128,8 @@ editable dependencies live under `src/`; this repository preserves the native
 runner changes as patches against documented commits. The existing development
 VM already has those patches applied.
 
+For the current two-stack figure-eight work, follow [the figure-eight run guide](docs/figure-eight.md).
+
 Inside the configured RDD2 environment:
 
 ```sh
@@ -150,27 +164,28 @@ counts, exchange timing and completion or failure information. The trajectory
 CSV contains time, position and orientation. Raw run artifacts and generated
 binaries remain local; they are not committed as source code.
 
-To run both stacks on the shared square reference, see the
+To reproduce the earlier CogniPilot/ArduPilot shared square reference, see the
 [shared-reference guide and recorded results](docs/shared-reference.md).
 
 ## What comes next
 
-1. Extend the shared-reference diagnostic toward a qualified navigation-control
-   experiment with matched sensor delivery and documented frame semantics.
-2. Align sensor injection, noise, delay, initial conditions and actuator
-   interpretation; standardize takeoff and landing behavior.
-3. Implement and validate PX4 and Betaflight adapters without introducing
-   separate physics models.
-4. Run repeatable experiments and gain sweeps, reporting trajectory error,
-   overshoot, settling time, actuator saturation, latency and jitter.
-5. Add completion time and racing trajectories, then explore hardware-in-the-loop
-   and motion-capture validation as later milestones.
+1. Connect Betaflight to the exact timed figure-eight reference already used by
+   CogniPilot, with confirmed position/velocity frame and timestamp semantics.
+2. Match sensor rates, noise, delay, takeoff/landing and timing before publishing
+   comparative error, overshoot, actuator saturation, latency or jitter scores.
+3. Identify both drones' firmware/configuration and the position-feedback system;
+   calibrate the shared model to the identical hardware.
+4. Assemble the second drone, validate CogniPilot timing/drivers, and transfer the
+   tested waypoint/control interfaces to autonomous physical figure-eight flights.
 
-Current exchange timing includes transport and host scheduling. Isolated
-controller execution time, configurable shared disturbances, and a qualified
-four-stack ranking remain future work.
+Current exchange timing includes transport and host scheduling. Betaflight's
+streamed SITL and CogniPilot's lockstep execution are not equivalent timing tests.
+HIL remains optional infrastructure work; PX4/ArduPilot expansion is not a
+requirement for the current semester objective.
 
 ## Project guides
+
+- [Betaflight/CogniPilot figure-eight runs](docs/figure-eight.md)
 
 - [Shared-reference flights and results](docs/shared-reference.md)
 - [Common benchmark architecture and interface](docs/common-benchmark.md)

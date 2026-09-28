@@ -16,6 +16,9 @@ bounded Guided flight diagnostic with a stack-independent reference. It also
 adds CogniPilot external-reference ingress, estimator-origin metadata, and the
 matching native diagnostic; rebuild runner and firmware together after applying
 this ABI-changing patch. See [shared-reference validation](../docs/shared-reference.md).
+The patch also adds the smooth timed figure-eight generator and the native Rust
+Betaflight/FMI diagnostic; see [figure-eight runs](../docs/figure-eight.md).
+Betaflight source is unmodified and pinned to `744f95fa31542c4c906f18072348a366ab11b6b7`.
 The ArduPilot source itself is unmodified; see [its build and usage guide](../docs/ardupilot-adapter.md). The compiler patch fixes deferred clock
 assertion evaluation and the Python package vendor hash. The model patch fixes
 signal selection and report provenance paths. Physics, controller gains and

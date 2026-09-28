@@ -274,13 +274,14 @@ index a66d6ed..2b39566 100644
  void rdd2_lockstep_gps_mission_status_get(
      struct rdd2_lockstep_gps_mission_status *status);
 diff --git a/xtask/src/main.rs b/xtask/src/main.rs
-index e11a7c8..4119c5d 100644
+index e11a7c8..24ddfeb 100644
 --- a/xtask/src/main.rs
 +++ b/xtask/src/main.rs
-@@ -1,7 +1,15 @@
+@@ -1,7 +1,16 @@
 +mod ardupilot;
 +mod ardupilot_probe;
 +mod benchmark;
++mod betaflight_probe;
 +mod cognipilot;
 +mod cognipilot_reference;
  mod fastdyn_ci;
@@ -293,7 +294,7 @@ index e11a7c8..4119c5d 100644
  mod shared_memory;
  
  use std::env;
-@@ -13,29 +21,19 @@ use std::thread;
+@@ -13,29 +22,20 @@ use std::thread;
  use std::time::{Duration, Instant};
  
  use anyhow::{Context, Result, anyhow, bail};
@@ -324,10 +325,11 @@ index e11a7c8..4119c5d 100644
  #[derive(Debug)]
  struct Options {
 +    external_reference: bool,
++    figure_eight: bool,
      report: PathBuf,
      trajectory: PathBuf,
      duration: f64,
-@@ -52,6 +50,9 @@ struct Options {
+@@ -52,6 +52,9 @@ struct Options {
  
  #[derive(Debug, Default, Serialize)]
  struct Report {
@@ -337,7 +339,7 @@ index e11a7c8..4119c5d 100644
      passed: bool,
      /// Which providers produced the firmware under test. A pass built from
      /// caller-selected sources is not a qualifying result, and the report
-@@ -108,7 +109,7 @@ fn options(args: impl IntoIterator<Item = String>) -> Result<Options> {
+@@ -108,7 +111,7 @@ fn options(args: impl IntoIterator<Item = String>) -> Result<Options> {
      let mut trajectory = env::var_os("RDD2_MISSION_TRAJECTORY")
          .map(PathBuf::from)
          .unwrap_or_else(|| PathBuf::from("out/mission-trajectory.csv"));
@@ -346,11 +348,12 @@ index e11a7c8..4119c5d 100644
      let mut timeout_ms = 2_000_u64;
      let mut controller_benchmark = env::var("RDD2_FASTDYN_CONTROLLER_BENCHMARK_S")
          .ok()
-@@ -124,10 +125,26 @@ fn options(args: impl IntoIterator<Item = String>) -> Result<Options> {
+@@ -124,10 +127,31 @@ fn options(args: impl IntoIterator<Item = String>) -> Result<Options> {
          .map(|value| value.parse())
          .transpose()?
          .unwrap_or(0.0);
 +    let mut external_reference = false;
++    let mut figure_eight = false;
 +    let mut plant_directory = None;
      let mut args = args.into_iter();
      while let Some(arg) = args.next() {
@@ -360,6 +363,10 @@ index e11a7c8..4119c5d 100644
 +                plant_directory = Some(PathBuf::from(args.next().ok_or_else(value)?))
 +            }
 +            "--external-reference" => external_reference = true,
++            "--figure-eight" => {
++                figure_eight = true;
++                external_reference = true;
++            }
 +            "--stack" => {
 +                let stack = args.next().ok_or_else(value)?;
 +                match stack.as_str() {
@@ -373,12 +380,12 @@ index e11a7c8..4119c5d 100644
              "--report" => report = args.next().ok_or_else(value)?.into(),
              "--trajectory" => trajectory = args.next().ok_or_else(value)?.into(),
              "--duration" => duration = args.next().ok_or_else(value)?.parse()?,
-@@ -145,20 +162,37 @@ fn options(args: impl IntoIterator<Item = String>) -> Result<Options> {
+@@ -145,20 +169,38 @@ fn options(args: impl IntoIterator<Item = String>) -> Result<Options> {
              "--minimum-speedup" => minimum_speedup = args.next().ok_or_else(value)?.parse()?,
              "-h" | "--help" => {
                  println!(
 -                    "cargo xtask fastdyn-mission --shared-memory PATH (--firmware-elf PATH | --native-sim PATH) --plant-library PATH --plant-description PATH [--report PATH] [--trajectory PATH] [--duration SEC] [--controller-benchmark SEC] [--minimum-speedup X]"
-+                    "cargo xtask fastdyn-mission --shared-memory PATH (--firmware-elf PATH | --native-sim PATH) --plant-library PATH --plant-description PATH [--stack cognipilot] [--external-reference] [--report PATH] [--trajectory PATH] [--duration SEC] [--controller-benchmark SEC] [--minimum-speedup X]"
++                    "cargo xtask fastdyn-mission --shared-memory PATH (--firmware-elf PATH | --native-sim PATH) --plant-library PATH --plant-description PATH [--stack cognipilot] [--external-reference] [--figure-eight] [--report PATH] [--trajectory PATH] [--duration SEC] [--controller-benchmark SEC] [--minimum-speedup X]"
                  );
                  std::process::exit(0);
              }
@@ -411,10 +418,11 @@ index e11a7c8..4119c5d 100644
 +    }
      Ok(Options {
 +        external_reference,
++        figure_eight,
          report,
          trajectory,
          duration,
-@@ -171,29 +205,29 @@ fn options(args: impl IntoIterator<Item = String>) -> Result<Options> {
+@@ -171,29 +213,29 @@ fn options(args: impl IntoIterator<Item = String>) -> Result<Options> {
              .context("--plant-library or RDD2_RUMOCA_PLANT_LIBRARY is required")?,
          plant_description: plant_description
              .context("--plant-description or RDD2_RUMOCA_PLANT_DESCRIPTION is required")?,
@@ -454,7 +462,7 @@ index e11a7c8..4119c5d 100644
  }
  
  fn rc_channels(mission_time: Option<f64>, plant: &Plant) -> [i32; 16] {
-@@ -204,15 +238,16 @@ fn rc_channels(mission_time: Option<f64>, plant: &Plant) -> [i32; 16] {
+@@ -204,15 +246,16 @@ fn rc_channels(mission_time: Option<f64>, plant: &Plant) -> [i32; 16] {
          channels[5] = 1000;
          return channels;
      };
@@ -479,7 +487,7 @@ index e11a7c8..4119c5d 100644
      if throttle_must_be_low(time) {
          channels[2] = 1000;
      } else {
-@@ -381,8 +416,7 @@ fn evaluate(report: &mut Report) {
+@@ -381,8 +424,7 @@ fn evaluate(report: &mut Report) {
              .push("vehicle had excessive vertical speed at completion".into());
      }
      report.passed = report.failures.is_empty();
@@ -489,7 +497,7 @@ index e11a7c8..4119c5d 100644
  }
  
  fn advance_square_corner(
-@@ -448,7 +482,11 @@ where
+@@ -448,7 +490,11 @@ where
      let warmup_target_ns = 5_000_000_u64;
      let ready_deadline = Instant::now() + Duration::from_secs(60);
      loop {
@@ -502,7 +510,7 @@ index e11a7c8..4119c5d 100644
          let inputs = protocol::lockstep_inputs(
              gyro,
              accel,
-@@ -466,7 +504,8 @@ where
+@@ -466,7 +512,8 @@ where
      }
  
      let target_ns = warmup_target_ns + (benchmark_seconds * 1.0e9).round() as u64;
@@ -512,7 +520,7 @@ index e11a7c8..4119c5d 100644
      let inputs = protocol::lockstep_inputs(
          gyro,
          accel,
-@@ -489,8 +528,12 @@ fn run_mission<F>(options: &Options, exchange: &mut F) -> Result<()>
+@@ -489,8 +536,12 @@ fn run_mission<F>(options: &Options, exchange: &mut F) -> Result<()>
  where
      F: FnMut(&protocol::LockstepInputs, Duration) -> Result<LockstepOutputs>,
  {
@@ -525,7 +533,7 @@ index e11a7c8..4119c5d 100644
          position_mission_continuous: true,
          mission_status_current: true,
          navigation_estimate_finite: true,
-@@ -500,7 +543,15 @@ where
+@@ -500,7 +551,15 @@ where
      let wall_start = Instant::now();
      let mut firmware_ready = false;
      let mut synthetic_gnss = SyntheticGnss::default();
@@ -542,7 +550,7 @@ index e11a7c8..4119c5d 100644
      let mut plan_sent = false;
      let mut mission_epoch = None;
      let mut last_outputs: Option<LockstepOutputs> = None;
-@@ -529,26 +580,38 @@ where
+@@ -529,26 +588,38 @@ where
          let channels = rc_channels(mission_time, &plant);
          let (gyro, accel) = plant.imu_flu();
          let target_time = ((simulated_time + options.plant_dt) * 1.0e9).round() as u64;
@@ -595,7 +603,7 @@ index e11a7c8..4119c5d 100644
          simulated_time += options.plant_dt;
          report.plant_steps += 1;
          let state = outputs.flight_state;
-@@ -619,7 +682,8 @@ where
+@@ -619,7 +690,8 @@ where
              .all(f32::is_finite);
          report.fresh_planner_reference_observed |= reference_current;
          if mission_time.is_some_and(|time| {
@@ -605,7 +613,7 @@ index e11a7c8..4119c5d 100644
          }) {
              let required = MissionStatusWire::SOURCE_READY
                  | MissionStatusWire::ORIGIN_VALID
-@@ -641,14 +705,14 @@ where
+@@ -641,14 +713,14 @@ where
                  &mut report.planner_corners_reached,
                  planner_origin_value,
                  planner_position,
@@ -622,7 +630,7 @@ index e11a7c8..4119c5d 100644
                  VEHICLE_CORNER_TOLERANCE_M,
              );
          }
-@@ -671,7 +735,8 @@ where
+@@ -671,7 +743,8 @@ where
          if mission_epoch.is_none() && status.mission_state == 1 {
              mission_epoch = Some(simulated_time);
          }
@@ -632,7 +640,7 @@ index e11a7c8..4119c5d 100644
              report.firmware_disarmed_after_flight = true;
          }
  
-@@ -708,6 +773,7 @@ where
+@@ -708,6 +781,7 @@ where
          last_outputs = Some(outputs);
      }
  
@@ -640,7 +648,7 @@ index e11a7c8..4119c5d 100644
      report.simulated_seconds = report.plant_steps as f64 * options.plant_dt;
      report.wall_seconds = wall_start.elapsed().as_secs_f64();
      report.speedup_over_realtime = report.simulated_seconds / report.wall_seconds;
-@@ -812,7 +878,7 @@ fn run_fastdyn_mission(args: impl IntoIterator<Item = String>) -> Result<()> {
+@@ -812,7 +886,7 @@ fn run_fastdyn_mission(args: impl IntoIterator<Item = String>) -> Result<()> {
  
  fn print_help() {
      println!(
@@ -649,15 +657,16 @@ index e11a7c8..4119c5d 100644
      );
  }
  
-@@ -824,6 +890,7 @@ fn main() -> Result<()> {
+@@ -824,6 +898,8 @@ fn main() -> Result<()> {
      };
  
      match command.to_string_lossy().as_ref() {
++        "betaflight-probe" => betaflight_probe::run(args),
 +        "ardupilot-probe" => ardupilot_probe::run(args),
          "fastdyn-ci" => fastdyn_ci::run(),
          "fastdyn-mission" => {
              let args = args
-@@ -870,7 +937,7 @@ mod tests {
+@@ -870,7 +946,7 @@ mod tests {
              vehicle_corners_reached: 5,
              navigation_estimate_finite: true,
              max_navigation_horizontal_error_m: 0.1,
@@ -666,7 +675,7 @@ index e11a7c8..4119c5d 100644
              maximum_gnss_generation: 441,
              maximum_reference_generation: 100,
              maximum_plan_generation: 1,
-@@ -904,16 +971,19 @@ mod tests {
+@@ -904,16 +980,19 @@ mod tests {
  
      #[test]
      fn takeoff_schedule_preserves_a_low_throttle_arming_window() {
@@ -693,7 +702,7 @@ index e11a7c8..4119c5d 100644
          );
      }
  
-@@ -926,7 +996,7 @@ mod tests {
+@@ -926,7 +1005,7 @@ mod tests {
              &mut progress,
              origin,
              origin,
@@ -702,7 +711,7 @@ index e11a7c8..4119c5d 100644
              VEHICLE_CORNER_TOLERANCE_M,
          );
          assert_eq!(progress, 1);
-@@ -934,15 +1004,15 @@ mod tests {
+@@ -934,15 +1013,15 @@ mod tests {
              &mut progress,
              origin,
              origin,
@@ -721,7 +730,7 @@ index e11a7c8..4119c5d 100644
              VEHICLE_CORNER_TOLERANCE_M,
          );
          assert_eq!(progress, 2);
-@@ -1063,7 +1133,7 @@ mod tests {
+@@ -1063,7 +1142,7 @@ mod tests {
          let result = (|| -> Result<()> {
              for _ in 0..4_000 {
                  target_ns += 625_000;
@@ -730,7 +739,7 @@ index e11a7c8..4119c5d 100644
                  let inputs = protocol::lockstep_inputs(
                      [0.0; 3],
                      [0.0, 0.0, 9.806_65],
-@@ -1096,7 +1166,7 @@ mod tests {
+@@ -1096,7 +1175,7 @@ mod tests {
              let mut last_quality = 0_i8;
              for _ in 0..320 {
                  target_ns += 625_000;
@@ -739,7 +748,7 @@ index e11a7c8..4119c5d 100644
                  let inputs = protocol::lockstep_inputs(
                      [0.0; 3],
                      [0.0, 0.0, 9.806_65],
-@@ -1125,7 +1195,7 @@ mod tests {
+@@ -1125,7 +1204,7 @@ mod tests {
              let mut last_flight_armed = false;
              for _ in 0..1_600 {
                  target_ns += 625_000;
@@ -2160,6 +2169,364 @@ index 0000000..b94b49c
 +        );
 +    }
 +}
+diff --git a/xtask/src/betaflight_probe.rs b/xtask/src/betaflight_probe.rs
+new file mode 100644
+index 0000000..575b640
+--- /dev/null
++++ b/xtask/src/betaflight_probe.rs
+@@ -0,0 +1,352 @@
++//! Real Betaflight SITL connected to the common FMI plant. Native HOLD/FIGURE8
++//! is an integration diagnostic: its phase law differs from the timed reference.
++use crate::physics::{self, Plant};
++use anyhow::{Result, bail};
++use serde_json::json;
++use std::{
++    fs::{self, File},
++    io::{BufWriter, Read, Write},
++    net::{TcpStream, UdpSocket},
++    path::PathBuf,
++    process::{Command, Stdio},
++    sync::{
++        Arc, Mutex,
++        atomic::{AtomicBool, Ordering},
++    },
++    thread,
++    time::{Duration, Instant},
++};
++
++fn request(s: &mut TcpStream, cmd: u8) -> Result<Vec<u8>> {
++    s.write_all(&[b'$', b'M', b'<', 0, cmd, cmd])?;
++    let deadline = Instant::now() + Duration::from_secs(3);
++    let mut prefix = Vec::new();
++    while Instant::now() < deadline {
++        let mut b = [0];
++        s.read_exact(&mut b)?;
++        prefix.push(b[0]);
++        if prefix.ends_with(b"$M!") {
++            bail!("MSP rejected command {cmd}");
++        }
++        if prefix.ends_with(b"$M>") {
++            let mut h = [0; 2];
++            s.read_exact(&mut h)?;
++            let mut data = vec![0; h[0] as usize + 1];
++            s.read_exact(&mut data)?;
++            let checksum = data[..data.len() - 1]
++                .iter()
++                .fold(h[0] ^ h[1], |v, b| v ^ b);
++            if checksum != data[data.len() - 1] {
++                bail!("MSP checksum mismatch");
++            }
++            data.pop();
++            if h[1] == cmd {
++                return Ok(data);
++            }
++            prefix.clear();
++        }
++    }
++    bail!("MSP timeout")
++}
++fn status(s: &mut TcpStream, boxes: &[u8]) -> Result<(u32, Vec<u8>)> {
++    let p = request(s, 101)?;
++    if p.len() < 21 {
++        bail!("short MSP status");
++    }
++    let n = p[15] as usize;
++    if p.len() < 21 + n {
++        bail!("short MSP extended status");
++    }
++    let flags = u32::from_le_bytes(p[17 + n..21 + n].try_into()?);
++    let bits: Vec<u8> = p[6..10]
++        .iter()
++        .chain(p[16..16 + n].iter())
++        .copied()
++        .collect();
++    let modes = boxes
++        .iter()
++        .enumerate()
++        .filter(|(i, _)| *i / 8 < bits.len() && bits[*i / 8] & (1 << (*i % 8)) != 0)
++        .map(|(_, id)| *id)
++        .collect();
++    Ok((flags, modes))
++}
++fn wait_status(
++    s: &mut TcpStream,
++    boxes: &[u8],
++    seconds: u64,
++    predicate: impl Fn(u32, &[u8]) -> bool,
++) -> Result<()> {
++    let start = Instant::now();
++    let mut last = (0, vec![]);
++    while start.elapsed() < Duration::from_secs(seconds) {
++        last = status(s, boxes)?;
++        if predicate(last.0, &last.1) {
++            return Ok(());
++        }
++        thread::sleep(Duration::from_millis(200));
++    }
++    bail!(
++        "Betaflight readiness timeout: arming_flags={} modes={:?}",
++        last.0,
++        last.1
++    )
++}
++// Packet attitude is chosen so upstream reconstructs Rz(-pi/2)*q_ENU,
++// i.e. the physical FLU-body to NWU-world rotation, including its bridge rotation.
++fn fdm(plant: &Plant, t: f64) -> Vec<u8> {
++    let [r, p, y] = plant.euler();
++    let (sr, cr) = (r / 2.).sin_cos();
++    let (sp, cp) = (p / 2.).sin_cos();
++    let (sy, cy) = (y / 2.).sin_cos();
++    let q = [
++        cr * cp * cy + sr * sp * sy,
++        sr * cp * cy - cr * sp * sy,
++        cr * sp * cy + sr * cp * sy,
++        cr * cp * sy - sr * sp * cy,
++    ];
++    let (g, a) = plant.imu_flu();
++    let pos = plant.position();
++    let v = plant.velocity();
++    let values = [
++        t,
++        g[0] as f64,
++        -g[1] as f64,
++        g[2] as f64,
++        -a[0] as f64,
++        -a[1] as f64,
++        -a[2] as f64,
++        q[3],
++        q[2],
++        q[1],
++        q[0],
++        v[0],
++        v[1],
++        v[2],
++        -86.9212 - pos[0] / (111319.49079327358 * 40.4237f64.to_radians().cos()),
++        40.4237 - pos[1] / 111319.49079327358,
++        200. + pos[2],
++        101325.,
++    ];
++    values.iter().flat_map(|x| x.to_le_bytes()).collect()
++}
++pub fn run(args: impl Iterator<Item = std::ffi::OsString>) -> Result<()> {
++    let args: Vec<_> = args.collect();
++    if args.len() != 3 {
++        bail!("betaflight-probe BINARY PLANT_DIRECTORY OUTPUT_DIRECTORY");
++    }
++    let binary = fs::canonicalize(&args[0])?;
++    let (library, description) = physics::host_paths(&PathBuf::from(&args[1]))?;
++    let out = PathBuf::from(&args[2]);
++    fs::create_dir_all(&out)?;
++    let out = fs::canonicalize(out)?;
++    if out.join("eeprom.bin").exists() {
++        bail!("use a fresh output directory to preserve prior evidence");
++    }
++    let config = "feature GPS\nset gps_provider = VIRTUAL\nset debug_mode = FLIGHT_PLAN\nset failsafe_procedure = AUTO-LAND\naux 0 0 0 1700 2100 0 0\naux 1 56 1 1700 2100 0 0\naux 2 1 2 1700 2100 0 0\nset mag_calibration = 1,1,1\nset ap_hover_throttle = 1690\nset ap_yaw_mode = FIXED\nset ap_waypoint_hold_radius = 100\nwaypoint insert 0 40.4237000 -86.9212000 20150 30 hold 600 figure8\n";
++    fs::write(out.join("config.txt"), config)?;
++    let provision = Command::new(&binary)
++        .args(["--config", out.join("config.txt").to_str().unwrap()])
++        .current_dir(&out)
++        .output()?;
++    fs::write(
++        out.join("provision.log"),
++        [provision.stdout, provision.stderr].concat(),
++    )?;
++    if !provision.status.success() {
++        bail!("Betaflight configuration failed");
++    }
++    let motor = UdpSocket::bind("127.0.0.1:9002")?;
++    motor.set_nonblocking(true)?;
++    let socket = UdpSocket::bind("127.0.0.1:0")?;
++    let log = File::create(out.join("firmware.log"))?;
++    let mut child = Command::new("stdbuf")
++        .arg("-oL")
++        .arg(&binary)
++        .current_dir(&out)
++        .stdout(Stdio::from(log.try_clone()?))
++        .stderr(Stdio::from(log))
++        .spawn()?;
++    let stop = Arc::new(AtomicBool::new(false));
++    let channels = Arc::new(Mutex::new([1000u16; 16]));
++    {
++        let mut c = channels.lock().unwrap();
++        c[0] = 1500;
++        c[1] = 1500;
++        c[3] = 1500;
++    }
++    let worker_stop = stop.clone();
++    let worker_channels = channels.clone();
++    let csv = out.join("mission-trajectory.csv");
++    let plant_hash = physics::file_sha256(&library)?;
++    let worker = thread::spawn(move || -> Result<serde_json::Value> {
++        let mut plant = Plant::open(&library, &description)?;
++        let mut trajectory = BufWriter::new(File::create(csv)?);
++        writeln!(
++            trajectory,
++            "time_s,x_m,y_m,z_m,roll_rad,pitch_rad,yaw_rad,m1,m2,m3,m4"
++        )?;
++        let start = Instant::now();
++        let mut step = 0u64;
++        let mut max_alt: f64 = 0.;
++        let mut raw = [0f32; 4];
++        let mut last_motor = Instant::now();
++        let mut motor_packets = 0u64;
++        while !worker_stop.load(Ordering::Relaxed) {
++            let t = step as f64 * 0.0025;
++            let mut rc = t.to_le_bytes().to_vec();
++            for c in *worker_channels.lock().unwrap() {
++                rc.extend(c.to_le_bytes());
++            }
++            socket.send_to(&rc, "127.0.0.1:9004")?;
++            socket.send_to(&fdm(&plant, t), "127.0.0.1:9003")?;
++            loop {
++                let mut buf = [0u8; 64];
++                match motor.recv_from(&mut buf) {
++                    Ok((n, peer)) => {
++                        if n != 16 || !peer.ip().is_loopback() {
++                            bail!("invalid motor datagram {n}");
++                        }
++                        raw = std::array::from_fn(|i| {
++                            f32::from_le_bytes(buf[i * 4..i * 4 + 4].try_into().unwrap())
++                        });
++                        if !raw.iter().all(|x| x.is_finite() && (0.0..=1.0).contains(x)) {
++                            bail!("invalid motor values {raw:?}");
++                        }
++                        last_motor = Instant::now();
++                        motor_packets += 1;
++                    }
++                    Err(e) if e.kind() == std::io::ErrorKind::WouldBlock => break,
++                    Err(e) => return Err(e.into()),
++                }
++            }
++            if t > 2. && last_motor.elapsed() > Duration::from_millis(500) {
++                bail!("Betaflight motor stream stale");
++            }
++            let m = [raw[1], raw[0], raw[2], raw[3]];
++            for _ in 0..4 {
++                plant.step(m, 0.000625)?;
++            }
++            step += 1;
++            let p = plant.position();
++            let e = plant.euler();
++            max_alt = max_alt.max(p[2]);
++            writeln!(
++                trajectory,
++                "{},{},{},{},{},{},{},{},{},{},{}",
++                step as f64 * 0.0025,
++                p[0],
++                p[1],
++                p[2],
++                e[0],
++                e[1],
++                e[2],
++                m[0],
++                m[1],
++                m[2],
++                m[3]
++            )?;
++            if !p.iter().chain(e.iter()).all(|x| x.is_finite())
++                || p[0].abs() > 5.
++                || p[1].abs() > 5.
++                || p[2] > 4.
++                || e[0].abs() > 0.8
++                || e[1].abs() > 0.8
++            {
++                bail!("flight bounds exceeded: position={p:?}, attitude={e:?}");
++            }
++            let deadline = start + Duration::from_secs_f64(step as f64 * 0.0025);
++            if deadline > Instant::now() {
++                thread::sleep(deadline - Instant::now());
++            }
++        }
++        trajectory.flush()?;
++        Ok(
++            json!({"simulated_seconds":step as f64*0.0025,"maximum_altitude_m":max_alt,"motor_packets":motor_packets,"final_position_enu_m":plant.position()}),
++        )
++    });
++    let mut phase = "connect";
++    let mut holding_samples = 0u64;
++    let mut telemetry = BufWriter::new(File::create(out.join("mission-status.csv"))?);
++    writeln!(telemetry, "sample,nav_state,abort_reason,waypoint_index")?;
++    let result = (|| -> Result<()> {
++        let deadline = Instant::now() + Duration::from_secs(10);
++        let mut s = loop {
++            match TcpStream::connect("127.0.0.1:5761") {
++                Ok(s) => break s,
++                Err(e) => {
++                    if Instant::now() > deadline {
++                        return Err(e.into());
++                    }
++                    thread::sleep(Duration::from_millis(100));
++                }
++            }
++        };
++        s.set_read_timeout(Some(Duration::from_secs(3)))?;
++        s.set_write_timeout(Some(Duration::from_secs(3)))?;
++        thread::sleep(Duration::from_secs(2));
++        let boxes = request(&mut s, 119)?;
++        phase = "navigation readiness";
++        wait_status(&mut s, &boxes, 40, |f, _| f == 0)?;
++        request(&mut s, 205)?;
++        thread::sleep(Duration::from_secs(2));
++        wait_status(&mut s, &boxes, 20, |f, _| f == 0)?;
++        phase = "arming";
++        {
++            let mut c = channels.lock().unwrap();
++            c[6] = 1800;
++            c[4] = 1800;
++        }
++        wait_status(&mut s, &boxes, 8, |_, m| m.contains(&0))?;
++        phase = "takeoff";
++        channels.lock().unwrap()[2] = 1700;
++        thread::sleep(Duration::from_secs(3));
++        phase = "engage native figure-eight";
++        channels.lock().unwrap()[5] = 1800;
++        wait_status(&mut s, &boxes, 10, |_, m| {
++            [56, 3, 11].iter().all(|x| m.contains(x))
++        })?;
++        channels.lock().unwrap()[2] = 1300;
++        phase = "native figure-eight window";
++        for sample in 0..125 {
++            let (_, m) = status(&mut s, &boxes)?;
++            if ![0, 56, 3, 11].iter().all(|id| m.contains(id)) {
++                bail!("lost autonomous armed modes during figure-eight: {m:?}");
++            }
++            let d = request(&mut s, 254)?;
++            if d.len() < 6 {
++                bail!("short mission debug telemetry");
++            }
++            let state = i16::from_le_bytes(d[0..2].try_into()?);
++            let abort = i16::from_le_bytes(d[2..4].try_into()?);
++            let index = i16::from_le_bytes(d[4..6].try_into()?);
++            writeln!(telemetry, "{sample},{state},{abort},{index}")?;
++            if state == 2 && abort == 0 {
++                holding_samples += 1;
++            }
++            if state == 5 || abort != 0 {
++                bail!("native mission aborted: state={state} reason={abort}");
++            }
++            thread::sleep(Duration::from_millis(200));
++        }
++        if holding_samples < 100 {
++            bail!("native figure-eight HOLD not observed for at least 100 samples");
++        }
++        channels.lock().unwrap()[4] = 1000;
++        phase = "completed diagnostic";
++        Ok(())
++    })();
++    stop.store(true, Ordering::Relaxed);
++    let worker_result = worker
++        .join()
++        .map_err(|_| anyhow::anyhow!("plant worker panicked"))?;
++    let _ = child.kill();
++    let _ = child.wait();
++    let report = json!({"adapter":"betaflight","phase":phase,"native_holding_samples":holding_samples,"passed":result.is_ok()&&worker_result.is_ok(),"plant_sha256":plant_hash,"executable_sha256":physics::file_sha256(&binary)?,"qualification":"integration only; native figure-eight phase differs from timed common reference; no landing qualification; wall-clock coupled SITL","control_error":result.as_ref().err().map(|e|format!("{e:#}")),"plant_error":worker_result.as_ref().err().map(|e|format!("{e:#}")),"plant":worker_result.as_ref().ok()});
++    telemetry.flush()?;
++    fs::write(out.join("report.json"), serde_json::to_vec_pretty(&report)?)?;
++    println!("{report}");
++    result?;
++    worker_result?;
++    Ok(())
++}
 diff --git a/xtask/src/cognipilot.rs b/xtask/src/cognipilot.rs
 new file mode 100644
 index 0000000..5c753ae
@@ -2447,10 +2814,10 @@ index 0000000..5c753ae
 +}
 diff --git a/xtask/src/cognipilot_reference.rs b/xtask/src/cognipilot_reference.rs
 new file mode 100644
-index 0000000..d12424e
+index 0000000..780d5e5
 --- /dev/null
 +++ b/xtask/src/cognipilot_reference.rs
-@@ -0,0 +1,234 @@
+@@ -0,0 +1,243 @@
 +//! Shared square reference diagnostic. Takeoff/landing still use the legacy
 +//! simulator-assisted throttle law; this is not full sensor/control parity.
 +use crate::{
@@ -2499,6 +2866,11 @@ index 0000000..d12424e
 +    if (options.plant_dt - 0.000625).abs() > 1e-12 {
 +        bail!("shared reference diagnostic requires 1600 Hz");
 +    }
++    let sample = if options.figure_eight {
++        reference::figure_eight
++    } else {
++        reference::sample
++    };
 +    let mut plant = Plant::open(&options.plant_library, &options.plant_description)?;
 +    let mut adapter = CogniPilotAdapter {
 +        exchange,
@@ -2515,8 +2887,12 @@ index 0000000..d12424e
 +                .or(options.firmware_elf.as_ref())
 +                .context("firmware path missing")?,
 +        )?,
-+        qualification: "shared square reference diagnostic; legacy simulator-assisted takeoff/landing and unmatched sensor paths",
-+        reference_id: reference::ID,
++        qualification: "shared trajectory reference diagnostic; legacy simulator-assisted takeoff/landing and unmatched sensor paths",
++        reference_id: if options.figure_eight {
++            "enu-figure-eight-v1"
++        } else {
++            reference::ID
++        },
 +        adapter: "cognipilot",
 +        ..Report::default()
 +    };
@@ -2540,7 +2916,7 @@ index 0000000..d12424e
 +                if held_reference.is_none()
 +                    || (target_ns - report.mission_epoch_ns.unwrap()) % 50_000_000 == 0
 +                {
-+                    let r = reference::sample((t - 8.).max(0.));
++                    let r = sample((t - 8.).max(0.));
 +                    held_reference = Some((target_ns, r));
 +                    if (8.0..33.0).contains(&t) {
 +                        report.references_sent += 1;
@@ -2630,7 +3006,7 @@ index 0000000..d12424e
 +                {
 +                    bail!("lost armed position mode or navigation during reference");
 +                }
-+                let r = reference::sample(t - 8.);
++                let r = sample(t - 8.);
 +                let err: f64 = p
 +                    .iter()
 +                    .zip(r.position_enu_m)
@@ -3005,10 +3381,10 @@ index 0000000..037c2ad
 +}
 diff --git a/xtask/src/reference.rs b/xtask/src/reference.rs
 new file mode 100644
-index 0000000..cd93247
+index 0000000..447c22e
 --- /dev/null
 +++ b/xtask/src/reference.rs
-@@ -0,0 +1,55 @@
+@@ -0,0 +1,91 @@
 +//! Stack-independent diagnostic reference; not the legacy RDD2 qualification.
 +use serde::Serialize;
 +#[derive(Clone, Copy, Debug, Serialize)]
@@ -3062,5 +3438,41 @@ index 0000000..cd93247
 +        let derivative =
 +            (sample(t + h).position_enu_m[0] - sample(t - h).position_enu_m[0]) / (2. * h);
 +        assert!((derivative - sample(t).velocity_enu_m_s[0]).abs() < 1e-9);
++    }
++}
++
++/// One Gerono figure eight over 20 seconds, with minimum-jerk phase so
++/// position, velocity and acceleration join the endpoint holds smoothly.
++/// Extents: +/- 1 m east, +/- 0.5 m north; altitude: 1.5 m.
++pub fn figure_eight(time_s: f64) -> Reference {
++    assert!(time_s.is_finite());
++    let u = time_s.clamp(0., 20.) / 20.;
++    let phase = std::f64::consts::TAU * u.powi(3) * (10. + u * (-15. + 6. * u));
++    let rate = std::f64::consts::TAU * 30. * u * u * (1. - u) * (1. - u) / 20.;
++    Reference {
++        position_enu_m: [phase.sin(), phase.sin() * phase.cos(), 1.5],
++        velocity_enu_m_s: [phase.cos() * rate, (2. * phase).cos() * rate, 0.],
++        yaw_enu_rad: 0.,
++    }
++}
++#[cfg(test)]
++mod figure_eight_tests {
++    use super::*;
++    #[test]
++    fn closed_smooth_and_correct_derivative() {
++        for t in [-1., 0., 20., 25.] {
++            let r = figure_eight(t);
++            assert!(r.position_enu_m[0].abs() < 1e-12 && r.position_enu_m[1].abs() < 1e-12);
++            assert_eq!(r.velocity_enu_m_s, [0.; 3]);
++        }
++        for t in [1., 5., 9., 15., 19.] {
++            let h = 1e-5;
++            for i in 0..3 {
++                let d = (figure_eight(t + h).position_enu_m[i]
++                    - figure_eight(t - h).position_enu_m[i])
++                    / (2. * h);
++                assert!((d - figure_eight(t).velocity_enu_m_s[i]).abs() < 1e-8);
++            }
++        }
 +    }
 +}

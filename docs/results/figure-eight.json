@@ -1,0 +1,66 @@
+{
+  "cognipilot": {
+    "passed": true,
+    "plant_sha256": "2b840fdee2a15aeeb80473f6ed6fa97a2404f7eefeb78d622e75df78e465fafa",
+    "description_sha256": "0723b221f152cf4535e829c03922aeea7f8a70d48965813bb1a2f59afb7d5d28",
+    "executable_sha256": "50c1c3a335eedc5e633ab2db1bdc0812468bd364d5e51b9a6e5d07b43f7616dd",
+    "qualification": "shared trajectory reference diagnostic; legacy simulator-assisted takeoff/landing and unmatched sensor paths",
+    "reference_id": "enu-figure-eight-v1",
+    "adapter": "cognipilot",
+    "simulated_seconds": 44.0,
+    "mission_epoch_ns": 500000000,
+    "steps": 70400,
+    "reference_samples": 40000,
+    "references_sent": 500,
+    "reference_echo_checks": 31500,
+    "position_rmse_m": 0.1298993219645614,
+    "position_max_error_m": 0.32332841339451696,
+    "maximum_altitude_m": 1.5370205364562415,
+    "final_position_enu_m": [
+      0.1251083040964636,
+      -0.10471645764781458,
+      0.09836555833226364
+    ],
+    "armed_observed": true,
+    "final_armed": false,
+    "exchange_metrics": {
+      "samples": 70400,
+      "round_trip_mean_us": 116.07151762783734,
+      "round_trip_stddev_us": 69.90406837889837,
+      "round_trip_p95_us": 174.106,
+      "round_trip_max_us": 3573.87,
+      "armed_motor_samples": 252796,
+      "armed_motor_samples_at_limit": 3200
+    },
+    "error": null,
+    "navigation_origin_enu_m": [
+      0.0,
+      0.0,
+      0.09800000000001319
+    ]
+  },
+  "betaflight": {
+    "adapter": "betaflight",
+    "control_error": null,
+    "executable_sha256": "b77543e3df275d8fc58a7dd7f1a7b17eaf6e20c3fba87390de6334a4a849990e",
+    "native_holding_samples": 119,
+    "passed": true,
+    "phase": "completed diagnostic",
+    "plant": {
+      "final_position_enu_m": [
+        0.22171698165414364,
+        0.23456640787677893,
+        1.488166287154042
+      ],
+      "maximum_altitude_m": 2.233707430126282,
+      "motor_packets": 14845,
+      "simulated_seconds": 37.68
+    },
+    "plant_error": null,
+    "plant_sha256": "2b840fdee2a15aeeb80473f6ed6fa97a2404f7eefeb78d622e75df78e465fafa",
+    "qualification": "integration only; native figure-eight phase differs from timed common reference; no landing qualification; wall-clock coupled SITL"
+  },
+  "comparison_qualified": false,
+  "scope": "Identical-drone Betaflight/CogniPilot autonomous figure-eight semester project",
+  "betaflight_revision": "744f95fa31542c4c906f18072348a366ab11b6b7"
+}
