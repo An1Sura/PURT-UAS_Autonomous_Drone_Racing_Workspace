@@ -44,22 +44,6 @@
         "sensor_status": "declared ingress only; internal sensor paths differ",
         "stack": "cognipilot",
         "tracking_lag_factor": 1.2
-      },
-      {
-        "arm_takeoff_s": 20.0,
-        "estimator_warmup_s": 90.0,
-        "lag_s": 0.1,
-        "landing_s": 10.0,
-        "limits_status": "assumed",
-        "max_lateral_accel_m_s2": 2.0,
-        "max_speed_m_s": 2.0,
-        "mode": "guided",
-        "sensor_delay_ms": 0.0,
-        "sensor_noise_std_m": 0.0,
-        "sensor_rate_hz": 1600.0,
-        "sensor_status": "declared ingress only; internal sensor paths differ",
-        "stack": "ardupilot",
-        "tracking_lag_factor": 1.2
       }
     ],
     "scale": 1.0,
@@ -135,5 +119,6 @@
   "timed_reference_parity": false,
   "touchdown_altitude_m": 0.09887278979467552,
   "yaw_i": 20,
-  "yaw_p": 45
+  "yaw_p": 45,
+  "archive_scope_note": "Retained measurements are unchanged. Retired-stack entries and unused profiles omitted; original report remains in Git history. Paired comparisons with the retired stack do not establish current two-stack parity."
 }

@@ -14,3 +14,4 @@ waypoint insert 1 40.4237000 -86.9212000 20150 30 land 0 none
 set p_yaw = 45
 set i_yaw = 20
 set ap_yaw_p = 30
+

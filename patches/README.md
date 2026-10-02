@@ -10,19 +10,9 @@ changes, without vendoring their build trees or changing upstream repositories.
 | `CogniPilot/rumoca` | `4d0e521d9a0bd2527808dbce2c5689834d1a0349` | `rumoca-runtime-fixes.patch` |
 | `CogniPilot/modelica_models` | `a41f7c0c00b55c1bf54f03c9b66b901ba8e43c6f` | `modelica-report-fixes.patch` |
 
-The firmware patch adds the shared sensor/actuator boundary, CogniPilot adapter,
-mission fixtures, metrics, tests, the ArduPilot JSON connection probe, and a
-bounded Guided flight diagnostic with a stack-independent reference. It also
-adds CogniPilot external-reference ingress, estimator-origin metadata, and the
-matching native diagnostic; rebuild runner and firmware together after applying
-this ABI-changing patch. See [shared-reference validation](../docs/shared-reference.md).
-The patch also adds the smooth timed figure-eight generator and the native Rust
-Betaflight/FMI diagnostic; see [figure-eight runs](../docs/figure-eight.md).
-Betaflight source is unmodified and pinned to `744f95fa31542c4c906f18072348a366ab11b6b7`.
-The ArduPilot source itself is unmodified; see [its build and usage guide](../docs/ardupilot-adapter.md). The compiler patch fixes deferred clock
-assertion evaluation and the Python package vendor hash. The model patch fixes
-signal selection and report provenance paths. Physics, controller gains and
-acceptance thresholds are unchanged.
+The firmware patch adds the shared sensor/actuator boundary, CogniPilot external-reference ingress, a smooth timed figure-eight generator, the native Betaflight/FMI diagnostic, and the two-stack simulation web server. Rebuild runner and firmware together after applying the patch. Betaflight is pinned to `744f95fa31542c4c906f18072348a366ab11b6b7`.
+
+The compiler patch fixes deferred clock assertion evaluation and the Python package vendor hash. The model patch fixes signal selection and report provenance paths.
 
 ## Apply once on a fresh workspace
 
@@ -64,4 +54,4 @@ workflows remain available. Generated binaries, caches, VM configuration and
 large simulation logs are intentionally outside this repository.
 
 Read [validation and limits](../docs/rdd2-validation.md) before interpreting a
-successful SIL result as a complete four-stack benchmark.
+successful SIL result as a matched two-stack benchmark.

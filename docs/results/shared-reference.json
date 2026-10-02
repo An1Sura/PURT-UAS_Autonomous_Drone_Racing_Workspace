@@ -6,10 +6,8 @@
   "maximum_command_value_delta": 2.3869795029440866e-15,
   "maximum_relative_timestamp_delta_s": 1.4210854715202004e-14,
   "cognipilot_rmse_m": 0.04714864203829081,
-  "ardupilot_rmse_m": 0.0625157059758463,
   "cognipilot_max_error_m": 0.08641994645611346,
-  "ardupilot_max_error_m": 0.09441015916022964,
   "cognipilot_run": "cognipilot-reference",
-  "ardupilot_run": "run-1790626738525660961-361751",
-  "qualification": "matched square reference and plant; sensor paths, takeoff and landing remain unmatched; no ranking"
+  "qualification": "matched square reference and plant; sensor paths, takeoff and landing remain unmatched; no ranking",
+  "archive_scope_note": "Retained measurements are unchanged. Retired-stack entries and unused profiles omitted; original report remains in Git history. Paired comparisons with the retired stack do not establish current two-stack parity."
 }

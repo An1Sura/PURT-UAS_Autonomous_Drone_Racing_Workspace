@@ -48,22 +48,6 @@
       "sensor_noise_std_m": 0,
       "limits_status": "assumed",
       "sensor_status": "declared ingress only; internal sensor paths differ"
-    },
-    {
-      "stack": "ardupilot",
-      "mode": "guided",
-      "max_speed_m_s": 2.0,
-      "max_lateral_accel_m_s2": 2.0,
-      "tracking_lag_factor": 1.2,
-      "lag_s": 0.1,
-      "arm_takeoff_s": 20,
-      "estimator_warmup_s": 90,
-      "landing_s": 10,
-      "sensor_rate_hz": 1600,
-      "sensor_delay_ms": 0,
-      "sensor_noise_std_m": 0,
-      "limits_status": "assumed",
-      "sensor_status": "declared ingress only; internal sensor paths differ"
     }
   ],
   "sweep_scales": [

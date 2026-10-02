@@ -1,211 +1,38 @@
-# Autonomous Drone Racing Benchmark
+# Autonomous Drone Benchmark
 
-The semester goal is to fly **two identical drones autonomously through a
-figure eight**, one running **Betaflight** and one running **CogniPilot**, and
-compare their tracking and timing performance. Simulation develops the waypoint,
-control-input and measurement software before physical flight tests.
+Compare **Betaflight and CogniPilot** flying an autonomous figure eight on the same Rumoca-generated quadrotor plant.
 
-**Current milestone:** Betaflight, CogniPilot and ArduPilot have flown figure-eight
-diagnostics on the same Rumoca-generated quadrotor model. CogniPilot and ArduPilot
-now follow the same configurable timed reference; Betaflight uses its native
-figure-eight planner.
-Their timing, sensor paths and takeoff/landing differ, so these runs are
-integration evidence, **not a performance ranking**. See [the figure-eight
-results and run instructions](docs/figure-eight.md).
+[Flight Simulation & Stats](https://an1sura.github.io/autonomous-drone-bench/sim/) · [VM-connected simulation](http://127.0.0.1:8766/sim/)
 
-[Editable size/timing planner](https://an1sura.github.io/autonomous-drone-bench/sim/) ·
-[Three-stack replay](https://an1sura.github.io/autonomous-drone-bench/replay/) ·
-[Timing rundown](docs/timing-rundown.md) · [PURT fit and survey](docs/purt-environment.md)
+The fixed course is **8 × 4 m**, at **1.5 m altitude**, with **one requested 45-second lap**, hold and landing. The page shows actual firmware recordings and fixed stats. PURT's approximate 53.34 × 28.956 × 9.144 m envelope is drawn over the black grid; current calibrated coverage remains unverified.
 
-The physical drones are intended to be identical. The current RDD2 model is a
-shared test vehicle, not yet a measured calibration of those drones. Hardware
-firmware versions and the source of autonomous position feedback still need to
-be identified. Assembling the CogniPilot drone and validating its timing/drivers
-remain hardware work alongside this software effort.
+## Run locally
 
-## What this project does
-
-The simulator acts as the drone: it produces sensor readings, receives motor
-commands from the flight software, and calculates the resulting motion. The
-runner records the flight so performance can be measured and experiments can
-be repeated.
-
-```mermaid
-flowchart LR
-    R[Trajectory and experiment settings] --> B[Benchmark runner]
-    B --> A[Flight-stack adapter]
-    A --> F[Selected flight stack]
-    F --> M[Motor commands]
-    M --> P[Shared quadrotor physics]
-    P --> S[Sensor observations]
-    S --> A
-    P --> L[Recorded motion and metrics]
-    B --> L
-```
-
-One stack runs at a time. Betaflight and CogniPilot are the current priority.
-The previous ArduPilot square-flight work remains available as background;
-PX4 is outside the semester scope.
-
-The eventual comparison must hold these conditions constant:
-
-- Trajectory, starting position and attitude, and control level being tested.
-- Quadrotor dynamics, motor order, actuator limits and command interpretation.
-- Sensor models, update rates, noise, delays and disturbances.
-- Simulation clock, logging definitions and evaluation windows.
-
-Shared physics now supports Betaflight and CogniPilot figure-eight diagnostics.
-Matching sensor conditions and takeoff/landing remain active development work.
-
-## Current implementation
-
-| Flight stack | Implemented and exercised | Remaining work |
-| --- | --- | --- |
-| **CogniPilot** | Real Zephyr firmware, shared physics, timed figure eight, landed after a 44-second run; 13.0 cm RMS tracking error | Standardize takeoff, sensors and timing; connect the selected hardware feedback system |
-| **Betaflight** | Pinned development SITL, streamed sensors/motors, native autonomous figure-eight flight on the same physics | Accept the exact timed common reference; standardize sensors, timing and landing; verify hardware firmware support |
-| **ArduPilot** | Earlier square-flight adapter and measurements | Retained background work |
-| **PX4** | Architecture candidate | Outside current semester scope |
-
-The project builds on the **CogniPilot development workspace**. Modelica defines
-the plant, Rumoca compiles it into an FMI simulation artifact with generated C,
-and the native Rust runner exchanges sensor and actuator data with flight
-software. Devenv coordinates dependencies and tasks; each source repository
-retains its own native build workflow.
-
-## Current figure-eight results
-
-CogniPilot completed a 44-second run, including takeoff, a 20-second figure eight,
-a five-second hold and landing. Its 3D tracking RMS error was **0.12990 m**, with
-**0.32333 m** maximum error over the 25-second scored window. Betaflight completed
-a 25-second autonomous pattern window on the same plant, with native HOLD mode
-confirmed in 119 telemetry samples. Betaflight has no comparable timed tracking
-score yet. See [full results and limitations](docs/figure-eight.md).
-
-The [October 1 Betaflight tuning experiments](docs/betaflight-tuning.md) reduce
-simulated yaw/altitude oscillation with model-specific yaw integral tuning.
-The shared physics remain unchanged; an intermittent estimator abort is still
-open. These altitude diagnostics are not CogniPilot-versus-Betaflight tracking
-scores. The updated [3D flight replay](https://an1sura.github.io/autonomous-drone-bench/replay/)
-shows the tuned Betaflight flight, its paired baseline and the CogniPilot recording,
-with orbit, chase, onboard and top cameras.
-
-## Earlier square-flight evidence
-
-These are recorded simulation results, not physical flight measurements.
-
-| Evidence | Observed result |
-| --- | --- |
-| CogniPilot baseline | 44 simulated seconds; takeoff, square flight, landing and disarming pass |
-| CogniPilot regression | Recorded trajectory remains byte-identical after adding the ArduPilot diagnostic |
-| ArduPilot connection probe | 8,000 contiguous steps at 1,600 Hz, with no motor actuation |
-| ArduPilot Guided flight | 232,000 contiguous steps over 145 simulated seconds; takeoff, square, landing and disarming pass |
-| ArduPilot position tracking | 0.06252 m RMS error; 0.09441 m maximum error over the 25-second square-and-hold window |
-| Motor response checks | All four rotors produce the expected roll, pitch and yaw response signs |
-| Shared-reference diagnostic | Both stacks receive 500 matching position/velocity/yaw samples; CogniPilot RMS error 0.04715 m, ArduPilot 0.06252 m; sensor parity remains unqualified |
-| Native unit/protocol tests | 37 tests pass, plus two explicitly run native firmware integration tests |
-
-The ArduPilot reference is a **0.5 m square at 1.5 m altitude**, with four
-five-second minimum-jerk edges and a five-second hold. Its 145-second run
-includes a 90-second estimator warmup. Normal arming checks remain enabled.
-Simulation seconds describe the vehicle's simulated clock, not the computer's
-execution time.
-
-The tracking figures are 3D distances between plant position and the continuous
-commanded reference, sampled during simulation time 110–135 seconds. They are
-single-run diagnostic measurements, not comparative scores. The new
-[shared-reference diagnostic](docs/shared-reference.md) scores both stacks over
-the same 25-second reference, with estimator-origin conversion for CogniPilot.
-CogniPilot's
-existing baseline uses its own planner and a simulator-assisted takeoff law;
-its navigation-estimate error is a different measurement and must not be
-compared with ArduPilot's trajectory-tracking RMS error.
-
-The pure Modelica qualification is still blocked by a packaged-runtime crash
-and separate estimator qualification failures. Passing SIL does not resolve
-those issues. See [verified results and limitations](docs/rdd2-validation.md).
-
-## Run the work
-
-The exercised environment is an Ubuntu 24.04 ARM64 Linux VM. Start from this
-repository, rather than cloning another CogniPilot workspace inside it:
+Use `./setup rdd2`, then the existing Devenv tasks:
 
 ```sh
-git clone https://github.com/An1Sura/autonomous-drone-bench.git
-cd autonomous-drone-bench
-./setup rdd2
-```
-
-On a **fresh checkout**, first follow the [dependency patch instructions](patches/README.md)
-to obtain the tested source revisions and apply the benchmark changes. The
-editable dependencies live under `src/`; this repository preserves the native
-runner changes as patches against documented commits. The existing development
-VM already has those patches applied.
-
-For the current two-stack figure-eight work, follow [the figure-eight run guide](docs/figure-eight.md).
-
-Inside the configured RDD2 environment:
-
-```sh
-# Exercise the shared boundary, protocol and reference tests.
-devenv -P rdd2 tasks run rdd2:benchmark:test
-
-# Run the existing CogniPilot simulated flight.
+devenv -P rdd2 tasks run rdd2:simulation:modelica:test
 devenv -P rdd2 tasks run rdd2:simulation:sil:test
+devenv -P rdd2 tasks run rdd2:simulation:compare
+devenv -P rdd2 tasks run rdd2:benchmark:betaflight:figure-eight
+devenv -P rdd2 tasks run rdd2:benchmark:cognipilot:figure-eight
+devenv -P rdd2 up mission-planner
 ```
 
-Build the pinned ArduPilot binary using the [ArduPilot setup guide](docs/ardupilot-adapter.md),
-then run:
+Apply the [tested dependency patches](patches/README.md) first on a fresh checkout. Native Cargo and West workflows remain available. The local web process runs only Betaflight and CogniPilot sequentially. Use **Rerun both** while the VM is on. GitHub Pages shows saved recordings.
 
-```sh
-# Runs CogniPilot SIL, the disarmed connection probe, then the Guided flight.
-devenv -P rdd2 tasks run rdd2:benchmark:ardupilot:flight
-```
+## What the comparison establishes
 
-Run one ArduPilot diagnostic at a time. The native Cargo and Waf workflows are
-also documented in the guide; Devenv does not replace those project tools.
+Both stacks use the same plant and requested figure-eight geometry. CogniPilot follows the shared timed reference; Betaflight uses a quantized native phase law. Sensors, execution timing and takeoff/landing differ. A passed run establishes this diagnostic completed, not sensor parity or a fair stack ranking. SIL is the software-first target; HIL reuses the same plant boundary as a stretch goal.
 
-### Where the results go
+## Guides
 
-| Location | Contents |
-| --- | --- |
-| `src/cerebri_rdd2/artifacts/sil/` | CogniPilot report and recorded flight trajectory |
-| `src/cerebri_rdd2/artifacts/ardupilot-probe/run-*/` | Disarmed probe report and firmware log |
-| `src/cerebri_rdd2/artifacts/ardupilot-flight/run-*/` | Flight report, measured trajectory, commanded trajectory, firmware log and exact parameters |
-
-Each flight report records plant and executable fingerprints, simulation step
-counts, exchange timing and completion or failure information. The trajectory
-CSV contains time, position and orientation. Raw run artifacts and generated
-binaries remain local; they are not committed as source code.
-
-To reproduce the earlier CogniPilot/ArduPilot shared square reference, see the
-[shared-reference guide and recorded results](docs/shared-reference.md).
-
-## What comes next
-
-1. Connect Betaflight to the exact timed figure-eight reference already used by
-   CogniPilot, with confirmed position/velocity frame and timestamp semantics.
-2. Match sensor rates, noise, delay, takeoff/landing and timing before publishing
-   comparative error, overshoot, actuator saturation, latency or jitter scores.
-3. Identify both drones' firmware/configuration and the position-feedback system;
-   calibrate the shared model to the identical hardware.
-4. Assemble the second drone, validate CogniPilot timing/drivers, and transfer the
-   tested waypoint/control interfaces to autonomous physical figure-eight flights.
-
-Current exchange timing includes transport and host scheduling. Betaflight's
-streamed SITL and CogniPilot's lockstep execution are not equivalent timing tests.
-HIL remains optional infrastructure work; PX4/ArduPilot expansion is not a
-requirement for the current semester objective.
-
-## Project guides
-
-- [Betaflight/CogniPilot figure-eight runs](docs/figure-eight.md)
-
-- [Shared-reference flights and results](docs/shared-reference.md)
-- [Common benchmark architecture and interface](docs/common-benchmark.md)
-- [ArduPilot setup, commands and diagnostic limits](docs/ardupilot-adapter.md)
-- [Verified results and unresolved blockers](docs/rdd2-validation.md)
-- [Tested dependency revisions and patches](patches/README.md)
-- [RDD2 workflow reference](docs/rdd2.md)
+- [Simulation page and startup](docs/mission-planner.md)
+- [Current timing rundown](docs/timing-rundown.md)
+- [Common benchmark architecture](docs/common-benchmark.md)
+- [Shared reference](docs/shared-reference.md)
+- [PURT evidence and survey](docs/purt-environment.md)
+- [RDD2 workflow](docs/rdd2.md)
 
 <details>
 <summary>Underlying CogniPilot workspace reference: profiles, tools and maintenance</summary>
@@ -392,7 +219,7 @@ devenv -P cubs2 up
 The first command runs the pure Modelica controller and physics with Rumoca.
 The second runs the CUBS2 64-bit Zephyr `native_sim` controller against Rumoca
 physics. The third rehosts the Cortex-M7 binary under FastDyn/QEMU and retains
-Rumoca physics. The fourth runs all three and gates their overlaid canonical
+Rumoca physics. The fourth runs both and gates their overlaid canonical
 trajectory logs. The fifth builds the aircraft image without touching hardware.
 The confirmed flash command deploys that firmware, and `up` runs the
 operator-side Electrode ground station plus its PPM bridge. See the
@@ -605,4 +432,4 @@ cache downloads.
 
 ## Connected Flight Simulation & Stats
 
-[Flight Simulation & Stats](https://an1sura.github.io/autonomous-drone-bench/sim/) now combines settings and recorded flights. Use the [VM-connected page](http://127.0.0.1:8766/sim/) to rerun all three native stacks using the fixed single-lap configuration. [Startup, job behavior and limits](docs/mission-planner.md).
+[Flight Simulation & Stats](https://an1sura.github.io/autonomous-drone-bench/sim/) now combines settings and recorded flights. Use the [VM-connected page](http://127.0.0.1:8766/sim/) to rerun both native stacks using the fixed single-lap configuration. [Startup, job behavior and limits](docs/mission-planner.md).

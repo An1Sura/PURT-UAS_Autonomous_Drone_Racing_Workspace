@@ -1,1 +1,17 @@
-{"id":"1790921200425581971","stacks":{"ardupilot":{"detail":"","recording":true,"state":"passed"},"betaflight":{"detail":"Error: Betaflight configuration failed","recording":false,"state":"failed"},"cognipilot":{"detail":"","recording":true,"state":"passed"}},"state":"complete"}
+{
+  "id": "1790921200425581971",
+  "stacks": {
+    "betaflight": {
+      "detail": "Error: Betaflight configuration failed",
+      "recording": false,
+      "state": "failed"
+    },
+    "cognipilot": {
+      "detail": "",
+      "recording": true,
+      "state": "passed"
+    }
+  },
+  "state": "complete",
+  "archive_scope_note": "Retained measurements are unchanged. Retired-stack entries and unused profiles omitted; original report remains in Git history. Paired comparisons with the retired stack do not establish current two-stack parity."
+}

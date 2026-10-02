@@ -215,12 +215,6 @@ let
       revision = "744f95fa31542c4c906f18072348a366ab11b6b7";
     }
     {
-      name = "ardupilot";
-      url = "https://github.com/ArduPilot/ardupilot.git";
-      branch = "master";
-      revision = "dbe792162d06cab66c3475fd5556bf7a120f119e";
-    }
-    {
       name = "csyn_ros2_bridge";
       url = "https://github.com/CogniPilot/csyn_ros2_bridge.git";
       submodules = true;
@@ -962,39 +956,7 @@ let
           after = [ "sources:ensure:cerebri_rdd2" ];
         };
 
-      "rdd2:benchmark:ardupilot:probe" =
-        (task "cerebri_rdd2" "Check the pinned ArduPilot JSON backend against the shared plant, disarmed." ''
-          test "$(git -C ${source "ardupilot"} rev-parse HEAD)" = dbe792162d06cab66c3475fd5556bf7a120f119e || {
-            echo 'ArduPilot source must match the tested Copter-4.7.1 revision.' >&2
-            exit 1
-          }
-          test -x ${source "ardupilot"}/build/sitl/bin/arducopter || {
-            echo 'Build ArduPilot with its native Waf workflow first; see docs/ardupilot-adapter.md.' >&2
-            exit 1
-          }
-          cargo run --release --locked --package cerebri-rdd2-xtask -- ardupilot-probe \
-            --executable ${source "ardupilot"}/build/sitl/bin/arducopter \
-            --plant-directory ${source "modelica_models"}/artifacts/vehicles/rdd2/plant/Vehicles_Rdd2_Plant \
-            --output "$PWD/artifacts/ardupilot-probe"
-        '')
-        // {
-          after = [
-            "sources:ensure:ardupilot"
-            "rdd2:simulation:sil:test"
-          ];
-        };
 
-      "rdd2:benchmark:ardupilot:flight" =
-        (task "cerebri_rdd2" "Run the bounded ArduPilot Guided flight diagnostic against the shared plant." ''
-          cargo run --release --locked --package cerebri-rdd2-xtask -- ardupilot-probe \
-            --flight-diagnostic \
-            --executable ${source "ardupilot"}/build/sitl/bin/arducopter \
-            --plant-directory ${source "modelica_models"}/artifacts/vehicles/rdd2/plant/Vehicles_Rdd2_Plant \
-            --output "$PWD/artifacts/ardupilot-flight"
-        '')
-        // {
-          after = [ "rdd2:benchmark:ardupilot:probe" ];
-        };
 
       "rdd2:benchmark:plan" =
         (task "cerebri_rdd2" "Calculate figure-eight size, timing, profiles and PURT fit from JSON." ''
@@ -1003,14 +965,6 @@ let
             "$PWD/artifacts/figure-plan"
         '');
 
-      "rdd2:benchmark:ardupilot:figure-eight" =
-        (task "cerebri_rdd2" "Fly ArduPilot Guided with the shared configurable timed reference." ''
-          cargo run --release --locked --package cerebri-rdd2-xtask -- ardupilot-probe \
-            --config ${root}/docs/config/figure-eight.json \
-            --executable ${source "ardupilot"}/build/sitl/bin/arducopter \
-            --plant-directory ${source "modelica_models"}/artifacts/vehicles/rdd2/plant/Vehicles_Rdd2_Plant \
-            --output "$PWD/artifacts/ardupilot-figure-eight"
-        '') // { after = [ "rdd2:benchmark:ardupilot:probe" "rdd2:benchmark:plan" ]; };
 
       "rdd2:benchmark:betaflight:build" =
         (task "betaflight" "Build the pinned Betaflight SITL with native flight planning." ''
