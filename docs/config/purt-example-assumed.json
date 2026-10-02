@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "name": "Assumed test box - NOT measured PURT",
+  "axis_convention": "ENU: x east, y north, z up; origin at surveyed floor marker",
+  "origin_status": "assumed",
+  "flyable_volume": {
+    "min_enu_m": [
+      -3,
+      -2,
+      0
+    ],
+    "max_enu_m": [
+      3,
+      2,
+      3
+    ],
+    "status": "assumed",
+    "reference": "synthetic 6 x 4 x 3 m example"
+  },
+  "mocap_coverage": {
+    "min_enu_m": [
+      -2.5,
+      -1.5,
+      0.3
+    ],
+    "max_enu_m": [
+      2.5,
+      1.5,
+      2.7
+    ],
+    "status": "assumed",
+    "reference": "synthetic smaller coverage box"
+  },
+  "safety_margin_m": 0.5,
+  "safety_margin_status": "assumed",
+  "obstacles": [],
+  "obstacle_inventory_status": "assumed empty for example",
+  "camera_count": null,
+  "camera_positions_enu_m": [],
+  "camera_status": "needs a real measurement",
+  "photo_evidence": "Available PPTX images show electronics and a schedule; no room photos available. No dimensions measured from photo.",
+  "room_shape_status": "needs a real measurement",
+  "ceiling_height_status": "needs a real measurement",
+  "floor_markings_status": "needs a real measurement",
+  "wall_net_status": "needs a real measurement"
+}

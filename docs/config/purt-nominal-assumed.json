@@ -1,0 +1,99 @@
+{
+  "schema_version": 1,
+  "name": "PURT nominal full-envelope coverage - ASSUMED",
+  "axis_convention": "ENU: x east, y north, z up; origin at surveyed floor marker",
+  "origin_status": "assumed",
+  "flyable_volume": {
+    "min_enu_m": [
+      -26.67,
+      -14.478,
+      0
+    ],
+    "max_enu_m": [
+      26.67,
+      14.478,
+      9.144
+    ],
+    "status": "assumed",
+    "reference": "Provisional box from user-supplied approximate 175 x 95 x 30 ft capture envelope; centre-floor origin assumed, not surveyed clear-flight bounds."
+  },
+  "mocap_coverage": {
+    "min_enu_m": [
+      -26.67,
+      -14.478,
+      0
+    ],
+    "max_enu_m": [
+      26.67,
+      14.478,
+      9.144
+    ],
+    "status": "assumed",
+    "reference": "Assumed coverage equals published envelope for upper-bound planning only; current QTM calibration required"
+  },
+  "safety_margin_m": 0.5,
+  "safety_margin_status": "assumed",
+  "obstacles": [],
+  "obstacle_inventory_status": "assumed empty ONLY for nominal upper-bound calculation",
+  "camera_count": null,
+  "camera_positions_enu_m": [],
+  "camera_status": "needs a real measurement; multiple tripod instruments visible but identities, complete camera count and calibrated positions cannot be determined",
+  "photo_evidence": "Five user-provided PURT-UAS images, October 2. Original photos are the evidence; no AI-filled pixels used for dimensions.",
+  "room_shape_status": "observed from photo: large hangar with rectangular wall bays; overall proportions not metrically recoverable",
+  "ceiling_height_status": "published 30 ft = 9.144 m; needs a real measurement of lowest obstruction",
+  "floor_markings_status": "observed from photo: concrete slab joints and worn yellow lines; spacing unknown",
+  "wall_net_status": "observed from photo: metal/insulated walls, large segmented hangar door, portable net frame in image 1 and mesh at mezzanine in image 3; complete flight-net enclosure not established",
+  "structural_obstacles_to_survey": [
+    "columns",
+    "mezzanine/stairs",
+    "portable net frames",
+    "fixed equipment and installed camera stands"
+  ],
+  "scene_cleanup": "Existing black grid background retained at user request; photos are evidence only.",
+  "published_facility": {
+    "floor_area_ft2": 20000,
+    "floor_area_m2": 1858.0608,
+    "ceiling_height_ft": 30,
+    "source": "https://engineering.purdue.edu/PURT/capabilities",
+    "status": "published facility description, not measured from photo"
+  },
+  "capture_envelope_source": {
+    "dimensions_ft": [
+      175,
+      95,
+      30
+    ],
+    "dimensions_m": [
+      53.34,
+      28.956,
+      9.144
+    ],
+    "floor_area_ft2": 16625,
+    "status": "user-supplied approximate capture volume; not interchangeable with 20000 ft2 total facility area"
+  },
+  "camera_descriptions": [
+    {
+      "count": 60,
+      "type": "Oqus 7+",
+      "source": "https://engineering.purdue.edu/PURT/capabilities"
+    },
+    {
+      "count": 58,
+      "type": "56 Oqus 700+p + 2 video cameras",
+      "source": "user-supplied calibration description; deployment/date unresolved"
+    }
+  ],
+  "sensor_capabilities": {
+    "published_frame_rates_hz": [
+      300,
+      1100
+    ],
+    "resolutions_megapixels": [
+      12,
+      3
+    ],
+    "capture_rate_is_not_end_to_end_latency": true,
+    "current_latency_ms": null,
+    "current_noise_distribution": null
+  }
+}

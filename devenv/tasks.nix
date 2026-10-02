@@ -996,6 +996,22 @@ let
           after = [ "rdd2:benchmark:ardupilot:probe" ];
         };
 
+      "rdd2:benchmark:plan" =
+        (task "cerebri_rdd2" "Calculate figure-eight size, timing, profiles and PURT fit from JSON." ''
+          cargo run --release --locked --package cerebri-rdd2-xtask -- figure-plan \
+            ${root}/docs/config/figure-eight.json ${root}/docs/config/purt-environment.json \
+            "$PWD/artifacts/figure-plan"
+        '');
+
+      "rdd2:benchmark:ardupilot:figure-eight" =
+        (task "cerebri_rdd2" "Fly ArduPilot Guided with the shared configurable timed reference." ''
+          cargo run --release --locked --package cerebri-rdd2-xtask -- ardupilot-probe \
+            --config ${root}/docs/config/figure-eight.json \
+            --executable ${source "ardupilot"}/build/sitl/bin/arducopter \
+            --plant-directory ${source "modelica_models"}/artifacts/vehicles/rdd2/plant/Vehicles_Rdd2_Plant \
+            --output "$PWD/artifacts/ardupilot-figure-eight"
+        '') // { after = [ "rdd2:benchmark:ardupilot:probe" "rdd2:benchmark:plan" ]; };
+
       "rdd2:benchmark:betaflight:build" =
         (task "betaflight" "Build the pinned Betaflight SITL with native flight planning." ''
           test "$(git rev-parse HEAD)" = 744f95fa31542c4c906f18072348a366ab11b6b7
@@ -1015,19 +1031,19 @@ let
           cargo run --release --locked --package cerebri-rdd2-xtask -- betaflight-probe \
             ${source "betaflight"}/obj/main/betaflight_SITL.elf \
             ${source "modelica_models"}/artifacts/vehicles/rdd2/plant/Vehicles_Rdd2_Plant \
-            "$PWD/artifacts/betaflight-figure-eight/run-$(date +%s%N)"
-        '') // { after = [ "rdd2:benchmark:betaflight:build" "rdd2:simulation:sil:test" ]; };
+            "$PWD/artifacts/betaflight-figure-eight/run-$(date +%s%N)" --config ${root}/docs/config/figure-eight.json
+        '') // { after = [ "rdd2:benchmark:betaflight:build" "rdd2:simulation:sil:test" "rdd2:benchmark:plan" ]; };
 
       "rdd2:benchmark:cognipilot:figure-eight" =
         (task "cerebri_rdd2" "Fly CogniPilot with the shared timed figure-eight reference." ''
           cargo run --release --locked --package cerebri-rdd2-xtask -- fastdyn-mission \
-            --figure-eight \
+            --config ${root}/docs/config/figure-eight.json \
             --native-sim "$PWD/build-native_sim/zephyr/zephyr.exe" \
             --shared-memory "$PWD/artifacts/cognipilot-figure-eight/lockstep.bin" \
             --plant-directory ${source "modelica_models"}/artifacts/vehicles/rdd2/plant/Vehicles_Rdd2_Plant \
             --report "$PWD/artifacts/cognipilot-figure-eight/report.json" \
             --trajectory "$PWD/artifacts/cognipilot-figure-eight/mission-trajectory.csv"
-        '') // { after = [ "rdd2:simulation:sil:test" ]; };
+        '') // { after = [ "rdd2:simulation:sil:test" "rdd2:benchmark:plan" ]; };
 
       "rdd2:benchmark:cognipilot:reference" =
         (task "cerebri_rdd2" "Fly CogniPilot with the shared time-indexed square reference." ''

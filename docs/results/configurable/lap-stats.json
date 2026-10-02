@@ -1,0 +1,42 @@
+[
+  {
+    "stack": "cognipilot",
+    "lap": 1,
+    "target_duration_s": 20.0,
+    "target_end_sim_s": 29.0,
+    "position_rmse_m": 0.1467444707554402,
+    "max_error_m": 0.32340633205414004,
+    "endpoint_error_m": 0.019935638686430706,
+    "samples": 32000
+  },
+  {
+    "stack": "cognipilot",
+    "lap": 2,
+    "target_duration_s": 20.0,
+    "target_end_sim_s": 49.0,
+    "position_rmse_m": 0.1466918506684279,
+    "max_error_m": 0.33321371719695103,
+    "endpoint_error_m": 0.01904525193053864,
+    "samples": 32000
+  },
+  {
+    "stack": "ardupilot",
+    "lap": 1,
+    "target_duration_s": 20.0,
+    "target_end_sim_s": 130.0,
+    "position_rmse_m": 0.10652626238893007,
+    "max_error_m": 0.2413112007301807,
+    "endpoint_error_m": 0.06417225283573662,
+    "samples": 32000
+  },
+  {
+    "stack": "ardupilot",
+    "lap": 2,
+    "target_duration_s": 20.0,
+    "target_end_sim_s": 150.0,
+    "position_rmse_m": 0.0936608323041423,
+    "max_error_m": 0.20399545356828455,
+    "endpoint_error_m": 0.056117184959543584,
+    "samples": 32000
+  }
+]

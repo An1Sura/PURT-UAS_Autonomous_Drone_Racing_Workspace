@@ -2,7 +2,7 @@
 
 ArduPilot is now connected to the same Rumoca-generated FMI plant as CogniPilot.
 It passes a disarmed transport test and an experimental Guided flight. Neither
-is a qualified four-stack comparison. Betaflight and PX4 remain unimplemented.
+is a qualified four-stack comparison. Betaflight now has a separate native-pattern diagnostic; PX4 remains unimplemented.
 
 The tested release is `Copter-4.7.1`, commit
 `dbe792162d06cab66c3475fd5556bf7a120f119e`. ArduPilot source is unmodified.
@@ -200,3 +200,20 @@ normal arm/takeoff/land acknowledgements and final disarmed status. Tracking
 RMSE was **0.06252 m**, maximum error **0.09441 m** over 40,000 physics samples;
 maximum flight altitude was **1.70516 m**. These are single-run diagnostics,
 not comparative benchmark scores. Unit/protocol/reference tests: **35 passed**.
+
+
+## Configurable figure-eight step (October 2)
+
+The separate `rdd2:benchmark:ardupilot:figure-eight` task now accepts the shared
+`docs/config/figure-eight.json` through `ardupilot-probe --config PATH`. It retains
+the pinned binary, motor impulse checks, normal arming and at least 90 seconds of
+estimator warmup. Position/velocity/yaw commands use the same 20 Hz timed
+reference as the configurable CogniPilot run. The two-lap test passed, including
+landing, with 0.09634 m overall RMSE over the reference plus terminal hold.
+The historical 0.06252 m square score above is not a figure-eight score.
+
+This pinned firmware uses `WP_SPD` (m/s) and `WP_ACC` (m/s²); the older
+`WPNAV_SPEED`/`WPNAV_ACCEL` equivalents multiply these values by 100. Parameter
+values are saved in each run's `probe.parm`. See [the timing rundown](timing-rundown.md)
+for per-lap errors, sensor/timing qualifications and reproducible tasks. ArduPilot
+results remain non-comparable until sensor, timing and takeoff conditions match.

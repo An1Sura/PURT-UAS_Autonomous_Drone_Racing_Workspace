@@ -1,0 +1,6 @@
+{
+  "cognipilot_commands": 900,
+  "ardupilot_commands": 900,
+  "max_setpoint_component_difference": 1.1157741397482823e-14,
+  "comparison": "position, velocity and yaw at matching mission-relative 20 Hz ticks; different absolute setup epochs"
+}

@@ -15,19 +15,23 @@ loading message when initialization fails.
 
 ## Recordings
 
-- **Betaflight landed, October 2:** `betaflight-landing/run-1`, yaw I = 20,
-  40.14 seconds; native figure-eight hold followed by a LAND waypoint and
-  automatic firmware disarm. Ground truth settled at 0.09837 m (vehicle centre),
-  with zero motor commands for over two seconds. See [recorded evidence](evidence/betaflight-landing-2026-10-02/report.json).
-- **Betaflight before tuning, October 1:** `betaflight-hover/baseline-final`,
-  yaw I = 80, 36.9675 seconds; historical baseline with no landing sequence.
-- **CogniPilot, September 28:** existing 44-second recorded figure-eight mission,
-  including takeoff, hold and landing.
+The current October 2 configuration is [figure-eight.json](../config/figure-eight.json).
+The [editable planner](../planner/) recalculates geometry and timing; it does not
+change existing recorded flights. The [rundown](../timing-rundown.md) distinguishes
+calculated requirements, actual run times and measured tracking errors.
 
-The Betaflight pair's provenance, metrics and unsuccessful repeat are documented
-in [the tuning report](../betaflight-tuning.md). CogniPilot's older recording and
-limitations are documented in [the figure-eight report](../figure-eight.md).
-The replaced September 28 Betaflight replay remains recoverable in Git history.
+- **Betaflight:** native pattern mapped from the config, 54.960 s recording,
+  native LAND and disarm on repeat. The first attempt aborted with estimator
+  reason 1 and is retained. This native phase law differs from the shared reference.
+- **CogniPilot:** two 20 s shared-reference laps, hold and assisted landing, 69 s
+  including setup and observation.
+- **ArduPilot:** the same two 20 s shared-reference laps, 90 s estimator warmup,
+  normal Guided takeoff and LAND, 165 s total. Purple identifies ArduPilot; the
+  requested orange Betaflight and blue CogniPilot colors are retained.
+- **Betaflight before tuning:** historical October 1 baseline; no landing.
+
+Current reports and 20 Hz trajectories are in [results/configurable](../results/configurable/).
+Earlier successful landing evidence and tuning reports remain historical.
 
 Embedded data are sampled at approximately 20 Hz from full-rate trajectory CSVs,
 with the exact final row retained. Columns are time in seconds, ENU position in
@@ -68,14 +72,8 @@ paths and end-state descriptions, export `source.html` to `index.html`, and
 verify playback and the GitHub Pages deployment. This is a required development
 workflow, not a browser-triggered simulation or an unattended CI promise.
 
-The October 2 change adds a 25-second native HOLD/figure-eight followed by a
-LAND waypoint. The runner fails on premature disarm, landing timeout, or failure
-to rest near the ground with zero motor commands for two seconds. Pre-landing
-altitude diagnostics are kept separately; the descent is not hover error.
-CogniPilot logic was unchanged, so its existing dated recording is retained.
-
-Validation on October 2: two consecutive native landing runs passed (40.14 s and
-41.43 s); the native Rust suite passed 40 tests with two ignored. The cumulative
-Cerebri patch applies cleanly to its pinned source. Earlier intermittent SITL
-startup and estimator failures remain documented; two passes are not a hardware
-flight qualification.
+The current configurable runner requires landing and stores the exact input
+configuration in the report/evidence. All three affected recordings were rerun
+on October 2. Native tests passed 43 cases with two ignored; browser/native
+geometry calculations agree. The earlier Betaflight abort remains visible in
+the evidence and rundown.

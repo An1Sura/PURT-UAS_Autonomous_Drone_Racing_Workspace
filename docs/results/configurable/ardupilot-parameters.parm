@@ -1,0 +1,16 @@
+# Connection-only baseline for ArduCopter Copter-4.7.1. No arming commands.
+# The shared plant owns the 1600 Hz physics step; the autopilot keeps its loop rate.
+SIM_RATE_HZ 1600
+FRAME_CLASS 1
+FRAME_TYPE 1
+MOT_PWM_MIN 1000
+MOT_PWM_MAX 2000
+SERVO1_FUNCTION 33
+SERVO2_FUNCTION 34
+SERVO3_FUNCTION 35
+SERVO4_FUNCTION 36
+AHRS_EKF_TYPE 3
+LOG_BACKEND_TYPE 0
+SERIAL0_PROTOCOL 1
+WP_SPD 2
+WP_ACC 2

@@ -1,0 +1,366 @@
+{
+  "config": {
+    "altitude_m": 1.5,
+    "center_enu_m": [
+      0.0,
+      0.0
+    ],
+    "end_hold_s": 5.0,
+    "height_m": 1.0,
+    "id": "figure-eight-scalable-v1",
+    "lap_time_s": 20.0,
+    "laps": 2,
+    "phase_law": "minimum_jerk_each_lap",
+    "profiles": [
+      {
+        "arm_takeoff_s": 5.0,
+        "estimator_warmup_s": 3.0,
+        "lag_s": 0.1,
+        "landing_s": 10.0,
+        "limits_status": "assumed",
+        "max_lateral_accel_m_s2": 2.0,
+        "max_speed_m_s": 2.0,
+        "mode": "native_pattern",
+        "sensor_delay_ms": 0.0,
+        "sensor_noise_std_m": 0.0,
+        "sensor_rate_hz": 400.0,
+        "sensor_status": "declared ingress only; internal sensor paths differ",
+        "stack": "betaflight",
+        "tracking_lag_factor": 1.2
+      },
+      {
+        "arm_takeoff_s": 8.0,
+        "estimator_warmup_s": 1.0,
+        "lag_s": 0.1,
+        "landing_s": 10.0,
+        "limits_status": "assumed",
+        "max_lateral_accel_m_s2": 2.0,
+        "max_speed_m_s": 2.0,
+        "mode": "external_reference",
+        "sensor_delay_ms": 0.0,
+        "sensor_noise_std_m": 0.0,
+        "sensor_rate_hz": 1600.0,
+        "sensor_status": "declared ingress only; internal sensor paths differ",
+        "stack": "cognipilot",
+        "tracking_lag_factor": 1.2
+      },
+      {
+        "arm_takeoff_s": 20.0,
+        "estimator_warmup_s": 90.0,
+        "lag_s": 0.1,
+        "landing_s": 10.0,
+        "limits_status": "assumed",
+        "max_lateral_accel_m_s2": 2.0,
+        "max_speed_m_s": 2.0,
+        "mode": "guided",
+        "sensor_delay_ms": 0.0,
+        "sensor_noise_std_m": 0.0,
+        "sensor_rate_hz": 1600.0,
+        "sensor_status": "declared ingress only; internal sensor paths differ",
+        "stack": "ardupilot",
+        "tracking_lag_factor": 1.2
+      }
+    ],
+    "scale": 1.0,
+    "schema_version": 1,
+    "sweep_lap_times_s": [
+      5.0,
+      10.0,
+      20.0,
+      30.0,
+      40.0
+    ],
+    "sweep_scales": [
+      0.5,
+      1.0,
+      2.0,
+      3.0
+    ],
+    "tracking_margin_m": 0.15,
+    "vehicle_radius_m": 0.4,
+    "width_m": 2.0,
+    "yaw_rad": 0.0
+  },
+  "environment": {
+    "axis_convention": "ENU: x east, y north, z up; origin at surveyed floor marker",
+    "camera_count": null,
+    "camera_descriptions": [
+      {
+        "count": 60,
+        "source": "https://engineering.purdue.edu/PURT/capabilities",
+        "type": "Oqus 7+"
+      },
+      {
+        "count": 58,
+        "source": "user-supplied calibration description; deployment/date unresolved",
+        "type": "56 Oqus 700+p + 2 video cameras"
+      }
+    ],
+    "camera_positions_enu_m": [],
+    "camera_status": "needs a real measurement; multiple tripod instruments visible but identities, complete camera count and calibrated positions cannot be determined",
+    "capture_envelope_source": {
+      "dimensions_ft": [
+        175,
+        95,
+        30
+      ],
+      "dimensions_m": [
+        53.34,
+        28.956,
+        9.144
+      ],
+      "floor_area_ft2": 16625,
+      "status": "user-supplied approximate capture volume; not interchangeable with 20000 ft2 total facility area"
+    },
+    "ceiling_height_status": "published 30 ft = 9.144 m; needs a real measurement of lowest obstruction",
+    "floor_markings_status": "observed from photo: concrete slab joints and worn yellow lines; spacing unknown",
+    "flyable_volume": {
+      "max_enu_m": [
+        26.67,
+        14.478,
+        9.144
+      ],
+      "min_enu_m": [
+        -26.67,
+        -14.478,
+        0
+      ],
+      "reference": "Provisional box from user-supplied approximate 175 x 95 x 30 ft capture envelope; centre-floor origin assumed, not surveyed clear-flight bounds.",
+      "status": "assumed"
+    },
+    "mocap_coverage": null,
+    "name": "PURT published envelope - current coverage unverified",
+    "obstacle_inventory_status": "needs a real measurement",
+    "obstacles": [],
+    "origin_status": "assumed",
+    "photo_evidence": "Five user-provided PURT-UAS images, October 2. Original photos are the evidence; no AI-filled pixels used for dimensions.",
+    "published_facility": {
+      "ceiling_height_ft": 30,
+      "floor_area_ft2": 20000,
+      "floor_area_m2": 1858.0608,
+      "source": "https://engineering.purdue.edu/PURT/capabilities",
+      "status": "published facility description, not measured from photo"
+    },
+    "room_shape_status": "observed from photo: large hangar with rectangular wall bays; overall proportions not metrically recoverable",
+    "safety_margin_m": 0.5,
+    "safety_margin_status": "assumed",
+    "scene_cleanup": "Existing black grid background retained at user request; photos are evidence only.",
+    "schema_version": 1,
+    "sensor_capabilities": {
+      "capture_rate_is_not_end_to_end_latency": true,
+      "current_latency_ms": null,
+      "current_noise_distribution": null,
+      "published_frame_rates_hz": [
+        300,
+        1100
+      ],
+      "resolutions_megapixels": [
+        12,
+        3
+      ]
+    },
+    "structural_obstacles_to_survey": [
+      "columns",
+      "mezzanine/stairs",
+      "portable net frames",
+      "fixed equipment and installed camera stands"
+    ],
+    "wall_net_status": "observed from photo: metal/insulated walls, large segmented hangar door, portable net frame in image 1 and mesh at mezzanine in image 3; complete flight-net enclosure not established"
+  },
+  "fit": {
+    "largest_scale": null,
+    "reason": "flyable volume or mocap coverage needs a real measurement",
+    "status": "unverified"
+  },
+  "profiles": [
+    {
+      "binding_limit": "corner acceleration",
+      "corner_accel_ratio": 0.4793270987480185,
+      "estimated_lag_distance_m": 0.08330405509046937,
+      "feasible_under_assumed_limits": true,
+      "limits_status": "assumed",
+      "minimum_lap_time_s": 13.846690561257134,
+      "mode": "native_pattern",
+      "scheduled_total_s": 63.0,
+      "sensor_fields_are_not_parity_proof": true,
+      "speed_ratio": 0.49982433054281616,
+      "stack": "betaflight"
+    },
+    {
+      "binding_limit": "corner acceleration",
+      "corner_accel_ratio": 0.4793270987480185,
+      "estimated_lag_distance_m": 0.08330405509046937,
+      "feasible_under_assumed_limits": true,
+      "limits_status": "assumed",
+      "minimum_lap_time_s": 13.846690561257134,
+      "mode": "external_reference",
+      "scheduled_total_s": 64.0,
+      "sensor_fields_are_not_parity_proof": true,
+      "speed_ratio": 0.49982433054281616,
+      "stack": "cognipilot"
+    },
+    {
+      "binding_limit": "corner acceleration",
+      "corner_accel_ratio": 0.4793270987480185,
+      "estimated_lag_distance_m": 0.08330405509046937,
+      "feasible_under_assumed_limits": true,
+      "limits_status": "assumed",
+      "minimum_lap_time_s": 13.846690561257134,
+      "mode": "guided",
+      "scheduled_total_s": 165.0,
+      "sensor_fields_are_not_parity_proof": true,
+      "speed_ratio": 0.49982433054281616,
+      "stack": "ardupilot"
+    }
+  ],
+  "size_sweep": [
+    {
+      "lap_time_s": 20.0,
+      "scale": 0.5,
+      "stats": {
+        "mean_speed_m_s": 0.152430586752623,
+        "path_length_per_lap_m": 3.04861173505246,
+        "path_length_total_m": 6.09722347010492,
+        "peak_horizontal_accel_m_s2": 0.34677739426175985,
+        "peak_lateral_accel_g": 0.033942889855071316,
+        "peak_lateral_accel_m_s2": 0.3328660407972351,
+        "peak_speed_m_s": 0.4165202754523468,
+        "tightest_turn_radius_m": 0.10437784234654227,
+        "timed_path_s": 40.0
+      }
+    },
+    {
+      "lap_time_s": 20.0,
+      "scale": 1.0,
+      "stats": {
+        "mean_speed_m_s": 0.304861173505246,
+        "path_length_per_lap_m": 6.09722347010492,
+        "path_length_total_m": 12.19444694020984,
+        "peak_horizontal_accel_m_s2": 0.6935547885235197,
+        "peak_lateral_accel_g": 0.06788577971014263,
+        "peak_lateral_accel_m_s2": 0.6657320815944702,
+        "peak_speed_m_s": 0.8330405509046936,
+        "tightest_turn_radius_m": 0.20875568469308453,
+        "timed_path_s": 40.0
+      }
+    },
+    {
+      "lap_time_s": 20.0,
+      "scale": 2.0,
+      "stats": {
+        "mean_speed_m_s": 0.609722347010492,
+        "path_length_per_lap_m": 12.19444694020984,
+        "path_length_total_m": 24.38889388041968,
+        "peak_horizontal_accel_m_s2": 1.3871095770470394,
+        "peak_lateral_accel_g": 0.13577155942028526,
+        "peak_lateral_accel_m_s2": 1.3314641631889403,
+        "peak_speed_m_s": 1.6660811018093873,
+        "tightest_turn_radius_m": 0.41751136938616906,
+        "timed_path_s": 40.0
+      }
+    },
+    {
+      "lap_time_s": 20.0,
+      "scale": 3.0,
+      "stats": {
+        "mean_speed_m_s": 0.9145835205157367,
+        "path_length_per_lap_m": 18.291670410314733,
+        "path_length_total_m": 36.583340820629466,
+        "peak_horizontal_accel_m_s2": 2.0806643655705592,
+        "peak_lateral_accel_g": 0.20365733913042786,
+        "peak_lateral_accel_m_s2": 1.9971962447834102,
+        "peak_speed_m_s": 2.4991216527140807,
+        "tightest_turn_radius_m": 0.6262670540792536,
+        "timed_path_s": 40.0
+      }
+    }
+  ],
+  "stats": {
+    "mean_speed_m_s": 0.304861173505246,
+    "path_length_per_lap_m": 6.09722347010492,
+    "path_length_total_m": 12.19444694020984,
+    "peak_horizontal_accel_m_s2": 0.6935547885235197,
+    "peak_lateral_accel_g": 0.06788577971014263,
+    "peak_lateral_accel_m_s2": 0.6657320815944702,
+    "peak_speed_m_s": 0.8330405509046936,
+    "tightest_turn_radius_m": 0.20875568469308453,
+    "timed_path_s": 40.0
+  },
+  "time_sweep": [
+    {
+      "lap_time_s": 5.0,
+      "scale": 1.0,
+      "stats": {
+        "mean_speed_m_s": 1.219444694020984,
+        "path_length_per_lap_m": 6.09722347010492,
+        "path_length_total_m": 12.19444694020984,
+        "peak_horizontal_accel_m_s2": 11.096876616376315,
+        "peak_lateral_accel_g": 1.0861724753622821,
+        "peak_lateral_accel_m_s2": 10.651713305511523,
+        "peak_speed_m_s": 3.3321622036187746,
+        "tightest_turn_radius_m": 0.20875568469308453,
+        "timed_path_s": 10.0
+      }
+    },
+    {
+      "lap_time_s": 10.0,
+      "scale": 1.0,
+      "stats": {
+        "mean_speed_m_s": 0.609722347010492,
+        "path_length_per_lap_m": 6.09722347010492,
+        "path_length_total_m": 12.19444694020984,
+        "peak_horizontal_accel_m_s2": 2.774219154094079,
+        "peak_lateral_accel_g": 0.27154311884057053,
+        "peak_lateral_accel_m_s2": 2.6629283263778807,
+        "peak_speed_m_s": 1.6660811018093873,
+        "tightest_turn_radius_m": 0.20875568469308453,
+        "timed_path_s": 20.0
+      }
+    },
+    {
+      "lap_time_s": 20.0,
+      "scale": 1.0,
+      "stats": {
+        "mean_speed_m_s": 0.304861173505246,
+        "path_length_per_lap_m": 6.09722347010492,
+        "path_length_total_m": 12.19444694020984,
+        "peak_horizontal_accel_m_s2": 0.6935547885235197,
+        "peak_lateral_accel_g": 0.06788577971014263,
+        "peak_lateral_accel_m_s2": 0.6657320815944702,
+        "peak_speed_m_s": 0.8330405509046936,
+        "tightest_turn_radius_m": 0.20875568469308453,
+        "timed_path_s": 40.0
+      }
+    },
+    {
+      "lap_time_s": 30.0,
+      "scale": 1.0,
+      "stats": {
+        "mean_speed_m_s": 0.20324078233683066,
+        "path_length_per_lap_m": 6.09722347010492,
+        "path_length_total_m": 12.19444694020984,
+        "peak_horizontal_accel_m_s2": 0.30824657267711986,
+        "peak_lateral_accel_g": 0.030171457648952283,
+        "peak_lateral_accel_m_s2": 0.2958809251530979,
+        "peak_speed_m_s": 0.5553603672697958,
+        "tightest_turn_radius_m": 0.20875568469308453,
+        "timed_path_s": 60.0
+      }
+    },
+    {
+      "lap_time_s": 40.0,
+      "scale": 1.0,
+      "stats": {
+        "mean_speed_m_s": 0.152430586752623,
+        "path_length_per_lap_m": 6.09722347010492,
+        "path_length_total_m": 12.19444694020984,
+        "peak_horizontal_accel_m_s2": 0.17338869713087993,
+        "peak_lateral_accel_g": 0.016971444927535658,
+        "peak_lateral_accel_m_s2": 0.16643302039861754,
+        "peak_speed_m_s": 0.4165202754523468,
+        "tightest_turn_radius_m": 0.20875568469308453,
+        "timed_path_s": 80.0
+      }
+    }
+  ]
+}

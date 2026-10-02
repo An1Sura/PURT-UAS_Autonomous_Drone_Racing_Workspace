@@ -5,12 +5,17 @@ figure eight**, one running **Betaflight** and one running **CogniPilot**, and
 compare their tracking and timing performance. Simulation develops the waypoint,
 control-input and measurement software before physical flight tests.
 
-**Current milestone:** both real flight-stack executables have flown a figure
-eight on the same Rumoca-generated quadrotor model. CogniPilot follows the shared
-timed reference; Betaflight currently uses its native figure-eight planner.
+**Current milestone:** Betaflight, CogniPilot and ArduPilot have flown figure-eight
+diagnostics on the same Rumoca-generated quadrotor model. CogniPilot and ArduPilot
+now follow the same configurable timed reference; Betaflight uses its native
+figure-eight planner.
 Their timing, sensor paths and takeoff/landing differ, so these runs are
 integration evidence, **not a performance ranking**. See [the figure-eight
 results and run instructions](docs/figure-eight.md).
+
+[Editable size/timing planner](https://an1sura.github.io/autonomous-drone-bench/planner/) ·
+[Three-stack replay](https://an1sura.github.io/autonomous-drone-bench/replay/) ·
+[Timing rundown](docs/timing-rundown.md) · [PURT fit and survey](docs/purt-environment.md)
 
 The physical drones are intended to be identical. The current RDD2 model is a
 shared test vehicle, not yet a measured calibration of those drones. Hardware
