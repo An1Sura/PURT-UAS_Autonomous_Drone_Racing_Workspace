@@ -15,10 +15,12 @@ loading message when initialization fails.
 
 ## Recordings
 
-- **Betaflight tuned, October 1:** `betaflight-hover/tuned-final`, yaw I = 20,
-  36.965 seconds; completed diagnostic, no qualified landing.
+- **Betaflight landed, October 2:** `betaflight-landing/run-1`, yaw I = 20,
+  40.14 seconds; native figure-eight hold followed by a LAND waypoint and
+  automatic firmware disarm. Ground truth settled at 0.09837 m (vehicle centre),
+  with zero motor commands for over two seconds. See [recorded evidence](evidence/betaflight-landing-2026-10-02/report.json).
 - **Betaflight before tuning, October 1:** `betaflight-hover/baseline-final`,
-  yaw I = 80, 36.9675 seconds; same plant and firmware as the tuned recording.
+  yaw I = 80, 36.9675 seconds; historical baseline with no landing sequence.
 - **CogniPilot, September 28:** existing 44-second recorded figure-eight mission,
   including takeoff, hold and landing.
 
@@ -54,3 +56,26 @@ Playback starts only on request. Old saved-state versions are ignored so the
 new tuned recording opens by default. Runtime checks cover load errors and lost
 WebGL contexts. Public layout supports small screens; orbit supports drag/zoom,
 while the named cameras remain available to keyboard users through the select.
+
+## Refresh after flight changes
+
+Rerun the affected `rdd2:benchmark:betaflight:figure-eight` or
+`rdd2:benchmark:cognipilot:figure-eight` Devenv task after each flight-logic change;
+rerun both if shared plant or sensor behavior changes. Check the native report,
+then replace the affected embedded trajectory with approximately 20 Hz samples
+from the new full-rate CSV, retaining the exact final row. Update dates, source
+paths and end-state descriptions, export `source.html` to `index.html`, and
+verify playback and the GitHub Pages deployment. This is a required development
+workflow, not a browser-triggered simulation or an unattended CI promise.
+
+The October 2 change adds a 25-second native HOLD/figure-eight followed by a
+LAND waypoint. The runner fails on premature disarm, landing timeout, or failure
+to rest near the ground with zero motor commands for two seconds. Pre-landing
+altitude diagnostics are kept separately; the descent is not hover error.
+CogniPilot logic was unchanged, so its existing dated recording is retained.
+
+Validation on October 2: two consecutive native landing runs passed (40.14 s and
+41.43 s); the native Rust suite passed 40 tests with two ignored. The cumulative
+Cerebri patch applies cleanly to its pinned source. Earlier intermittent SITL
+startup and estimator failures remain documented; two passes are not a hardware
+flight qualification.

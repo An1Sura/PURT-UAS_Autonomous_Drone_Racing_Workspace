@@ -1,0 +1,55 @@
+{
+  "adapter": "betaflight",
+  "control_error": null,
+  "executable_sha256": "b77543e3df275d8fc58a7dd7f1a7b17eaf6e20c3fba87390de6334a4a849990e",
+  "heading_p": 30,
+  "hold_throttle_us": 1690,
+  "landing_observed": true,
+  "native_disarmed": true,
+  "native_holding_samples": 107,
+  "passed": true,
+  "phase": "landed and disarmed",
+  "plant": {
+    "final_position_enu_m": [
+      -0.026349542488477137,
+      -0.014877281860670022,
+      0.09836555833331231
+    ],
+    "final_vertical_speed_m_s": 3.324420445877473e-14,
+    "ground_settled_samples": 1295,
+    "last_15s_before_landing_observed": {
+      "altitude_max_m": 1.5583227458515874,
+      "altitude_min_m": 1.476532287881723,
+      "altitude_rmse_m": 0.030092330457510242,
+      "altitude_target_m": 1.5,
+      "fraction_samples_any_motor_within_1pct_of_limit": 0.0,
+      "mean_motor_spread_normalized": 0.007051658680041631,
+      "samples": 6000,
+      "window_end_s": 34.0325,
+      "window_start_s": 19.035
+    },
+    "maximum_altitude_m": 1.7693690217042577,
+    "motor_packets": 16330,
+    "simulated_seconds": 41.43,
+    "trailing_15s_diagnostics": {
+      "altitude_max_m": 1.5583227458515874,
+      "altitude_min_m": 0.09830905791609607,
+      "altitude_rmse_m": 0.8225420362172737,
+      "altitude_target_m": 1.5,
+      "fraction_samples_any_motor_within_1pct_of_limit": 0.21583333333333332,
+      "mean_motor_spread_normalized": 0.010377327849467596,
+      "samples": 6000,
+      "window_end_s": 41.43,
+      "window_start_s": 26.4325
+    }
+  },
+  "plant_error": null,
+  "plant_sha256": "284cced3ceec15128886d05753900b8ae47f38570ce0112c50e801356de97654",
+  "qualification": "integration only; native planner diagnostic is not the timed common reference; landing checked against ground truth and motor output; wall-clock coupled SITL",
+  "scenario": "figure-eight",
+  "sensor_hz": 400,
+  "takeoff_ms": 1000,
+  "touchdown_altitude_m": 0.098376839166842,
+  "yaw_i": 20,
+  "yaw_p": 45
+}

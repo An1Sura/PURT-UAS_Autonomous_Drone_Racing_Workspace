@@ -2171,10 +2171,10 @@ index 0000000..b94b49c
 +}
 diff --git a/xtask/src/betaflight_probe.rs b/xtask/src/betaflight_probe.rs
 new file mode 100644
-index 0000000..161d9f1
+index 0000000..8a5a2be
 --- /dev/null
 +++ b/xtask/src/betaflight_probe.rs
-@@ -0,0 +1,531 @@
+@@ -0,0 +1,600 @@
 +//! Real Betaflight SITL connected to the common FMI plant. Native HOLD/FIGURE8
 +//! is an integration diagnostic: its phase law differs from the timed reference.
 +use crate::physics::{self, Plant};
@@ -2201,6 +2201,17 @@ index 0000000..161d9f1
 +    time: f64,
 +    altitude: f64,
 +    motors: [f32; 4],
++}
++#[derive(Clone, Copy, Default)]
++struct GroundState {
++    altitude: f64,
++    vertical_speed: f64,
++    settled_samples: u64,
++}
++fn grounded(altitude: f64, vertical_speed: f64, motors: [f32; 4]) -> bool {
++    (0.05..=0.20).contains(&altitude)
++        && vertical_speed.abs() <= 0.10
++        && motors.iter().all(|m| *m <= 0.001)
 +}
 +fn tail_metrics(samples: &VecDeque<FlightSample>) -> serde_json::Value {
 +    if samples.is_empty() {
@@ -2443,9 +2454,9 @@ index 0000000..161d9f1
 +    if out.join("eeprom.bin").exists() {
 +        bail!("use a fresh output directory to preserve prior evidence");
 +    }
-+    let config = "feature GPS\nset gps_provider = VIRTUAL\nset debug_mode = FLIGHT_PLAN\nset failsafe_procedure = AUTO-LAND\naux 0 0 0 1700 2100 0 0\naux 1 56 1 1700 2100 0 0\naux 2 1 2 1700 2100 0 0\nset mag_calibration = 1,1,1\nset ap_hover_throttle = 1690\nset ap_yaw_mode = FIXED\nset ap_waypoint_hold_radius = 100\nwaypoint insert 0 40.4237000 -86.9212000 20150 30 hold 600 figure8\n";
++    let config = "feature GPS\nset gps_provider = VIRTUAL\nset debug_mode = FLIGHT_PLAN\nset failsafe_procedure = AUTO-LAND\naux 0 0 0 1700 2100 0 0\naux 1 56 1 1700 2100 0 0\naux 2 1 2 1700 2100 0 0\nset mag_calibration = 1,1,1\nset ap_hover_throttle = 1690\nset ap_yaw_mode = FIXED\nset ap_waypoint_hold_radius = 100\nwaypoint insert 0 40.4237000 -86.9212000 20150 30 hold 250 figure8\nwaypoint insert 1 40.4237000 -86.9212000 20150 30 land 0 none\n";
 +    let config = if hover {
-+        config.replace("hold 600 figure8", "hold 600 none")
++        config.replace("hold 250 figure8", "hold 250 none")
 +    } else {
 +        config.to_string()
 +    };
@@ -2482,6 +2493,10 @@ index 0000000..161d9f1
 +        c[1] = 1500;
 +        c[3] = 1500;
 +    }
++    let ground = Arc::new(Mutex::new(GroundState::default()));
++    let worker_ground = ground.clone();
++    let landing = Arc::new(AtomicBool::new(false));
++    let worker_landing = landing.clone();
 +    let worker_stop = stop.clone();
 +    let worker_channels = channels.clone();
 +    let csv = out.join("mission-trajectory.csv");
@@ -2499,6 +2514,7 @@ index 0000000..161d9f1
 +        let mut raw = [0f32; 4];
 +        let mut last_motor = Instant::now();
 +        let mut motor_packets = 0u64;
++        let mut pre_landing_metrics = None;
 +        let mut tail = VecDeque::with_capacity((15 * sensor_hz) as usize);
 +        while !worker_stop.load(Ordering::Relaxed) {
 +            let t = step as f64 * bridge_dt;
@@ -2539,6 +2555,19 @@ index 0000000..161d9f1
 +            let p = plant.position();
 +            let e = plant.euler();
 +            max_alt = max_alt.max(p[2]);
++            {
++                let mut g = worker_ground.lock().unwrap();
++                g.altitude = p[2];
++                g.vertical_speed = plant.vertical_speed();
++                g.settled_samples = if grounded(g.altitude, g.vertical_speed, m) {
++                    g.settled_samples + 1
++                } else {
++                    0
++                };
++            }
++            if worker_landing.load(Ordering::Relaxed) && pre_landing_metrics.is_none() {
++                pre_landing_metrics = Some(tail_metrics(&tail));
++            }
 +            if tail.len() == (15 * sensor_hz) as usize {
 +                tail.pop_front();
 +            }
@@ -2578,11 +2607,14 @@ index 0000000..161d9f1
 +        }
 +        trajectory.flush()?;
 +        Ok(
-+            json!({"simulated_seconds":step as f64*bridge_dt,"maximum_altitude_m":max_alt,"motor_packets":motor_packets,"final_position_enu_m":plant.position(),"trailing_15s_diagnostics":tail_metrics(&tail)}),
++            json!({"simulated_seconds":step as f64*bridge_dt,"maximum_altitude_m":max_alt,"motor_packets":motor_packets,"final_position_enu_m":plant.position(),"trailing_15s_diagnostics":tail_metrics(&tail),"last_15s_before_landing_observed":pre_landing_metrics,"final_vertical_speed_m_s":plant.vertical_speed(),"ground_settled_samples":worker_ground.lock().unwrap().settled_samples}),
 +        )
 +    });
 +    let mut phase = "connect";
 +    let mut holding_samples = 0u64;
++    let mut landing_observed = false;
++    let mut native_disarmed = false;
++    let mut touchdown_altitude_m = None;
 +    let mut telemetry = BufWriter::new(File::create(out.join("mission-status.csv"))?);
 +    writeln!(
 +        telemetry,
@@ -2627,11 +2659,8 @@ index 0000000..161d9f1
 +        })?;
 +        channels.lock().unwrap()[2] = hold_throttle;
 +        phase = "native planner window";
-+        for sample in 0..125 {
++        for sample in 0..600 {
 +            let (_, m) = status(&mut s, &boxes)?;
-+            if ![0, 56, 3, 11].iter().all(|id| m.contains(id)) {
-+                bail!("lost autonomous armed modes during diagnostic: {m:?}");
-+            }
 +            let d = request(&mut s, 254)?;
 +            if d.len() < 6 {
 +                bail!("short mission debug telemetry");
@@ -2655,13 +2684,45 @@ index 0000000..161d9f1
 +            if state == 5 || abort != 0 {
 +                bail!("native mission aborted: state={state} reason={abort}");
 +            }
++            if state == 4 {
++                landing_observed = true;
++                landing.store(true, Ordering::Relaxed);
++                phase = "native landing";
++            }
++            if !m.contains(&0) {
++                if !landing_observed {
++                    bail!("disarmed before native landing");
++                }
++                let g = *ground.lock().unwrap();
++                touchdown_altitude_m = Some(g.altitude);
++                if !(0.05..=0.20).contains(&g.altitude) || g.vertical_speed.abs() > 0.15 {
++                    bail!(
++                        "native disarm before verified touchdown: z={} vz={}",
++                        g.altitude,
++                        g.vertical_speed
++                    );
++                }
++                native_disarmed = true;
++                break;
++            }
++            if ![56, 3, 11].iter().all(|id| m.contains(id)) {
++                bail!("lost autonomous modes: {m:?}");
++            }
 +            thread::sleep(Duration::from_millis(200));
++        }
++        if !native_disarmed {
++            bail!("native landing/disarm timeout");
 +        }
 +        if holding_samples < 100 {
 +            bail!("native HOLD not observed for at least 100 samples");
 +        }
++        // Lower the RC arm switch only after firmware has disarmed itself.
 +        channels.lock().unwrap()[4] = 1000;
-+        phase = "completed diagnostic";
++        thread::sleep(Duration::from_secs(3));
++        if ground.lock().unwrap().settled_samples < 2 * sensor_hz {
++            bail!("landing did not settle for two seconds with zero motor commands");
++        }
++        phase = "landed and disarmed";
 +        Ok(())
 +    })();
 +    stop.store(true, Ordering::Relaxed);
@@ -2670,7 +2731,7 @@ index 0000000..161d9f1
 +        .map_err(|_| anyhow::anyhow!("plant worker panicked"))?;
 +    let _ = child.kill();
 +    let _ = child.wait();
-+    let report = json!({"adapter":"betaflight","yaw_p":yaw_p,"yaw_i":yaw_i,"heading_p":heading_p,"sensor_hz":sensor_hz,"scenario":if hover {"hover"} else {"figure-eight"},"takeoff_ms":takeoff_ms,"hold_throttle_us":hold_throttle,"phase":phase,"native_holding_samples":holding_samples,"passed":result.is_ok()&&worker_result.is_ok(),"plant_sha256":plant_hash,"executable_sha256":physics::file_sha256(&binary)?,"qualification":"integration only; native planner diagnostic is not the timed common reference; no landing qualification; wall-clock coupled SITL","control_error":result.as_ref().err().map(|e|format!("{e:#}")),"plant_error":worker_result.as_ref().err().map(|e|format!("{e:#}")),"plant":worker_result.as_ref().ok()});
++    let report = json!({"adapter":"betaflight","yaw_p":yaw_p,"yaw_i":yaw_i,"heading_p":heading_p,"sensor_hz":sensor_hz,"scenario":if hover {"hover"} else {"figure-eight"},"takeoff_ms":takeoff_ms,"hold_throttle_us":hold_throttle,"phase":phase,"native_holding_samples":holding_samples,"landing_observed":landing_observed,"native_disarmed":native_disarmed,"touchdown_altitude_m":touchdown_altitude_m,"passed":result.is_ok()&&worker_result.is_ok(),"plant_sha256":plant_hash,"executable_sha256":physics::file_sha256(&binary)?,"qualification":"integration only; native planner diagnostic is not the timed common reference; landing checked against ground truth and motor output; wall-clock coupled SITL","control_error":result.as_ref().err().map(|e|format!("{e:#}")),"plant_error":worker_result.as_ref().err().map(|e|format!("{e:#}")),"plant":worker_result.as_ref().ok()});
 +    telemetry.flush()?;
 +    fs::write(out.join("report.json"), serde_json::to_vec_pretty(&report)?)?;
 +    println!("{report}");
@@ -2682,6 +2743,14 @@ index 0000000..161d9f1
 +#[cfg(test)]
 +mod tests {
 +    use super::*;
++    #[test]
++    fn landing_requires_ground_contact_rest_and_stopped_motors() {
++        assert!(grounded(0.0984, 0.0, [0.0; 4]));
++        assert!(!grounded(1.5, 0.0, [0.0; 4]));
++        assert!(!grounded(0.0984, -0.5, [0.0; 4]));
++        assert!(!grounded(0.0984, 0.0, [0.1; 4]));
++        assert!(!grounded(f64::NAN, 0.0, [0.0; 4]));
++    }
 +    #[test]
 +    fn altitude_error_and_motor_limits_have_explicit_units() {
 +        let samples = VecDeque::from([

@@ -34,3 +34,15 @@
   documentation in the same change.
 - Create commits with DCO sign-off (`git commit -s`). Do not add AI co-author
   attribution or `Co-authored-by` trailers naming an AI tool or model.
+
+## Flight logic and replay updates
+
+- Whenever flight logic, adapter timing, controller gains, missions, or plant
+  behavior changes, rerun every affected native simulation before calling the
+  change complete. Preserve unsuccessful attempts and report blocking errors.
+- Refresh `docs/replay/source.html` and its exported `index.html` from the actual
+  new trajectory, retaining its final sample. Update recording dates, provenance,
+  reports and end-state labels together, then publish and verify GitHub Pages.
+- Verify landing using native firmware state/disarm, plant ground truth and
+  stopped motor commands. Never animate a landing absent from the recording.
+- Unaffected recordings can remain, with their original dates clearly labeled.
