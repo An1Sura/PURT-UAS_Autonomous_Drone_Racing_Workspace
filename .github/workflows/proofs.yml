@@ -1,0 +1,29 @@
+name: Benchmark mathematical proofs
+on:
+  push:
+    branches: [main]
+    paths: ['proofs/**', 'docs/planner/math.js', 'docs/config/figure-eight.json', 'docs/config/purt-environment.json', 'patches/cerebri-rdd2-benchmark.patch', '.github/workflows/proofs.yml']
+  pull_request:
+    paths: ['proofs/**', 'docs/planner/math.js', 'docs/config/figure-eight.json', 'docs/config/purt-environment.json', 'patches/cerebri-rdd2-benchmark.patch', '.github/workflows/proofs.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
+        with:
+          persist-credentials: false
+      - name: Check reviewed implementation snapshot
+        run: sha256sum -c proofs/source-snapshot.sha256
+      - uses: leanprover/lean-action@f061402b660e0c34644504b324e830f2991d4865
+        with:
+          lake-package-directory: proofs
+          auto-config: 'false'
+          build: 'true'
+          use-mathlib-cache: 'true'
+      - name: Rerun the axiom audit explicitly
+        working-directory: proofs
+        run: lake env lean ADR/Audit.lean

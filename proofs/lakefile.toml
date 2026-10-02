@@ -1,0 +1,56 @@
+name = "adr_proofs"
+version = "0.1.0"
+defaultTargets = ["ADR"]
+
+[[require]]
+name = "mathlib"
+git = "https://github.com/leanprover-community/mathlib4"
+rev = "5e932f97dd25535344f80f9dd8da3aab83df0fe6"
+
+[[require]]
+name = "gnc"
+git = "https://github.com/CogniPilot/gnc_lean"
+rev = "0c01537b94677d38c0547a72c1dc12a7e87db234"
+
+[[lean_lib]]
+name = "ADR"
+
+[[require]]
+name = "Cli"
+git = "https://github.com/leanprover/lean4-cli"
+rev = "7802da01beb530bf051ab657443f9cd9bc3e1a29"
+
+[[require]]
+name = "LeanSearchClient"
+git = "https://github.com/leanprover-community/LeanSearchClient"
+rev = "c5d5b8fe6e5158def25cd28eb94e4141ad97c843"
+
+[[require]]
+name = "Qq"
+git = "https://github.com/leanprover-community/quote4"
+rev = "707efb56d0696634e9e965523a1bbe9ac6ce141d"
+
+[[require]]
+name = "aesop"
+git = "https://github.com/leanprover-community/aesop"
+rev = "7152850e7b216a0d409701617721b6e469d34bf6"
+
+[[require]]
+name = "batteries"
+git = "https://github.com/leanprover-community/batteries"
+rev = "756e3321fd3b02a85ffda19fef789916223e578c"
+
+[[require]]
+name = "importGraph"
+git = "https://github.com/leanprover-community/import-graph"
+rev = "48d5698bc464786347c1b0d859b18f938420f060"
+
+[[require]]
+name = "plausible"
+git = "https://github.com/leanprover-community/plausible"
+rev = "83e90935a17ca19ebe4b7893c7f7066e266f50d3"
+
+[[require]]
+name = "proofwidgets"
+git = "https://github.com/leanprover-community/ProofWidgets4"
+rev = "4dd0959c44d1af0462bd604d0f87c5781307d709"

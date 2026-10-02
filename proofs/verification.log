@@ -1,0 +1,129 @@
+Lean 4.29.1 / aarch64-darwin
+⚠ [3286/3301] Replayed GNC.Planning.SmoothStep
+warning: GNC/Planning/SmoothStep.lean:62:53: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+warning: GNC/Planning/SmoothStep.lean:62:63: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+warning: GNC/Planning/SmoothStep.lean:67:68: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+warning: GNC/Planning/SmoothStep.lean:67:78: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+warning: GNC/Planning/SmoothStep.lean:144:10: This simp argument is unused:
+  blend
+
+Hint: Omit it from the simp argument list.
+  simp [blend,̵ ̵b̵l̵e̵n̵d̵Velocity]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: GNC/Planning/SmoothStep.lean:143:63: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+warning: GNC/Planning/SmoothStep.lean:144:32: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+warning: GNC/Planning/SmoothStep.lean:151:10: This simp argument is unused:
+  blendVelocity
+
+Hint: Omit it from the simp argument list.
+  simp [blendV̵e̵l̵o̵c̵i̵t̵y̵,̵ ̵b̵l̵e̵n̵d̵Acceleration]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: GNC/Planning/SmoothStep.lean:150:59: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+warning: GNC/Planning/SmoothStep.lean:151:44: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+warning: GNC/Planning/SmoothStep.lean:170:58: unused variable `hd`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+⚠ [3298/3301] Built ADR.Benchmark (4.9s)
+warning: ADR/Benchmark.lean:53:78: This simp argument is unused:
+  y
+
+Hint: Omit it from the simp argument list.
+  simp [y̵,̵dy]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: ADR/Benchmark.lean:53:68: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+warning: ADR/Benchmark.lean:53:84: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+warning: ADR/Benchmark.lean:56:64: This simp argument is unused:
+  dx
+
+Hint: Omit it from the simp argument list.
+  simp [̵d̵x̵,̵d̵d̵x̵]̵[̲d̲d̲x̲]̲
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: ADR/Benchmark.lean:56:76: this tactic is never executed
+
+Note: This linter can be disabled with `set_option linter.unreachableTactic false`
+warning: ADR/Benchmark.lean:56:54: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+warning: ADR/Benchmark.lean:56:76: 'ring' tactic does nothing
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+warning: ADR/Benchmark.lean:59:82: This simp argument is unused:
+  dy
+
+Hint: Omit it from the simp argument list.
+  simp [̵d̵y̵,̵d̵d̵y̵]̵[̲d̲d̲y̲]̲
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: ADR/Benchmark.lean:59:72: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+warning: ADR/Benchmark.lean:59:90: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+warning: ADR/Benchmark.lean:100:49: This simp argument is unused:
+  vx
+
+Hint: Omit it from the simp argument list.
+  simp [v̵x̵,̵ax]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: ADR/Benchmark.lean:100:39: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+warning: ADR/Benchmark.lean:100:56: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+warning: ADR/Benchmark.lean:104:49: This simp argument is unused:
+  vy
+
+Hint: Omit it from the simp argument list.
+  simp [v̵y̵,̵ay]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: ADR/Benchmark.lean:104:39: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+warning: ADR/Benchmark.lean:104:56: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+warning: ADR/Benchmark.lean:200:6: this tactic is never executed
+
+Note: This linter can be disabled with `set_option linter.unreachableTactic false`
+warning: ADR/Benchmark.lean:200:6: 'ring' tactic does nothing
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+ℹ [3299/3301] Built ADR.Audit (3.8s)
+info: ADR/Audit.lean:9:0: ADR audit passed: 71 theorems; only propext, Classical.choice and Quot.sound permitted.
+✔ [3300/3301] Built ADR (1.7s)
+Build completed successfully (3301 jobs).
+
+Explicit audit:
+ADR audit passed: 71 theorems; only propext, Classical.choice and Quot.sound permitted.
+
+Negative test (temporary, excluded from proof sources):
+temporary-negative-test.lean:9:8: warning: declaration uses `sorry`
+temporary-negative-test.lean:13:0: error: Forbidden benchmark axiom: sorryAx

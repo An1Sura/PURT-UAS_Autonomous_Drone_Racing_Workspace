@@ -6,6 +6,8 @@ Compare **Betaflight and CogniPilot** flying an autonomous figure eight on the s
 
 The fixed course is **8 × 4 m**, at **1.5 m altitude**, with **one figure eight**, then landing. CogniPilot uses a 45-second reference; Betaflight’s native cycle is 25.13 seconds and its recorded lap count is checked independently. The page shows actual firmware recordings and fixed stats. PURT's approximate 53.34 × 28.956 × 9.144 m envelope is drawn over the black grid; current calibrated coverage remains unverified.
 
+The benchmark now has [checked Lean mathematics](docs/formal-verification.md), using pinned CogniPilot `gnc_lean` proofs. This covers the reference equations and timing/scaling identities, not universal firmware or hardware correctness.
+
 ## Run locally
 
 Use `./setup rdd2`, then the existing Devenv tasks:
