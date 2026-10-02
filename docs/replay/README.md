@@ -2,11 +2,14 @@
 
 [Open the published replay](https://an1sura.github.io/autonomous-drone-bench/replay/).
 
-The viewer uses Three.js 0.180.0 with WebGL2, shaded procedural drone geometry,
-soft shadows, planar floor reflections, bloom, and orbit/chase/onboard/top cameras.
-The visual direction was inspired by [Threejs-Punk](https://threejspunk.vercel.app/).
-No game assets or code from that site were copied. Three.js and its addons are
-loaded from the version-pinned esm.sh CDN; see the [upstream MIT license](https://github.com/mrdoob/three.js/blob/dev/LICENSE).
+The viewer uses Three.js 0.180.0 with WebGL2, a shaded procedural drone,
+and orbit/chase/onboard/top cameras. The requested scene is a black void with a
+0.5 m square floor grid and green display boundary lines. Betaflight flight
+trails are orange; CogniPilot trails are blue, independent of the UI theme.
+The green 4 × 4 × 3 m box is a visual guide, not an enforced simulation geofence.
+The previous decorative hangar, launch pad, reflections and bloom were removed.
+Three.js and its controls are loaded from the version-pinned esm.sh CDN; see the
+[upstream MIT license](https://github.com/mrdoob/three.js/blob/dev/LICENSE).
 Internet access to that CDN and WebGL2 are required. A visible error replaces the
 loading message when initialization fails.
 
@@ -32,7 +35,7 @@ match the corresponding CSV position and attitude values to six decimal places.
 Position is linearly interpolated; attitude uses quaternion interpolation with
 ZYX Euler conversion (`Rz(yaw) Ry(pitch) Rx(roll)`). The scene preserves Z-up ENU.
 
-The floor, hangar, drone body, lighting and propeller animation are illustrative.
+The grid, boundary, drone body, lighting and propeller animation are illustrative.
 Rotor spin is not measured RPM. The dashed figure eight is reference geometry,
 not a claim that all controllers received the same timed command. No cosmetic
 scene objects participate in physics or collision detection. This is a **recorded
