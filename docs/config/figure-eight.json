@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "id": "figure-eight-scalable-v1",
+  "id": "purt-single-lap-v1",
   "width_m": 2.0,
   "height_m": 1.0,
   "scale": 1.0,
@@ -10,8 +10,8 @@
     0
   ],
   "yaw_rad": 0,
-  "lap_time_s": 20.0,
-  "laps": 2,
+  "lap_time_s": 30,
+  "laps": 1,
   "end_hold_s": 5.0,
   "phase_law": "minimum_jerk_each_lap",
   "vehicle_radius_m": 0.4,
