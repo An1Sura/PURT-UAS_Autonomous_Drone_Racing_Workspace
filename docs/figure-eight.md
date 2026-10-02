@@ -15,7 +15,9 @@ The October 1 [Betaflight wobble investigation](betaflight-tuning.md) adds a
 hover diagnostic, recorded configuration options and model-specific yaw tuning.
 The current default uses yaw I = 20, a one-second takeoff and neutral autonomous
 throttle 1690. The historical recordings below used the older settings; they
-remain unchanged as evidence. The hosted replay also shows those older flights.
+remain unchanged as evidence. The [3D replay](replay/) now defaults to the tuned
+October 1 Betaflight recording, with its paired baseline selectable alongside
+the original CogniPilot recording.
 
 ## Recorded results (September 28)
 

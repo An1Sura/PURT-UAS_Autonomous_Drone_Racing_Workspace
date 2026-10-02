@@ -80,7 +80,9 @@ The [October 1 Betaflight tuning experiments](docs/betaflight-tuning.md) reduce
 simulated yaw/altitude oscillation with model-specific yaw integral tuning.
 The shared physics remain unchanged; an intermittent estimator abort is still
 open. These altitude diagnostics are not CogniPilot-versus-Betaflight tracking
-scores. The existing replay preserves the original flights.
+scores. The updated [3D flight replay](https://an1sura.github.io/autonomous-drone-bench/replay/)
+shows the tuned Betaflight flight, its paired baseline and the CogniPilot recording,
+with orbit, chase, onboard and top cameras.
 
 ## Earlier square-flight evidence
 

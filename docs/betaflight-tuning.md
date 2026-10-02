@@ -144,5 +144,6 @@ plant and sensor conditions before a performance ranking is attempted.
 
 The [shared timed-reference adapter](figure-eight.md#limits-and-next-code-change)
 remains the next architecture step. Betaflight's native path timing still differs
-from CogniPilot's. Historical figure-eight plots and the hosted replay retain the
-older flights; this page records the updated tuning separately.
+from CogniPilot's. Historical figure-eight plots retain the older flights. The updated
+[Three.js replay](replay/) offers the tuned and baseline October 1 Betaflight
+recordings alongside the original CogniPilot recording.
