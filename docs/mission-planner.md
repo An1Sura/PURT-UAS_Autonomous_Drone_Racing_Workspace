@@ -1,6 +1,6 @@
 # Flight Simulation & Stats
 
-The project goal is to find each stack’s fastest repeatable valid figure-eight lap. This page currently shows fixed diagnostic runs, not a maximum-speed sweep or a ranking. The 45-second reference is a baseline setting, not the intended final racing pace. See the [speed-benchmark plan](speed-benchmark.md).
+The project goal is to make CogniPilot faster than Betaflight while maintaining accurate, reliable flight. This SIL page establishes baseline behavior before the separate latency tests. This page currently shows fixed diagnostic runs, not a maximum-speed sweep or a ranking. The 45-second reference is a baseline setting, not the intended final racing pace. See the [speed-benchmark plan](speed-benchmark.md).
 
 The [simulation page](https://an1sura.github.io/autonomous-drone-bench/sim/) now uses a fixed PURT single-lap configuration. There are no editable mission, profile or environment controls.
 

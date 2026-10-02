@@ -1,6 +1,8 @@
-# Fastest valid figure-eight benchmark
+# Improving CogniPilot against a Betaflight baseline
 
-The primary question is **which of Betaflight and CogniPilot achieves the fastest repeatable, valid one-lap flight on the same course and identical drones?** Tracking accuracy, actuator saturation and control/communication timing constrain and explain attainable speed. They are not substitutes for measuring lap time.
+The objective is **to make CogniPilot faster than Betaflight on the same figure-eight course and identical drones**, while preserving accurate and reliable flight. Betaflight provides a documented performance baseline; CogniPilot is the optimization target.
+
+The current work is the **SIL foundation before separate latency tests**. First establish autonomous flight, shared physics, command interfaces and recorded baseline behavior. Then use the latency experiments to investigate control, communication and driver timing, guide CogniPilot changes, and test whether those changes improve flight performance. Existing SIL transport timings are not isolated controller-latency measurements.
 
 This document defines the direction of the next experiment. The current website shows fixed diagnostic recordings; an automated maximum-speed search and a qualified ranking have **not** been implemented.
 
@@ -18,7 +20,7 @@ Choose and record the following before collecting ranked runs:
 | Completion | All gates in order; no extra lap or skipped lobe; no abort; accepted landing and disarm after the timed lap |
 | Operating limits | Common actuator/vehicle limits, declared saturation policy and identical boundary/obstacle checks |
 | Repeatability | Fixed repeat count, required success rate, disturbance seeds and reported timing spread |
-| Tuning | Declare the same tuning budget and allowed parameters; retain each stack's settings and all attempts |
+| Tuning | Record Betaflight baseline settings and the allowed CogniPilot changes; retain tuning history and all attempts |
 | Autonomous control level | State which waypoint/outer-loop controller is included for each stack; do not silently compare different parts of the control pipeline |
 
 These thresholds and gates are not yet a qualified common runtime validator. The existing Betaflight checker uses four quadrant gates and a tolerant centre return; it is useful integration evidence, not an exact race-clock implementation. Assumed profile limits and PURT margins are not measured hardware capability or clearance.
@@ -29,9 +31,9 @@ Start with a passing baseline, then reduce requested lap duration while preservi
 
 Use a coarse duration sweep to find the transition between valid and invalid runs, then refine around that interval. Track failures as outcomes, not samples to discard. Because tuning, estimator state and disturbances can produce nonmonotonic results, do not assume every slower setting passes or a single successful fast run establishes a reliable limit. Repeat the candidate settings under the preregistered trial rules.
 
-The final comparison should show:
+After the SIL baseline and separate latency tests, the improvement evaluation should show:
 
-- Fastest tested setting satisfying the common validity and repeatability rules.
+- CogniPilot performance before and after changes, relative to the documented Betaflight baseline, under common validity and repeatability rules.
 - Measured lap-time distribution and success rate at that setting.
 - Mean course speed (path length divided by measured lap time), peak measured speed, tracking RMS/max error and saturation.
 - Why faster settings fail: tracking, turn acceleration, actuator limits, estimator, transport or planner cap.

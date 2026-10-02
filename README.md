@@ -1,10 +1,10 @@
 # Autonomous Drone Racing Benchmark
 
-**Which flight stack can fly the same figure-eight course as fast as possible while still completing it accurately and reliably?**
+**Our goal is to make CogniPilot fly the same figure-eight course faster than Betaflight while maintaining accurate, reliable flight.**
 
-The semester goal is to fly **two identical drones autonomously**, one running **Betaflight** and one running **CogniPilot**, and find each stack's **fastest repeatable, valid one-lap time**. Tracking error, overshoot, actuator saturation and timing measurements explain what limits that speed. They are constraints and diagnostics for the racing comparison, not a replacement for it.
+Betaflight is the performance baseline; CogniPilot is the stack we aim to improve. We plan to fly **two identical drones autonomously** on the same course, using repeatable measurements to determine whether our CogniPilot changes improve performance and ultimately surpass that baseline. Faster flight must still meet the same tracking and completion requirements.
 
-Simulation develops the waypoint, control-input and measurement software before physical flights at PURT. Software-in-the-loop (SIL) is the working foundation; hardware-in-the-loop (HIL) can reuse the same simulation boundary as a stretch goal.
+**This repository is the SIL stage before our separate latency tests.** It establishes working autonomous flights, shared physics, command interfaces and recorded baseline behavior. Subsequent latency tests will investigate control, communication and driver timing to guide CogniPilot improvements. The current flight recordings do not isolate those latencies or prove that CogniPilot is already faster. Hardware-in-the-loop (HIL) and physical flights at PURT build on this foundation.
 
 [**Watch the Flight Simulation & Stats page**](https://an1sura.github.io/autonomous-drone-bench/sim/) · [Open the VM-connected simulation](http://127.0.0.1:8766/sim/) · [Read the speed-benchmark plan](docs/speed-benchmark.md)
 
@@ -38,15 +38,15 @@ The comparison must hold these conditions constant:
 
 Shared physics is working. Matching sensor conditions, reference timing and takeoff/landing remains active work. The physical drones are intended to be identical; the current RDD2 plant is a shared test vehicle, **not yet a measured calibration of those drones**.
 
-## How we will find the fastest valid lap
+## How SIL supports making CogniPilot faster
 
-Keep the **same course size** for both stacks, then progressively shorten the requested lap duration. Each stack may be tuned for performance under the same vehicle and evaluation constraints. Do not shrink the path, skip a lobe or loosen the acceptance rules to get a faster result.
+Keep the **same course size** for both stacks, then progressively shorten the requested lap duration. Document a reproducible Betaflight baseline, then evaluate CogniPilot improvements under the same vehicle and evaluation constraints. Do not shrink the path, skip a lobe or loosen the acceptance rules to get a faster result.
 
 1. Establish a completed one-lap baseline with valid takeoff, tracking and landing.
 2. Align the command interface, sensor conditions and lap-timing rules before ranking stacks.
 3. Run a coarse sweep of shorter lap targets, then refine around the pass/fail boundary.
 4. Repeat candidate settings and retain every failed attempt as well as successful ones.
-5. Report each stack's fastest repeatable accepted lap, tracking error and failure rate, with the conditions and tuning budget stated.
+5. Report CogniPilot's improvement relative to the documented Betaflight baseline, including accepted lap times, tracking error and failure rate. Keep baseline settings and tuning history explicit.
 
 The lap clock measures **flight around the course**, separately from estimator warmup, arming, takeoff, end hold and landing. Total mission time is still reported. Simulation time is not the computer's execution time or the replay playback speed.
 
@@ -56,7 +56,7 @@ The acceptance thresholds, repeat count and common start/finish implementation s
 
 | Component | Implemented and exercised | Remaining work |
 | --- | --- | --- |
-| **CogniPilot** | Real Zephyr `native_sim` firmware, shared-memory lockstep, common plant, external timed figure-eight reference and recorded landing | Match comparison conditions; find its fastest valid lap; validate hardware feedback and timing/drivers |
+| **CogniPilot** | Real Zephyr `native_sim` firmware, shared-memory lockstep, common plant, external timed figure-eight reference and recorded landing | Establish SIL baseline; use later latency tests to guide performance improvements; validate hardware feedback and timing/drivers |
 | **Betaflight** | Pinned development SITL, sensor/motor exchange, native figure-eight pattern, independent recorded-lap check and landing/disarm checks | Support the common speed experiment; match sensors and timing; confirm the hardware firmware/interface |
 | **Shared plant** | Modelica quadrotor dynamics compiled by Rumoca into a generated-C/FMI artifact | Calibrate mass, inertia, motor response and limits against the identical physical drones |
 | **Simulation page** | Fixed one-lap PURT course, actual recordings, stats, black grid and green facility outline | Display future speed-sweep results once the runner and acceptance rules are implemented |
@@ -147,11 +147,11 @@ Reports preserve completion/failure details and plant/firmware fingerprints. Ful
 ## What comes next
 
 1. Give both stacks a common speed-test reference and lap start/finish definition; resolve sensor and execution-timing differences.
-2. Implement shorter-lap sweeps, fixed acceptance criteria and repeatability reporting to locate each stack's fastest valid lap.
+2. Run the separate latency tests after the SIL baseline is established; use the findings to improve CogniPilot, then rerun flight tests and shorter-lap sweeps against the documented Betaflight baseline.
 3. Identify hardware firmware/configuration and position feedback, then calibrate the plant against the identical drones.
 4. Finish assembly and soldering of the CogniPilot drone, validate its timing/drivers, and transfer the tested waypoint/control interfaces to autonomous physical figure-eight flights.
 
-A controller that cuts the course or fails tracking does not win because it finishes quickly. A conservative demonstration setting also does not establish a controller's speed limit. The goal is the fastest **valid, repeatable** flight under the same declared constraints.
+A controller that cuts the course or fails tracking does not win because it finishes quickly. A conservative demonstration setting also does not establish a controller's speed limit. The goal is to make **CogniPilot faster than Betaflight**, with valid, repeatable evidence under the same declared constraints.
 
 ## Project guides
 

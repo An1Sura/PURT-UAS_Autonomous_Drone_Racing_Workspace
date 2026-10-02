@@ -1,6 +1,6 @@
 # Common benchmark architecture
 
-The goal is the fastest repeatable, valid one-lap figure eight for Betaflight and CogniPilot under the same course and vehicle constraints. Tracking and timing diagnostics explain the speed limit. The [speed-benchmark plan](speed-benchmark.md) separates that goal from the current integration recordings.
+The goal is to make CogniPilot faster than Betaflight under the same course and vehicle constraints while maintaining accurate, reliable flight. This SIL stage establishes the flight baseline before separate latency tests guide CogniPilot improvements. The [speed-benchmark plan](speed-benchmark.md) separates that goal from the current integration recordings.
 
 The benchmark compares Betaflight and CogniPilot on one Rumoca-generated quadrotor plant. The plant supplies sensor observations to each stack's adapter and receives its motor commands. Geometry, requested trajectory, actuator model and physical initial conditions belong to the benchmark rather than separate simulator models.
 
