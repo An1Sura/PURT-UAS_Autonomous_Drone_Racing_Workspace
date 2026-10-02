@@ -288,10 +288,10 @@ index 753d72f..0fa90f4 100644
      fs::write(&report_path, serde_json::to_vec_pretty(&report)?)?;
  
 diff --git a/xtask/src/main.rs b/xtask/src/main.rs
-index e11a7c8..b172dbe 100644
+index e11a7c8..4dd0871 100644
 --- a/xtask/src/main.rs
 +++ b/xtask/src/main.rs
-@@ -1,7 +1,17 @@
+@@ -1,7 +1,18 @@
 +mod ardupilot;
 +mod ardupilot_probe;
 +mod benchmark;
@@ -303,13 +303,14 @@ index e11a7c8..b172dbe 100644
 +mod flight_link;
  mod format;
 +mod mission;
++mod mission_server;
  mod physics;
  mod protocol;
 +mod reference;
  mod shared_memory;
  
  use std::env;
-@@ -13,29 +23,21 @@ use std::thread;
+@@ -13,29 +24,21 @@ use std::thread;
  use std::time::{Duration, Instant};
  
  use anyhow::{Context, Result, anyhow, bail};
@@ -345,7 +346,7 @@ index e11a7c8..b172dbe 100644
      report: PathBuf,
      trajectory: PathBuf,
      duration: f64,
-@@ -52,6 +54,9 @@ struct Options {
+@@ -52,6 +55,9 @@ struct Options {
  
  #[derive(Debug, Default, Serialize)]
  struct Report {
@@ -355,7 +356,7 @@ index e11a7c8..b172dbe 100644
      passed: bool,
      /// Which providers produced the firmware under test. A pass built from
      /// caller-selected sources is not a qualifying result, and the report
-@@ -108,7 +113,7 @@ fn options(args: impl IntoIterator<Item = String>) -> Result<Options> {
+@@ -108,7 +114,7 @@ fn options(args: impl IntoIterator<Item = String>) -> Result<Options> {
      let mut trajectory = env::var_os("RDD2_MISSION_TRAJECTORY")
          .map(PathBuf::from)
          .unwrap_or_else(|| PathBuf::from("out/mission-trajectory.csv"));
@@ -364,7 +365,7 @@ index e11a7c8..b172dbe 100644
      let mut timeout_ms = 2_000_u64;
      let mut controller_benchmark = env::var("RDD2_FASTDYN_CONTROLLER_BENCHMARK_S")
          .ok()
-@@ -124,10 +129,39 @@ fn options(args: impl IntoIterator<Item = String>) -> Result<Options> {
+@@ -124,10 +130,39 @@ fn options(args: impl IntoIterator<Item = String>) -> Result<Options> {
          .map(|value| value.parse())
          .transpose()?
          .unwrap_or(0.0);
@@ -404,7 +405,7 @@ index e11a7c8..b172dbe 100644
              "--report" => report = args.next().ok_or_else(value)?.into(),
              "--trajectory" => trajectory = args.next().ok_or_else(value)?.into(),
              "--duration" => duration = args.next().ok_or_else(value)?.parse()?,
-@@ -145,20 +179,48 @@ fn options(args: impl IntoIterator<Item = String>) -> Result<Options> {
+@@ -145,20 +180,48 @@ fn options(args: impl IntoIterator<Item = String>) -> Result<Options> {
              "--minimum-speedup" => minimum_speedup = args.next().ok_or_else(value)?.parse()?,
              "-h" | "--help" => {
                  println!(
@@ -456,7 +457,7 @@ index e11a7c8..b172dbe 100644
          report,
          trajectory,
          duration,
-@@ -171,29 +233,29 @@ fn options(args: impl IntoIterator<Item = String>) -> Result<Options> {
+@@ -171,29 +234,29 @@ fn options(args: impl IntoIterator<Item = String>) -> Result<Options> {
              .context("--plant-library or RDD2_RUMOCA_PLANT_LIBRARY is required")?,
          plant_description: plant_description
              .context("--plant-description or RDD2_RUMOCA_PLANT_DESCRIPTION is required")?,
@@ -496,7 +497,7 @@ index e11a7c8..b172dbe 100644
  }
  
  fn rc_channels(mission_time: Option<f64>, plant: &Plant) -> [i32; 16] {
-@@ -204,15 +266,16 @@ fn rc_channels(mission_time: Option<f64>, plant: &Plant) -> [i32; 16] {
+@@ -204,15 +267,16 @@ fn rc_channels(mission_time: Option<f64>, plant: &Plant) -> [i32; 16] {
          channels[5] = 1000;
          return channels;
      };
@@ -521,7 +522,7 @@ index e11a7c8..b172dbe 100644
      if throttle_must_be_low(time) {
          channels[2] = 1000;
      } else {
-@@ -381,8 +444,7 @@ fn evaluate(report: &mut Report) {
+@@ -381,8 +445,7 @@ fn evaluate(report: &mut Report) {
              .push("vehicle had excessive vertical speed at completion".into());
      }
      report.passed = report.failures.is_empty();
@@ -531,7 +532,7 @@ index e11a7c8..b172dbe 100644
  }
  
  fn advance_square_corner(
-@@ -448,7 +510,11 @@ where
+@@ -448,7 +511,11 @@ where
      let warmup_target_ns = 5_000_000_u64;
      let ready_deadline = Instant::now() + Duration::from_secs(60);
      loop {
@@ -544,7 +545,7 @@ index e11a7c8..b172dbe 100644
          let inputs = protocol::lockstep_inputs(
              gyro,
              accel,
-@@ -466,7 +532,8 @@ where
+@@ -466,7 +533,8 @@ where
      }
  
      let target_ns = warmup_target_ns + (benchmark_seconds * 1.0e9).round() as u64;
@@ -554,7 +555,7 @@ index e11a7c8..b172dbe 100644
      let inputs = protocol::lockstep_inputs(
          gyro,
          accel,
-@@ -489,8 +556,12 @@ fn run_mission<F>(options: &Options, exchange: &mut F) -> Result<()>
+@@ -489,8 +557,12 @@ fn run_mission<F>(options: &Options, exchange: &mut F) -> Result<()>
  where
      F: FnMut(&protocol::LockstepInputs, Duration) -> Result<LockstepOutputs>,
  {
@@ -567,7 +568,7 @@ index e11a7c8..b172dbe 100644
          position_mission_continuous: true,
          mission_status_current: true,
          navigation_estimate_finite: true,
-@@ -500,7 +571,15 @@ where
+@@ -500,7 +572,15 @@ where
      let wall_start = Instant::now();
      let mut firmware_ready = false;
      let mut synthetic_gnss = SyntheticGnss::default();
@@ -584,7 +585,7 @@ index e11a7c8..b172dbe 100644
      let mut plan_sent = false;
      let mut mission_epoch = None;
      let mut last_outputs: Option<LockstepOutputs> = None;
-@@ -529,26 +608,38 @@ where
+@@ -529,26 +609,38 @@ where
          let channels = rc_channels(mission_time, &plant);
          let (gyro, accel) = plant.imu_flu();
          let target_time = ((simulated_time + options.plant_dt) * 1.0e9).round() as u64;
@@ -637,7 +638,7 @@ index e11a7c8..b172dbe 100644
          simulated_time += options.plant_dt;
          report.plant_steps += 1;
          let state = outputs.flight_state;
-@@ -619,7 +710,8 @@ where
+@@ -619,7 +711,8 @@ where
              .all(f32::is_finite);
          report.fresh_planner_reference_observed |= reference_current;
          if mission_time.is_some_and(|time| {
@@ -647,7 +648,7 @@ index e11a7c8..b172dbe 100644
          }) {
              let required = MissionStatusWire::SOURCE_READY
                  | MissionStatusWire::ORIGIN_VALID
-@@ -641,14 +733,14 @@ where
+@@ -641,14 +734,14 @@ where
                  &mut report.planner_corners_reached,
                  planner_origin_value,
                  planner_position,
@@ -664,7 +665,7 @@ index e11a7c8..b172dbe 100644
                  VEHICLE_CORNER_TOLERANCE_M,
              );
          }
-@@ -671,7 +763,8 @@ where
+@@ -671,7 +764,8 @@ where
          if mission_epoch.is_none() && status.mission_state == 1 {
              mission_epoch = Some(simulated_time);
          }
@@ -674,7 +675,7 @@ index e11a7c8..b172dbe 100644
              report.firmware_disarmed_after_flight = true;
          }
  
-@@ -708,6 +801,7 @@ where
+@@ -708,6 +802,7 @@ where
          last_outputs = Some(outputs);
      }
  
@@ -682,7 +683,7 @@ index e11a7c8..b172dbe 100644
      report.simulated_seconds = report.plant_steps as f64 * options.plant_dt;
      report.wall_seconds = wall_start.elapsed().as_secs_f64();
      report.speedup_over_realtime = report.simulated_seconds / report.wall_seconds;
-@@ -812,7 +906,7 @@ fn run_fastdyn_mission(args: impl IntoIterator<Item = String>) -> Result<()> {
+@@ -812,7 +907,7 @@ fn run_fastdyn_mission(args: impl IntoIterator<Item = String>) -> Result<()> {
  
  fn print_help() {
      println!(
@@ -691,17 +692,18 @@ index e11a7c8..b172dbe 100644
      );
  }
  
-@@ -824,6 +918,9 @@ fn main() -> Result<()> {
+@@ -824,6 +919,10 @@ fn main() -> Result<()> {
      };
  
      match command.to_string_lossy().as_ref() {
++        "mission-server" => mission_server::run(args),
 +        "figure-plan" => figure_config::run(args),
 +        "betaflight-probe" => betaflight_probe::run(args),
 +        "ardupilot-probe" => ardupilot_probe::run(args),
          "fastdyn-ci" => fastdyn_ci::run(),
          "fastdyn-mission" => {
              let args = args
-@@ -870,7 +967,7 @@ mod tests {
+@@ -870,7 +969,7 @@ mod tests {
              vehicle_corners_reached: 5,
              navigation_estimate_finite: true,
              max_navigation_horizontal_error_m: 0.1,
@@ -710,7 +712,7 @@ index e11a7c8..b172dbe 100644
              maximum_gnss_generation: 441,
              maximum_reference_generation: 100,
              maximum_plan_generation: 1,
-@@ -904,16 +1001,19 @@ mod tests {
+@@ -904,16 +1003,19 @@ mod tests {
  
      #[test]
      fn takeoff_schedule_preserves_a_low_throttle_arming_window() {
@@ -737,7 +739,7 @@ index e11a7c8..b172dbe 100644
          );
      }
  
-@@ -926,7 +1026,7 @@ mod tests {
+@@ -926,7 +1028,7 @@ mod tests {
              &mut progress,
              origin,
              origin,
@@ -746,7 +748,7 @@ index e11a7c8..b172dbe 100644
              VEHICLE_CORNER_TOLERANCE_M,
          );
          assert_eq!(progress, 1);
-@@ -934,15 +1034,15 @@ mod tests {
+@@ -934,15 +1036,15 @@ mod tests {
              &mut progress,
              origin,
              origin,
@@ -765,7 +767,7 @@ index e11a7c8..b172dbe 100644
              VEHICLE_CORNER_TOLERANCE_M,
          );
          assert_eq!(progress, 2);
-@@ -1063,7 +1163,7 @@ mod tests {
+@@ -1063,7 +1165,7 @@ mod tests {
          let result = (|| -> Result<()> {
              for _ in 0..4_000 {
                  target_ns += 625_000;
@@ -774,7 +776,7 @@ index e11a7c8..b172dbe 100644
                  let inputs = protocol::lockstep_inputs(
                      [0.0; 3],
                      [0.0, 0.0, 9.806_65],
-@@ -1096,7 +1196,7 @@ mod tests {
+@@ -1096,7 +1198,7 @@ mod tests {
              let mut last_quality = 0_i8;
              for _ in 0..320 {
                  target_ns += 625_000;
@@ -783,7 +785,7 @@ index e11a7c8..b172dbe 100644
                  let inputs = protocol::lockstep_inputs(
                      [0.0; 3],
                      [0.0, 0.0, 9.806_65],
-@@ -1125,7 +1225,7 @@ mod tests {
+@@ -1125,7 +1227,7 @@ mod tests {
              let mut last_flight_armed = false;
              for _ in 0..1_600 {
                  target_ns += 625_000;
@@ -4300,6 +4302,440 @@ index 0000000..037c2ad
 +        assert!(m.mission_takeoff_end_s < m.mission_position_start_s);
 +        assert!(m.mission_position_end_s < m.mission_disarm_s);
 +        assert!(m.mission_disarm_s + 2.0 <= m.default_mission_duration_s);
++    }
++}
+diff --git a/xtask/src/mission_server.rs b/xtask/src/mission_server.rs
+new file mode 100644
+index 0000000..f41e56c
+--- /dev/null
++++ b/xtask/src/mission_server.rs
+@@ -0,0 +1,428 @@
++//! Loopback-only UI and bounded, serialized native simulation jobs.
++use anyhow::{Context, Result, bail};
++use serde_json::{Value, json};
++use std::{
++    fs,
++    io::{Read, Write},
++    net::{TcpListener, TcpStream},
++    path::{Path, PathBuf},
++    process::{Command, Stdio},
++    sync::{Arc, Mutex},
++    thread,
++    time::{Duration, SystemTime, UNIX_EPOCH},
++};
++const STACKS: [&str; 3] = ["betaflight", "cognipilot", "ardupilot"];
++fn write_json(path: &Path, v: &Value) -> Result<()> {
++    let tmp = path.with_extension("tmp");
++    fs::write(&tmp, serde_json::to_vec(v)?)?;
++    fs::rename(tmp, path)?;
++    Ok(())
++}
++fn find(dir: &Path, name: &str) -> Option<PathBuf> {
++    let p = dir.join(name);
++    if p.is_file() {
++        return Some(p);
++    }
++    for e in fs::read_dir(dir).ok()?.flatten() {
++        if e.path().is_dir() {
++            let p = e.path().join(name);
++            if p.is_file() {
++                return Some(p);
++            }
++        }
++    }
++    None
++}
++fn rows(path: &Path) -> Result<Vec<Vec<f64>>> {
++    let text = fs::read_to_string(path)?;
++    let mut out = vec![];
++    let mut last = None;
++    let mut next = 0.;
++    for line in text.lines().skip(1) {
++        let r = line
++            .split(',')
++            .take(7)
++            .map(str::parse::<f64>)
++            .collect::<std::result::Result<Vec<_>, _>>()?;
++        if r.len() != 7 || r.iter().any(|v| !v.is_finite()) {
++            bail!("invalid trajectory")
++        };
++        last = Some(r.clone());
++        if r[0] >= next {
++            next = r[0] + 0.049;
++            out.push(r);
++        }
++    }
++    if let Some(r) = last {
++        if out.last() != Some(&r) {
++            out.push(r)
++        }
++    }
++    for i in (0..out.len()).rev() {
++        let speed = if i > 0 {
++            let dt = out[i][0] - out[i - 1][0];
++            if dt > 0. {
++                (1..4)
++                    .map(|j| (out[i][j] - out[i - 1][j]).powi(2))
++                    .sum::<f64>()
++                    .sqrt()
++                    / dt
++            } else {
++                0.
++            }
++        } else {
++            0.
++        };
++        out[i].push(speed);
++    }
++    Ok(out)
++}
++fn execute(root: &Path, dir: &Path) -> Result<()> {
++    let config = dir.join("config.json");
++    let env = dir.join("environment.json");
++    let exe = std::env::current_exe()?;
++    let project = root.join("src/cerebri_rdd2");
++    let plant = root.join("src/modelica_models/artifacts/vehicles/rdd2/plant/Vehicles_Rdd2_Plant");
++    let mut status: Value = serde_json::from_slice(&fs::read(dir.join("status.json"))?)?;
++    status["state"] = json!("running");
++    write_json(&dir.join("status.json"), &status)?;
++    let plan = Command::new(&exe)
++        .arg("figure-plan")
++        .arg(&config)
++        .arg(&env)
++        .arg(dir.join("plan"))
++        .output()?;
++    fs::write(dir.join("plan.log"), [plan.stdout, plan.stderr].concat())?;
++    if !plan.status.success() {
++        status["state"] = json!("rejected");
++        status["error"] = json!("Environment fit rejected. Review the PURT fit check.");
++        write_json(&dir.join("status.json"), &status)?;
++        return Ok(());
++    }
++    for stack in STACKS {
++        status["stacks"][stack] = json!({"state":"running"});
++        write_json(&dir.join("status.json"), &status)?;
++        let dest = dir.join(stack);
++        fs::create_dir_all(&dest)?;
++        let log = fs::File::create(dest.join("runner.log"))?;
++        let mut cmd = Command::new(&exe);
++        cmd.current_dir(&project)
++            .stdout(Stdio::from(log.try_clone()?))
++            .stderr(Stdio::from(log));
++        match stack {
++            "betaflight" => {
++                cmd.arg("betaflight-probe")
++                    .arg(root.join("src/betaflight/obj/main/betaflight_SITL.elf"))
++                    .arg(&plant)
++                    .arg(&dest)
++                    .arg("--config")
++                    .arg(&config);
++            }
++            "cognipilot" => {
++                cmd.arg("fastdyn-mission")
++                    .arg("--config")
++                    .arg(&config)
++                    .arg("--native-sim")
++                    .arg(project.join("build-native_sim/zephyr/zephyr.exe"))
++                    .arg("--plant-directory")
++                    .arg(&plant)
++                    .arg("--shared-memory")
++                    .arg(dest.join("lockstep.bin"))
++                    .arg("--report")
++                    .arg(dest.join("report.json"))
++                    .arg("--trajectory")
++                    .arg(dest.join("mission-trajectory.csv"));
++            }
++            _ => {
++                cmd.arg("ardupilot-probe")
++                    .arg("--config")
++                    .arg(&config)
++                    .arg("--executable")
++                    .arg(root.join("src/ardupilot/build/sitl/bin/arducopter"))
++                    .arg("--plant-directory")
++                    .arg(&plant)
++                    .arg("--output")
++                    .arg(&dest);
++            }
++        }
++        let outcome = cmd.status();
++        let ok = outcome.as_ref().map(|x| x.success()).unwrap_or(false);
++        let report = find(&dest, "report.json")
++            .and_then(|p| fs::read(p).ok())
++            .and_then(|b| serde_json::from_slice::<Value>(&b).ok());
++        let trajectory = find(&dest, "mission-trajectory.csv")
++            .and_then(|p| rows(&p).ok())
++            .filter(|r| r.len() > 1);
++        let log = fs::read_to_string(dest.join("runner.log")).unwrap_or_default();
++        let tail = log
++            .lines()
++            .filter(|line| line.len() < 400)
++            .rev()
++            .take(8)
++            .collect::<Vec<_>>()
++            .into_iter()
++            .rev()
++            .collect::<Vec<_>>()
++            .join("\n");
++        let ready = trajectory.is_some();
++        write_json(
++            &dest.join("result.json"),
++            &json!({"config":serde_json::from_slice::<Value>(&fs::read(&config)?)?,"stack":stack,"passed":ok,"report":report,"rows":trajectory}),
++        )?;
++        status["stacks"][stack] = json!({"state":if ok{"passed"}else{"failed"},"recording":ready,"detail":if ok{String::new()}else{tail}});
++        write_json(&dir.join("status.json"), &status)?;
++    }
++    status["state"] = json!("complete");
++    write_json(&dir.join("status.json"), &status)
++}
++fn response(s: &mut TcpStream, code: &str, mime: &str, body: &[u8]) -> Result<()> {
++    write!(
++        s,
++        "HTTP/1.1 {code}\r\nContent-Type: {mime}\r\nContent-Length: {}\r\nCache-Control: no-store\r\nX-Content-Type-Options: nosniff\r\nConnection: close\r\n\r\n",
++        body.len()
++    )?;
++    s.write_all(body)?;
++    Ok(())
++}
++fn handle(
++    mut s: TcpStream,
++    root: &Path,
++    jobs: &Path,
++    pending: &Arc<Mutex<Option<PathBuf>>>,
++) -> Result<()> {
++    s.set_read_timeout(Some(Duration::from_secs(3)))?;
++    let mut bytes = vec![];
++    let end;
++    loop {
++        let mut b = [0; 4096];
++        let n = s.read(&mut b)?;
++        if n == 0 {
++            return Ok(());
++        }
++        bytes.extend_from_slice(&b[..n]);
++        if let Some(i) = bytes.windows(4).position(|w| w == b"\r\n\r\n") {
++            end = i + 4;
++            break;
++        }
++        if bytes.len() > 16384 {
++            bail!("header too large")
++        }
++    }
++    let header = String::from_utf8(bytes[..end].to_vec())?;
++    let mut lines = header.lines();
++    let first = lines.next().unwrap_or("");
++    let mut parts = first.split_whitespace();
++    let method = parts.next().unwrap_or("");
++    let url = parts.next().unwrap_or("").split('?').next().unwrap_or("");
++    let headers = lines
++        .filter_map(|l| l.split_once(':'))
++        .map(|(k, v)| (k.to_ascii_lowercase(), v.trim().to_string()))
++        .collect::<std::collections::HashMap<_, _>>();
++    if !matches!(
++        headers.get("host").map(String::as_str),
++        Some("127.0.0.1:8766" | "localhost:8766")
++    ) {
++        return response(
++            &mut s,
++            "403 Forbidden",
++            "text/plain",
++            b"Loopback host required",
++        );
++    }
++    if method == "POST" && url == "/api/runs" {
++        if !matches!(
++            headers.get("origin").map(String::as_str),
++            Some("http://127.0.0.1:8766" | "http://localhost:8766")
++        ) || headers.get("content-type").map(String::as_str) != Some("application/json")
++        {
++            return response(
++                &mut s,
++                "403 Forbidden",
++                "text/plain",
++                b"Same-origin JSON required",
++            );
++        }
++        let len = headers
++            .get("content-length")
++            .context("length required")?
++            .parse::<usize>()?;
++        if len > 131072 {
++            bail!("body too large")
++        };
++        while bytes.len() < end + len {
++            let mut b = [0; 4096];
++            let n = s.read(&mut b)?;
++            if n == 0 {
++                bail!("incomplete body")
++            };
++            bytes.extend_from_slice(&b[..n]);
++        }
++        let input: Value = serde_json::from_slice(&bytes[end..end + len])?;
++        let c: crate::figure_config::Config = serde_json::from_value(input["config"].clone())?;
++        c.validate()?;
++        if c.total_time() + c.end_hold_s > 300.
++            || c.profiles.len() != 3
++            || c.profiles
++                .iter()
++                .any(|p| p.estimator_warmup_s + p.arm_takeoff_s + p.landing_s > 180.)
++        {
++            return response(&mut s,"422 Unprocessable Entity","text/plain",b"Interactive runs support three profiles and at most 300 seconds of reference, with at most 180 seconds of setup/landing per stack.");
++        }
++        for name in STACKS {
++            if c.profiles.iter().filter(|p| p.stack == name).count() != 1 {
++                bail!("one profile per stack required")
++            }
++        }
++        let id = SystemTime::now()
++            .duration_since(UNIX_EPOCH)?
++            .as_nanos()
++            .to_string();
++        let dir = jobs.join(&id);
++        fs::create_dir(&dir)?;
++        write_json(&dir.join("config.json"), &input["config"])?;
++        write_json(&dir.join("environment.json"), &input["environment"])?;
++        let status = json!({"id":id,"state":"queued","stacks":{"betaflight":{"state":"queued"},"cognipilot":{"state":"queued"},"ardupilot":{"state":"queued"}}});
++        write_json(&dir.join("status.json"), &status)?;
++        if let Some(old) = pending.lock().unwrap().replace(dir) {
++            let mut v: Value = serde_json::from_slice(&fs::read(old.join("status.json"))?)?;
++            v["state"] = json!("superseded");
++            write_json(&old.join("status.json"), &v)?;
++        }
++        return response(
++            &mut s,
++            "202 Accepted",
++            "application/json",
++            serde_json::to_string(&status)?.as_bytes(),
++        );
++    }
++    if method != "GET" {
++        return response(
++            &mut s,
++            "405 Method Not Allowed",
++            "text/plain",
++            b"Method not allowed",
++        );
++    }
++    if url == "/api/health" {
++        return response(&mut s, "200 OK", "application/json", b"{\"ready\":true}");
++    }
++    let path = if let Some(rest) = url.strip_prefix("/api/runs/") {
++        let parts = rest.split('/').collect::<Vec<_>>();
++        if parts.len() != 2
++            || !parts[0].chars().all(|c| c.is_ascii_digit())
++            || !matches!(
++                parts[1],
++                "status.json" | "betaflight.json" | "cognipilot.json" | "ardupilot.json"
++            )
++        {
++            bail!("invalid run path")
++        };
++        if parts[1] == "status.json" {
++            jobs.join(parts[0]).join(parts[1])
++        } else {
++            jobs.join(parts[0])
++                .join(parts[1].trim_end_matches(".json"))
++                .join("result.json")
++        }
++    } else {
++        let p = if url == "/" {
++            "planner/index.html"
++        } else {
++            url.trim_start_matches('/')
++        };
++        let p = if p.ends_with('/') {
++            format!("{p}index.html")
++        } else {
++            p.to_string()
++        };
++        if p.split('/').any(|x| x == ".." || x.starts_with('.'))
++            || p.contains('%')
++            || p.contains('\\')
++        {
++            bail!("invalid static path")
++        };
++        let p = root.join("docs").join(p);
++        let canonical = p.canonicalize()?;
++        if !canonical.starts_with(root.join("docs").canonicalize()?) {
++            bail!("outside docs")
++        };
++        canonical
++    };
++    let mime = match path.extension().and_then(|x| x.to_str()).unwrap_or("") {
++        "html" => "text/html; charset=utf-8",
++        "js" => "text/javascript",
++        "json" => "application/json",
++        "svg" => "image/svg+xml",
++        "css" => "text/css",
++        _ => "text/plain",
++    };
++    match fs::read(path) {
++        Ok(b) => response(&mut s, "200 OK", mime, &b),
++        Err(_) => response(&mut s, "404 Not Found", "text/plain", b"Not found"),
++    }
++}
++pub fn run(args: impl IntoIterator<Item = std::ffi::OsString>) -> Result<()> {
++    let root = PathBuf::from(
++        args.into_iter()
++            .next()
++            .context("mission-server WORKSPACE_ROOT")?,
++    )
++    .canonicalize()?;
++    let listener = TcpListener::bind("127.0.0.1:8766")?;
++    let jobs = root.join("src/cerebri_rdd2/artifacts/mission-planner");
++    fs::create_dir_all(&jobs)?;
++    let pending = Arc::new(Mutex::new(None::<PathBuf>));
++    let queue = pending.clone();
++    let worker_root = root.clone();
++    thread::spawn(move || {
++        loop {
++            let job = queue.lock().unwrap().take();
++            if let Some(dir) = job {
++                if let Err(err) = execute(&worker_root, &dir) {
++                    let _ = write_json(
++                        &dir.join("status.json"),
++                        &json!({"state":"failed","error":err.to_string(),"stacks":{}}),
++                    );
++                }
++            } else {
++                thread::sleep(Duration::from_millis(200));
++            }
++        }
++    });
++    println!("Mission Planner: http://127.0.0.1:8766/planner/");
++    for s in listener.incoming() {
++        let s = s?;
++        let error = s.try_clone()?;
++        if let Err(e) = handle(s, &root, &jobs, &pending) {
++            let _ = response(
++                &mut { error },
++                "400 Bad Request",
++                "text/plain",
++                e.to_string().as_bytes(),
++            );
++        }
++    }
++    Ok(())
++}
++
++#[cfg(test)]
++mod tests {
++    use super::*;
++    #[test]
++    fn downsampling_retains_final_sample_and_computes_speed() {
++        let p = std::env::temp_dir().join(format!("adr-rows-{}.csv", std::process::id()));
++        fs::write(&p,"time_s,x,y,z,r,p,y\n0,0,0,1,0,0,0\n0.02,0.02,0,1,0,0,0\n0.05,0.05,0,1,0,0,0\n0.07,0.07,0,1,0,0,0\n").unwrap();
++        let r = rows(&p).unwrap();
++        let _ = fs::remove_file(p);
++        assert_eq!(r.len(), 3);
++        assert_eq!(r.last().unwrap()[0], 0.07);
++        assert!((r.last().unwrap()[7] - 1.).abs() < 1e-12);
++    }
++    #[test]
++    fn rejects_nonfinite_trajectory() {
++        let p = std::env::temp_dir().join(format!("adr-bad-{}.csv", std::process::id()));
++        fs::write(&p, "header\n0,NaN,0,0,0,0,0\n").unwrap();
++        assert!(rows(&p).is_err());
++        let _ = fs::remove_file(p);
 +    }
 +}
 diff --git a/xtask/src/reference.rs b/xtask/src/reference.rs

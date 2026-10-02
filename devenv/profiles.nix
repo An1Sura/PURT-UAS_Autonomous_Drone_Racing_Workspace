@@ -512,6 +512,10 @@ in
           taskModules.rdd2
         ];
         env.COGNIPILOT_PROFILE = "rdd2";
+        processes.mission-planner = {
+          cwd = source "cerebri_rdd2";
+          exec = "exec cargo run --release --locked --package cerebri-rdd2-xtask -- mission-server ${config.git.root}";
+        };
         enterShell = ''
           echo "RDD2 firmware: devenv -P rdd2 tasks run rdd2:firmware:build"
           echo "RDD2 Modelica: devenv -P rdd2 tasks run rdd2:simulation:modelica:test"

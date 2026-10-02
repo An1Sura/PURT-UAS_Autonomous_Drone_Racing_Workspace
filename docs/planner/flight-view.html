@@ -1,0 +1,129 @@
+<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{margin:0;background:#0b0e12;color:#ecf0f4;font:15px system-ui}select,button,input{font:inherit;background:#151b24;color:inherit;border:1px solid #455269;padding:8px}label{display:flex;flex-direction:column;gap:6px}.viz-controls,.viz-row{display:flex;flex-wrap:wrap;gap:12px}.form-range{width:95%}.text-small{font-size:13px}.text-muted{color:#afbac9}</style></head><body><div id="adr-replay">
+<style>
+#adr-replay{--flight-sky:#000000;--flight-floor:#000000;--flight-metal:#adc1d0;--flight-carbon:#22303e;--flight-line:#30383f;--flight-light:#c5d0da;--flight-betaflight:#ff8a24;--flight-cognipilot:#278cff;--flight-ardupilot:#bf9aff;--flight-boundary:#28df76}
+#adr-replay .flight-stage{position:relative;height:490px;margin:12px 0;background:var(--flight-sky)}
+#adr-replay .flight-stage canvas{display:block;width:100%;height:100%;touch-action:none}
+#adr-replay .flight-loading{position:absolute;inset:0;display:grid;place-items:center;color:var(--flight-light);padding:24px;text-align:center;pointer-events:none}
+#adr-replay .flight-loading[hidden]{display:none}
+#adr-replay .readouts{display:flex;gap:18px;flex-wrap:wrap;margin:8px 0}
+#adr-replay .flight-legend{display:flex;gap:18px;flex-wrap:wrap;margin:8px 0}
+#adr-replay .trail-key{width:20px;display:inline-block;border-top:3px solid var(--flight-betaflight);vertical-align:middle;margin-right:6px}
+#adr-replay .boundary-key{width:20px;display:inline-block;border-top:2px solid var(--flight-boundary);vertical-align:middle;margin-right:6px}
+#adr-replay .reference-key{width:20px;display:inline-block;border-top:2px dashed var(--muted-foreground);vertical-align:middle;margin-right:6px}
+#adr-replay .flight-heading{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}
+@media(max-width:480px){#adr-replay .flight-stage{height:380px}}
+</style>
+<div class="flight-heading"><h2>Autonomous flight lab</h2><span class="text-small">Recorded SIL · Three.js 3D replay</span></div>
+<div class="viz-controls">
+<label class="form-label">Recorded flight<select class="form-select" data-id="stack"><option value="betaflight">Betaflight · native pattern, Oct 2</option><option value="betaflight-before">Betaflight · before tuning, Oct 1</option><option value="ardupilot">ArduPilot · Guided, Oct 2</option><option value="cognipilot">CogniPilot · two laps, Oct 2</option></select></label>
+<label class="form-label">Camera<select class="form-select" data-id="camera"><option value="orbit">Orbit · drag to look around</option><option value="chase">Chase drone</option><option value="fpv">Onboard view</option><option value="top">Top view</option></select></label>
+<label class="form-label">Playback speed<select class="form-select" data-id="rate"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option><option value="4">4×</option></select></label>
+</div>
+<div class="flight-stage" data-id="stage"><canvas role="img" aria-label="3D replay of measured simulation position and attitude over a black square grid with green display boundaries. Drag to orbit and scroll to zoom."></canvas><div class="flight-loading" data-id="loading" role="status">Loading flight replay…</div></div>
+<div class="flight-legend text-small"><span><i class="trail-key" data-id="swatch"></i><span data-id="trail-label">Betaflight · orange</span></span><span><i class="boundary-key"></i>Display boundary · green</span><span><i class="reference-key"></i>Configured figure-eight geometry</span><span>Floor grid · 0.5 m</span></div>
+<div class="readouts tabular-nums"><span data-id="clock">22.00 s</span><span data-id="alt"></span><span data-id="speed"></span></div>
+<label class="form-label">Flight time<input class="form-range" data-id="seek" type="range" min="0" max="36.965" step="0.01" value="22" aria-label="Flight time in seconds"></label>
+<div class="viz-row"><button class="btn btn-primary" data-id="play" type="button" disabled>Play</button><button class="btn" data-id="restart" type="button" disabled>Replay from start</button><button class="btn" data-id="flight-start" type="button">Jump to flight</button><span class="text-small" data-id="status" aria-live="polite">Preparing scene</span></div>
+<div class="text-small text-muted" data-id="note">Illustrative drone and display boundaries · recorded motion · different stack timing and sensors; not a ranking.</div>
+
+<script>
+(async()=>{
+'use strict';
+const root=document.getElementById('adr-replay'),get=id=>root.querySelector('[data-id="'+id+'"]'),result=await (await fetch('/api/runs/'+new URLSearchParams(location.search).get('run')+'/'+new URLSearchParams(location.search).get('stack')+'.json')).json(),cfg=result.config,data={[result.stack]:result.rows};
+get('stack').replaceChildren(new Option(result.stack+' · '+(result.passed?'completed':'FAILED'),result.stack));
+let stack=result.stack,time=0,playing=false,rate=1,mode='orbit',last=null,disposed=false;
+const end=()=>data[stack].at(-1)[0];
+function save(){window.openai?.setWidgetState?.({modelContent:{version:3,flightController:stack,replaySeconds:+time.toFixed(3)},privateContent:{camera:mode,rate}}).catch(()=>{});}
+function restore(s){if(s?.modelContent?.version!==3)return;const m=s.modelContent,p=s.privateContent||{};if(data[m.flightController])stack=m.flightController;if(Number.isFinite(m.replaySeconds))time=Math.max(0,Math.min(end(),m.replaySeconds));if(['orbit','chase','fpv','top'].includes(p.camera))mode=p.camera;if([.5,1,2,4].includes(p.rate))rate=p.rate;}
+restore(window.openai?.widgetState);
+try{
+const [T,{OrbitControls}]=await Promise.all([
+import('https://esm.sh/three@0.180.0'),
+import('https://esm.sh/three@0.180.0/examples/jsm/controls/OrbitControls.js')]);
+const canvas=root.querySelector('canvas'),stage=get('stage'),probe=document.createElement('span');probe.hidden=true;root.appendChild(probe);
+const color=n=>{probe.style.color='var('+n+')';return new T.Color(getComputedStyle(probe).color);};
+const palette={sky:color('--flight-sky'),floor:color('--flight-floor'),metal:color('--flight-metal'),carbon:color('--flight-carbon'),line:color('--flight-line'),light:color('--flight-light'),series:color('--flight-betaflight')};
+const renderer=new T.WebGLRenderer({canvas,antialias:true,alpha:false,powerPreference:'high-performance'});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.5));renderer.shadowMap.enabled=false;renderer.shadowMap.type=T.PCFSoftShadowMap;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=1.1;
+const scene=new T.Scene();scene.background=palette.sky;scene.fog=new T.Fog(palette.sky,30,150);
+const camera=new T.PerspectiveCamera(43,1,.025,300);camera.up.set(0,0,1);
+const controls=new OrbitControls(camera,canvas);controls.enableDamping=true;controls.dampingFactor=.1;controls.minDistance=1.2;controls.maxDistance=150;controls.maxPolarAngle=Math.PI*.48;controls.target.set(0,0,1.05);
+const hemi=new T.HemisphereLight(palette.light,palette.floor,2.5);hemi.position.set(0,0,10);scene.add(hemi);
+const key=new T.DirectionalLight(palette.light,3.5);key.position.set(1,-3,7);key.castShadow=true;key.shadow.mapSize.set(2048,2048);Object.assign(key.shadow.camera,{left:-5,right:5,top:5,bottom:-5,near:.1,far:18});key.shadow.bias=-.0003;key.shadow.normalBias=.015;scene.add(key);
+const fill=new T.DirectionalLight(palette.light,1.8);fill.position.set(-4,3,3);scene.add(fill);
+const mats={carbon:new T.MeshStandardMaterial({color:palette.carbon,roughness:.4,metalness:.65}),metal:new T.MeshStandardMaterial({color:palette.metal,roughness:.25,metalness:.8}),floor:new T.MeshStandardMaterial({color:palette.floor,roughness:.6,metalness:.25}),neutral:new T.MeshStandardMaterial({color:palette.line,roughness:.7,metalness:.3}),light:new T.MeshStandardMaterial({color:palette.light,emissive:palette.light,emissiveIntensity:1.15}),accent:new T.MeshStandardMaterial({color:palette.series,emissive:palette.series,emissiveIntensity:2.3,roughness:.3,metalness:.3})};
+function mesh(geo,mat,parent=scene,pos=[0,0,0]){const m=new T.Mesh(geo,mat);m.position.set(...pos);m.castShadow=true;m.receiveShadow=true;parent.add(m);return m;}
+function box(size,pos,mat=mats.carbon,parent=scene){return mesh(new T.BoxGeometry(...size),mat,parent,pos);}
+function strut(a,b,r,mat,parent=scene){const av=new T.Vector3(...a),bv=new T.Vector3(...b);const m=mesh(new T.CylinderGeometry(r,r,av.distanceTo(bv),10),mat,parent);m.position.copy(av).add(bv).multiplyScalar(.5);m.quaternion.setFromUnitVectors(new T.Vector3(0,1,0),bv.sub(av).normalize());return m;}
+// Requested display-only black void, 0.5 m grid, and green 4 x 4 x 3 m wire boundary.
+// These lines are visual guides, not a physics geofence or collision surface.
+const grid=new T.GridHelper(30,60,palette.line,palette.line);grid.rotation.x=Math.PI/2;grid.position.z=0;grid.material.toneMapped=false;scene.add(grid);
+const bounds=new T.Group();bounds.position.z=1.5;scene.add(bounds);
+const boundaryMaterial=new T.MeshBasicMaterial({color:color('--flight-boundary'),toneMapped:false});
+const edges=new T.EdgesGeometry(new T.BoxGeometry(4,4,3));const edgePoints=edges.attributes.position;
+for(let i=0;i<edgePoints.count;i+=2)strut([edgePoints.getX(i),edgePoints.getY(i),edgePoints.getZ(i)],[edgePoints.getX(i+1),edgePoints.getY(i+1),edgePoints.getZ(i+1)],.006,boundaryMaterial,bounds);
+edges.dispose();
+function label(text,pos,size=.3){const c=document.createElement('canvas');c.width=512;c.height=96;const ctx=c.getContext('2d');ctx.clearRect(0,0,512,96);ctx.font='500 45px sans-serif';ctx.textAlign='center';ctx.fillStyle='#'+palette.light.getHexString();ctx.fillText(text,256,62);const tx=new T.CanvasTexture(c);const s=new T.Sprite(new T.SpriteMaterial({map:tx,transparent:true,depthWrite:false}));s.position.set(...pos);s.scale.set(size*5.33,size,1);scene.add(s);return s;}
+label('East (m)',[2.1,0,.08],.16);label('North (m)',[0,2.2,.08],.16);
+const refPoints=Array.from({length:241},(_,i)=>{const a=i/240*Math.PI*2;return new T.Vector3(cfg.center_enu_m[0]+cfg.width_m*cfg.scale/2*Math.sin(a),cfg.center_enu_m[1]+cfg.height_m*cfg.scale/2*Math.sin(2*a),cfg.altitude_m);});
+const reference=new T.Line(new T.BufferGeometry().setFromPoints(refPoints),new T.LineDashedMaterial({color:palette.light,dashSize:.04,gapSize:.035,transparent:true,opacity:.7}));reference.computeLineDistances();scene.add(reference);
+const groundReference=new T.Line(new T.BufferGeometry().setFromPoints(refPoints.map(p=>new T.Vector3(p.x,p.y,.03))),new T.LineBasicMaterial({color:palette.line,transparent:true,opacity:.7}));scene.add(groundReference);
+const drone=new T.Group();scene.add(drone);
+// Illustrative quad geometry, 0.25 m arm offsets; rotor phase is decorative, not RPM.
+box([.26,.16,.035],[0,0,0],mats.carbon,drone);box([.22,.145,.018],[0,0,.075],mats.carbon,drone);
+for(const x of [-.09,.09])for(const y of [-.05,.05])strut([x,y,.01],[x,y,.075],.009,mats.metal,drone);
+box([.16,.085,.07],[-.02,0,.12],mats.carbon,drone);for(const x of [-.06,.03])box([.016,.09,.076],[x,0,.12],mats.metal,drone);
+const nose=mesh(new T.CylinderGeometry(.03,.035,.045,24),mats.metal,drone,[.14,0,.04]);nose.rotation.z=-Math.PI/2;
+const lens=mesh(new T.SphereGeometry(.025,20,12),new T.MeshPhysicalMaterial({color:palette.sky,metalness:.9,roughness:.06,clearcoat:1}),drone,[.163,0,.04]);lens.scale.x=.3;
+strut([-.11,0,.07],[-.17,0,.21],.006,mats.carbon,drone);mesh(new T.SphereGeometry(.016,12,8),mats.metal,drone,[-.17,0,.21]);
+const rotors=[];
+for(const [x,y]of [[.25,-.25],[-.25,-.25],[-.25,.25],[.25,.25]]){
+const arm=box([Math.hypot(x,y),.043,.024],[x/2,y/2,-.007],mats.carbon,drone);arm.rotation.z=Math.atan2(y,x);
+const motor=mesh(new T.CylinderGeometry(.036,.036,.047,24),mats.metal,drone,[x,y,.019]);motor.rotation.x=Math.PI/2;
+const ring=mesh(new T.TorusGeometry(.037,.004,8,28),mats.accent,drone,[x,y,.039]);ring.castShadow=false;
+const prop=new T.Group();prop.position.set(x,y,.053);drone.add(prop);for(let j=0;j<3;j++){const blade=mesh(new T.SphereGeometry(1,12,6),mats.carbon,prop);blade.scale.set(.074,.017,.004);blade.position.set(.063*Math.cos(j*2*Math.PI/3),.063*Math.sin(j*2*Math.PI/3),0);blade.rotation.z=j*2*Math.PI/3;}rotors.push(prop);
+strut([x*.65,y*.65,-.02],[x*.73,y*.73,-.085],.01,mats.carbon,drone);
+}
+box([.045,.13,.008],[.095,0,.087],mats.accent,drone);
+const trails=new Map();
+for(const name of Object.keys(data)){
+const points=data[name].map(r=>new T.Vector3(r[1],r[2],r[3]));
+class RecordedCurve extends T.Curve{getPoint(t,target=new T.Vector3()){const f=Math.min(points.length-1,Math.max(0,t)*(points.length-1)),i=Math.min(points.length-2,Math.floor(f));return target.copy(points[i]).lerp(points[i+1],f-i);}}
+const geo=new T.TubeGeometry(new RecordedCurve(),points.length-1,.009,6,false);const trail=mesh(geo,new T.MeshBasicMaterial({color:color(name==='cognipilot'?'--flight-cognipilot':name==='ardupilot'?'--flight-ardupilot':'--flight-betaflight'),toneMapped:false}));trail.castShadow=false;trail.receiveShadow=false;trails.set(name,trail);
+}
+const drop=new T.Line(new T.BufferGeometry().setFromPoints([new T.Vector3(),new T.Vector3()]),new T.LineDashedMaterial({color:palette.line,dashSize:.045,gapSize:.045}));scene.add(drop);
+function sample(t){const a=data[stack];let l=0,h=a.length-1;while(l<h){const mid=(l+h)>>1;if(a[mid][0]<t)l=mid+1;else h=mid;}const b=a[l],c=a[Math.max(0,l-1)],u=b[0]===c[0]?0:T.MathUtils.clamp((t-c[0])/(b[0]-c[0]),0,1);const v=b.map((x,i)=>c[i]+(x-c[i])*u);const q1=new T.Quaternion().setFromEuler(new T.Euler(c[4],c[5],c[6],'ZYX')),q2=new T.Quaternion().setFromEuler(new T.Euler(b[4],b[5],b[6],'ZYX'));return{v,q:q1.slerp(q2,u),index:l,u};}
+function setCamera(){controls.enabled=mode==='orbit';camera.fov=mode==='fpv'?78:43;camera.up.set(0,0,1);if(mode==='orbit'){camera.position.set(3.8*Math.max(1,cfg.width_m*cfg.scale/2),-4.6*Math.max(1,cfg.width_m*cfg.scale/2),3.4*Math.max(1,cfg.width_m*cfg.scale/2));controls.target.set(0,0,1.05);controls.update();}if(mode==='top'){camera.up.set(0,1,0);camera.position.set(cfg.center_enu_m[0],cfg.center_enu_m[1],6*Math.max(1,cfg.width_m*cfg.scale/2));camera.lookAt(0,0,0);}camera.updateProjectionMatrix();}
+function selectFlight(){const c=color(stack==='cognipilot'?'--flight-cognipilot':stack==='ardupilot'?'--flight-ardupilot':'--flight-betaflight');mats.accent.color.copy(c);mats.accent.emissive.copy(c);get('swatch').style.borderColor='#'+c.getHexString();get('trail-label').textContent=stack==='cognipilot'?'CogniPilot · blue':stack==='ardupilot'?'ArduPilot · purple':'Betaflight · orange';for(const[n,t]of trails)t.visible=n===stack;get('seek').max=end();get('stack').value=stack;get('camera').value=mode;get('rate').value=rate;get('note').textContent=(result.passed?'Completed native run':'Failed native run — partial recording')+' · configuration '+cfg.width_m*cfg.scale+' × '+cfg.height_m*cfg.scale+' m, '+cfg.lap_time_s+' s/lap · sensors/timing unmatched';}
+function state(){get('play').textContent=playing?'Pause':'Play';get('status').textContent=playing?'Playing recorded flight':time>=end()?'End of recording · '+(result.passed?'run completed':'FAILED — partial recording'):(mode==='orbit'?'Paused · drag to orbit, scroll to zoom':'Paused · '+(mode==='fpv'?'onboard camera':mode==='chase'?'chase camera':'top camera'));}
+function draw(dt=0){const {v,q,index,u}=sample(time);drone.position.set(v[1],v[2],v[3]);drone.quaternion.copy(q);drone.visible=mode!=='fpv';if(playing&&v[3]>.15)rotors.forEach((p,i)=>p.rotation.z+=dt*90*(i%2?1:-1));
+const trail=trails.get(stack);trail.geometry.setDrawRange(0,Math.max(0,(time>=end()?index:index-1)*36));
+const pa=drop.geometry.attributes.position;pa.setXYZ(0,v[1],v[2],.025);pa.setXYZ(1,v[1],v[2],v[3]);pa.needsUpdate=true;drop.computeLineDistances();
+if(mode==='chase'){const offset=new T.Vector3(-1.65,-1.6,.85).applyQuaternion(q);camera.position.copy(drone.position).add(offset);camera.up.set(0,0,1);camera.lookAt(drone.position.clone().add(new T.Vector3(0,0,.03)));}
+if(mode==='fpv'){camera.position.copy(new T.Vector3(.18,0,.065).applyQuaternion(q)).add(drone.position);camera.up.copy(new T.Vector3(0,0,1).applyQuaternion(q));camera.lookAt(new T.Vector3(3,0,.065).applyQuaternion(q).add(drone.position));}
+if(mode==='orbit')controls.update();renderer.render(scene,camera);get('clock').textContent=time.toFixed(2)+' / '+end().toFixed(2)+' s';get('alt').textContent='Altitude '+v[3].toFixed(2)+' m';get('speed').textContent='Speed ≈ '+v[7].toFixed(2)+' m/s';get('seek').value=time;canvas.setAttribute('aria-label',get('stack').selectedOptions[0].text+': '+time.toFixed(2)+' seconds, altitude '+v[3].toFixed(2)+' metres. '+mode+' view.');}
+function resize(){const w=stage.clientWidth,h=stage.clientHeight;if(!w||!h)return;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();draw();}
+get('flight-start').onclick=()=>{time=Math.min(end(),cfg.profiles.find(p=>p.stack===stack).estimator_warmup_s+cfg.profiles.find(p=>p.stack===stack).arm_takeoff_s);playing=true;last=null;state();draw();save();};
+get('play').onclick=()=>{if(time>=end())time=0;playing=!playing;last=null;state();save();};get('restart').onclick=()=>{time=0;playing=true;last=null;state();save();};
+get('seek').oninput=e=>{time=+e.target.value;playing=false;state();draw();};get('seek').onchange=save;
+get('stack').onchange=e=>{stack=e.target.value;time=Math.min(time,end());playing=false;selectFlight();state();draw();save();};get('camera').onchange=e=>{mode=e.target.value;setCamera();state();draw();save();};get('rate').onchange=e=>{rate=+e.target.value;save();};
+window.addEventListener('openai:set_globals',e=>{restore(e.detail?.globals?.widgetState);selectFlight();setCamera();state();draw();});
+canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();playing=false;get('loading').hidden=false;get('loading').textContent='Graphics context interrupted. Reload to resume this recording.';get('play').disabled=true;get('restart').disabled=true;});
+function themeChanged(){
+for(const key of ['sky','floor','metal','carbon','line','light'])palette[key].copy(color('--flight-'+key));
+scene.background.copy(palette.sky);scene.fog.color.copy(palette.sky);
+for(const key of ['floor','metal','carbon'])mats[key].color.copy(palette[key]);
+mats.neutral.color.copy(palette.line);mats.light.color.copy(palette.light);mats.light.emissive.copy(palette.light);
+hemi.color.copy(palette.light);hemi.groundColor.copy(palette.floor);key.color.copy(palette.light);fill.color.copy(palette.light);
+reference.material.color.copy(palette.light);selectFlight();draw();
+}
+const themeObserver=new MutationObserver(themeChanged);themeObserver.observe(document.documentElement,{attributes:true,attributeFilter:['class','style','data-theme']});
+const themeMedia=matchMedia('(prefers-color-scheme: dark)');themeMedia.addEventListener('change',themeChanged);
+const observer=new ResizeObserver(resize);observer.observe(stage);get('loading').hidden=true;get('play').disabled=false;get('restart').disabled=false;selectFlight();setCamera();resize();state();
+function animate(now){if(disposed)return;const dt=last===null?0:Math.min((now-last)/1000,.1);last=now;if(playing){time=Math.min(end(),time+dt*rate);if(time>=end()){playing=false;state();save();}}draw(dt*rate);requestAnimationFrame(animate);}requestAnimationFrame(animate);
+window.addEventListener('pagehide',()=>{disposed=true;observer.disconnect();themeObserver.disconnect();themeMedia.removeEventListener('change',themeChanged);controls.dispose();renderer.dispose();},{once:true});
+}catch(error){get('loading').hidden=false;get('loading').textContent='The 3D scene could not start. WebGL2 and access to the graphics CDN are required. Reload to retry.';get('status').textContent='3D unavailable';console.error('Flight replay:',error);}
+})();
+</script>
+</div>
+</body></html>

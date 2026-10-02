@@ -602,3 +602,7 @@ packages. Native editable outputs are intentionally not Cachix artifacts.
 cache downloads.
 
 </details>
+
+## Connected Mission Planner
+
+[Mission Planner](https://an1sura.github.io/autonomous-drone-bench/planner/) now combines settings and recorded flights. Use the [VM-connected page](http://127.0.0.1:8766/planner/) to automatically run all three native stacks after edits. [Startup, job behavior and limits](docs/mission-planner.md).
