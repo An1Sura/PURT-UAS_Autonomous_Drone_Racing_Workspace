@@ -2171,16 +2171,17 @@ index 0000000..b94b49c
 +}
 diff --git a/xtask/src/betaflight_probe.rs b/xtask/src/betaflight_probe.rs
 new file mode 100644
-index 0000000..575b640
+index 0000000..161d9f1
 --- /dev/null
 +++ b/xtask/src/betaflight_probe.rs
-@@ -0,0 +1,352 @@
+@@ -0,0 +1,531 @@
 +//! Real Betaflight SITL connected to the common FMI plant. Native HOLD/FIGURE8
 +//! is an integration diagnostic: its phase law differs from the timed reference.
 +use crate::physics::{self, Plant};
 +use anyhow::{Result, bail};
 +use serde_json::json;
 +use std::{
++    collections::VecDeque,
 +    fs::{self, File},
 +    io::{BufWriter, Read, Write},
 +    net::{TcpStream, UdpSocket},
@@ -2193,6 +2194,53 @@ index 0000000..575b640
 +    thread,
 +    time::{Duration, Instant},
 +};
++
++// Trailing altitude/actuator diagnostics, not a timed trajectory score.
++#[derive(Clone, Copy)]
++struct FlightSample {
++    time: f64,
++    altitude: f64,
++    motors: [f32; 4],
++}
++fn tail_metrics(samples: &VecDeque<FlightSample>) -> serde_json::Value {
++    if samples.is_empty() {
++        return serde_json::Value::Null;
++    }
++    let n = samples.len() as f64;
++    let rmse = (samples
++        .iter()
++        .map(|s| (s.altitude - 1.5).powi(2))
++        .sum::<f64>()
++        / n)
++        .sqrt();
++    let min = samples
++        .iter()
++        .map(|s| s.altitude)
++        .fold(f64::INFINITY, f64::min);
++    let max = samples
++        .iter()
++        .map(|s| s.altitude)
++        .fold(f64::NEG_INFINITY, f64::max);
++    let spread = samples
++        .iter()
++        .map(|s| {
++            let lo = s.motors.iter().copied().fold(f32::INFINITY, f32::min);
++            let hi = s.motors.iter().copied().fold(f32::NEG_INFINITY, f32::max);
++            f64::from(hi - lo)
++        })
++        .sum::<f64>()
++        / n;
++    let limited = samples
++        .iter()
++        .filter(|s| s.motors.iter().any(|m| *m <= 0.01 || *m >= 0.99))
++        .count();
++    json!({"window_start_s":samples.front().unwrap().time,
++        "window_end_s":samples.back().unwrap().time,"samples":samples.len(),
++        "altitude_target_m":1.5,"altitude_rmse_m":rmse,
++        "altitude_min_m":min,"altitude_max_m":max,
++        "mean_motor_spread_normalized":spread,
++        "fraction_samples_any_motor_within_1pct_of_limit":limited as f64/n})
++}
 +
 +fn request(s: &mut TcpStream, cmd: u8) -> Result<Vec<u8>> {
 +    s.write_all(&[b'$', b'M', b'<', 0, cmd, cmd])?;
@@ -2309,9 +2357,84 @@ index 0000000..575b640
 +}
 +pub fn run(args: impl Iterator<Item = std::ffi::OsString>) -> Result<()> {
 +    let args: Vec<_> = args.collect();
-+    if args.len() != 3 {
-+        bail!("betaflight-probe BINARY PLANT_DIRECTORY OUTPUT_DIRECTORY");
++    if args.len() < 3 {
++        bail!(
++            "betaflight-probe BINARY PLANT_DIRECTORY OUTPUT_DIRECTORY [--hover] [--sensor-hz 400] [--takeoff-ms 1000] [--hold-throttle 1690] [--yaw-p 45] [--yaw-i 20] [--heading-p 30]"
++        );
 +    }
++    let mut yaw_p = 45u8;
++    // Tuning for the shared 2 kg RDD2 model, not a physical-drone recommendation.
++    let mut yaw_i = 20u8;
++    let mut heading_p = 30u8;
++    let mut sensor_hz = 400u64;
++    let mut hover = false;
++    let mut takeoff_ms = 1000u64;
++    let mut hold_throttle = 1690u16;
++    let mut extra = args[3..].iter();
++    while let Some(arg) = extra.next() {
++        match arg.to_str() {
++            Some("--hover") => hover = true,
++            Some("--yaw-p") => {
++                yaw_p = extra
++                    .next()
++                    .ok_or_else(|| anyhow::anyhow!("missing yaw P"))?
++                    .to_str()
++                    .ok_or_else(|| anyhow::anyhow!("invalid yaw P"))?
++                    .parse()?
++            }
++            Some("--yaw-i") => {
++                yaw_i = extra
++                    .next()
++                    .ok_or_else(|| anyhow::anyhow!("missing yaw I"))?
++                    .to_str()
++                    .ok_or_else(|| anyhow::anyhow!("invalid yaw I"))?
++                    .parse()?
++            }
++            Some("--heading-p") => {
++                heading_p = extra
++                    .next()
++                    .ok_or_else(|| anyhow::anyhow!("missing heading P"))?
++                    .to_str()
++                    .ok_or_else(|| anyhow::anyhow!("invalid heading P"))?
++                    .parse()?
++            }
++            Some("--sensor-hz") => {
++                sensor_hz = extra
++                    .next()
++                    .ok_or_else(|| anyhow::anyhow!("missing sensor rate"))?
++                    .to_str()
++                    .ok_or_else(|| anyhow::anyhow!("invalid sensor rate"))?
++                    .parse()?
++            }
++            Some("--takeoff-ms") => {
++                takeoff_ms = extra
++                    .next()
++                    .ok_or_else(|| anyhow::anyhow!("missing takeoff duration"))?
++                    .to_str()
++                    .ok_or_else(|| anyhow::anyhow!("invalid duration"))?
++                    .parse()?
++            }
++            Some("--hold-throttle") => {
++                hold_throttle = extra
++                    .next()
++                    .ok_or_else(|| anyhow::anyhow!("missing hold throttle"))?
++                    .to_str()
++                    .ok_or_else(|| anyhow::anyhow!("invalid throttle"))?
++                    .parse()?
++            }
++            _ => bail!("unknown option: {arg:?}"),
++        }
++    }
++    if !(500..=3000).contains(&takeoff_ms) || !(1100..=1800).contains(&hold_throttle) {
++        bail!("takeoff duration or throttle outside diagnostic bounds");
++    }
++    if ![400, 800, 1600].contains(&sensor_hz) {
++        bail!("sensor rate must be 400, 800 or 1600 Hz");
++    }
++    if yaw_p > 200 || yaw_i > 200 || heading_p > 200 {
++        bail!("yaw gains must be at most 200");
++    }
++    let bridge_dt = 1.0 / sensor_hz as f64;
 +    let binary = fs::canonicalize(&args[0])?;
 +    let (library, description) = physics::host_paths(&PathBuf::from(&args[1]))?;
 +    let out = PathBuf::from(&args[2]);
@@ -2321,6 +2444,13 @@ index 0000000..575b640
 +        bail!("use a fresh output directory to preserve prior evidence");
 +    }
 +    let config = "feature GPS\nset gps_provider = VIRTUAL\nset debug_mode = FLIGHT_PLAN\nset failsafe_procedure = AUTO-LAND\naux 0 0 0 1700 2100 0 0\naux 1 56 1 1700 2100 0 0\naux 2 1 2 1700 2100 0 0\nset mag_calibration = 1,1,1\nset ap_hover_throttle = 1690\nset ap_yaw_mode = FIXED\nset ap_waypoint_hold_radius = 100\nwaypoint insert 0 40.4237000 -86.9212000 20150 30 hold 600 figure8\n";
++    let config = if hover {
++        config.replace("hold 600 figure8", "hold 600 none")
++    } else {
++        config.to_string()
++    };
++    let config =
++        format!("{config}set p_yaw = {yaw_p}\nset i_yaw = {yaw_i}\nset ap_yaw_p = {heading_p}\n");
 +    fs::write(out.join("config.txt"), config)?;
 +    let provision = Command::new(&binary)
 +        .args(["--config", out.join("config.txt").to_str().unwrap()])
@@ -2369,8 +2499,9 @@ index 0000000..575b640
 +        let mut raw = [0f32; 4];
 +        let mut last_motor = Instant::now();
 +        let mut motor_packets = 0u64;
++        let mut tail = VecDeque::with_capacity((15 * sensor_hz) as usize);
 +        while !worker_stop.load(Ordering::Relaxed) {
-+            let t = step as f64 * 0.0025;
++            let t = step as f64 * bridge_dt;
 +            let mut rc = t.to_le_bytes().to_vec();
 +            for c in *worker_channels.lock().unwrap() {
 +                rc.extend(c.to_le_bytes());
@@ -2401,17 +2532,25 @@ index 0000000..575b640
 +                bail!("Betaflight motor stream stale");
 +            }
 +            let m = [raw[1], raw[0], raw[2], raw[3]];
-+            for _ in 0..4 {
++            for _ in 0..(1600 / sensor_hz) {
 +                plant.step(m, 0.000625)?;
 +            }
 +            step += 1;
 +            let p = plant.position();
 +            let e = plant.euler();
 +            max_alt = max_alt.max(p[2]);
++            if tail.len() == (15 * sensor_hz) as usize {
++                tail.pop_front();
++            }
++            tail.push_back(FlightSample {
++                time: step as f64 * bridge_dt,
++                altitude: p[2],
++                motors: m,
++            });
 +            writeln!(
 +                trajectory,
 +                "{},{},{},{},{},{},{},{},{},{},{}",
-+                step as f64 * 0.0025,
++                step as f64 * bridge_dt,
 +                p[0],
 +                p[1],
 +                p[2],
@@ -2432,20 +2571,23 @@ index 0000000..575b640
 +            {
 +                bail!("flight bounds exceeded: position={p:?}, attitude={e:?}");
 +            }
-+            let deadline = start + Duration::from_secs_f64(step as f64 * 0.0025);
++            let deadline = start + Duration::from_secs_f64(step as f64 * bridge_dt);
 +            if deadline > Instant::now() {
 +                thread::sleep(deadline - Instant::now());
 +            }
 +        }
 +        trajectory.flush()?;
 +        Ok(
-+            json!({"simulated_seconds":step as f64*0.0025,"maximum_altitude_m":max_alt,"motor_packets":motor_packets,"final_position_enu_m":plant.position()}),
++            json!({"simulated_seconds":step as f64*bridge_dt,"maximum_altitude_m":max_alt,"motor_packets":motor_packets,"final_position_enu_m":plant.position(),"trailing_15s_diagnostics":tail_metrics(&tail)}),
 +        )
 +    });
 +    let mut phase = "connect";
 +    let mut holding_samples = 0u64;
 +    let mut telemetry = BufWriter::new(File::create(out.join("mission-status.csv"))?);
-+    writeln!(telemetry, "sample,nav_state,abort_reason,waypoint_index")?;
++    writeln!(
++        telemetry,
++        "sample,nav_state,abort_reason,waypoint_index,estimated_altitude_cm,estimated_vario_cm_s"
++    )?;
 +    let result = (|| -> Result<()> {
 +        let deadline = Instant::now() + Duration::from_secs(10);
 +        let mut s = loop {
@@ -2477,18 +2619,18 @@ index 0000000..575b640
 +        wait_status(&mut s, &boxes, 8, |_, m| m.contains(&0))?;
 +        phase = "takeoff";
 +        channels.lock().unwrap()[2] = 1700;
-+        thread::sleep(Duration::from_secs(3));
-+        phase = "engage native figure-eight";
++        thread::sleep(Duration::from_millis(takeoff_ms));
++        phase = "engage native planner";
 +        channels.lock().unwrap()[5] = 1800;
 +        wait_status(&mut s, &boxes, 10, |_, m| {
 +            [56, 3, 11].iter().all(|x| m.contains(x))
 +        })?;
-+        channels.lock().unwrap()[2] = 1300;
-+        phase = "native figure-eight window";
++        channels.lock().unwrap()[2] = hold_throttle;
++        phase = "native planner window";
 +        for sample in 0..125 {
 +            let (_, m) = status(&mut s, &boxes)?;
 +            if ![0, 56, 3, 11].iter().all(|id| m.contains(id)) {
-+                bail!("lost autonomous armed modes during figure-eight: {m:?}");
++                bail!("lost autonomous armed modes during diagnostic: {m:?}");
 +            }
 +            let d = request(&mut s, 254)?;
 +            if d.len() < 6 {
@@ -2497,7 +2639,16 @@ index 0000000..575b640
 +            let state = i16::from_le_bytes(d[0..2].try_into()?);
 +            let abort = i16::from_le_bytes(d[2..4].try_into()?);
 +            let index = i16::from_le_bytes(d[4..6].try_into()?);
-+            writeln!(telemetry, "{sample},{state},{abort},{index}")?;
++            let altitude = request(&mut s, 109)?;
++            if altitude.len() < 6 {
++                bail!("short altitude telemetry");
++            }
++            let altitude_cm = i32::from_le_bytes(altitude[0..4].try_into()?);
++            let vario_cm_s = i16::from_le_bytes(altitude[4..6].try_into()?);
++            writeln!(
++                telemetry,
++                "{sample},{state},{abort},{index},{altitude_cm},{vario_cm_s}"
++            )?;
 +            if state == 2 && abort == 0 {
 +                holding_samples += 1;
 +            }
@@ -2507,7 +2658,7 @@ index 0000000..575b640
 +            thread::sleep(Duration::from_millis(200));
 +        }
 +        if holding_samples < 100 {
-+            bail!("native figure-eight HOLD not observed for at least 100 samples");
++            bail!("native HOLD not observed for at least 100 samples");
 +        }
 +        channels.lock().unwrap()[4] = 1000;
 +        phase = "completed diagnostic";
@@ -2519,13 +2670,41 @@ index 0000000..575b640
 +        .map_err(|_| anyhow::anyhow!("plant worker panicked"))?;
 +    let _ = child.kill();
 +    let _ = child.wait();
-+    let report = json!({"adapter":"betaflight","phase":phase,"native_holding_samples":holding_samples,"passed":result.is_ok()&&worker_result.is_ok(),"plant_sha256":plant_hash,"executable_sha256":physics::file_sha256(&binary)?,"qualification":"integration only; native figure-eight phase differs from timed common reference; no landing qualification; wall-clock coupled SITL","control_error":result.as_ref().err().map(|e|format!("{e:#}")),"plant_error":worker_result.as_ref().err().map(|e|format!("{e:#}")),"plant":worker_result.as_ref().ok()});
++    let report = json!({"adapter":"betaflight","yaw_p":yaw_p,"yaw_i":yaw_i,"heading_p":heading_p,"sensor_hz":sensor_hz,"scenario":if hover {"hover"} else {"figure-eight"},"takeoff_ms":takeoff_ms,"hold_throttle_us":hold_throttle,"phase":phase,"native_holding_samples":holding_samples,"passed":result.is_ok()&&worker_result.is_ok(),"plant_sha256":plant_hash,"executable_sha256":physics::file_sha256(&binary)?,"qualification":"integration only; native planner diagnostic is not the timed common reference; no landing qualification; wall-clock coupled SITL","control_error":result.as_ref().err().map(|e|format!("{e:#}")),"plant_error":worker_result.as_ref().err().map(|e|format!("{e:#}")),"plant":worker_result.as_ref().ok()});
 +    telemetry.flush()?;
 +    fs::write(out.join("report.json"), serde_json::to_vec_pretty(&report)?)?;
 +    println!("{report}");
 +    result?;
 +    worker_result?;
 +    Ok(())
++}
++
++#[cfg(test)]
++mod tests {
++    use super::*;
++    #[test]
++    fn altitude_error_and_motor_limits_have_explicit_units() {
++        let samples = VecDeque::from([
++            FlightSample {
++                time: 10.0,
++                altitude: 1.4,
++                motors: [0.5; 4],
++            },
++            FlightSample {
++                time: 10.5,
++                altitude: 1.6,
++                motors: [0.0, 0.5, 1.0, 0.5],
++            },
++        ]);
++        let m = tail_metrics(&samples);
++        assert!((m["altitude_rmse_m"].as_f64().unwrap() - 0.1).abs() < 1e-12);
++        assert_eq!(m["mean_motor_spread_normalized"], 0.5);
++        assert_eq!(m["fraction_samples_any_motor_within_1pct_of_limit"], 0.5);
++        assert_eq!(m["window_start_s"], 10.0);
++        assert_eq!(m["window_end_s"], 10.5);
++        assert_eq!(m["samples"], 2);
++        assert!(tail_metrics(&VecDeque::new()).is_null());
++    }
 +}
 diff --git a/xtask/src/cognipilot.rs b/xtask/src/cognipilot.rs
 new file mode 100644

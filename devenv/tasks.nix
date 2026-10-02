@@ -1002,6 +1002,14 @@ let
           make TARGET=SITL EXTRA_FLAGS=-DENABLE_FLIGHT_PLANNING=1 -j1
         '') // { after = [ "sources:ensure:betaflight" ]; };
 
+      "rdd2:benchmark:betaflight:hover" =
+        (task "cerebri_rdd2" "Check Betaflight hover before attempting a moving trajectory." ''
+          cargo run --release --locked --package cerebri-rdd2-xtask -- betaflight-probe \
+            ${source "betaflight"}/obj/main/betaflight_SITL.elf \
+            ${source "modelica_models"}/artifacts/vehicles/rdd2/plant/Vehicles_Rdd2_Plant \
+            "$PWD/artifacts/betaflight-hover/run-$(date +%s%N)" --hover
+        '') // { after = [ "rdd2:benchmark:betaflight:build" "rdd2:simulation:sil:test" ]; };
+
       "rdd2:benchmark:betaflight:figure-eight" =
         (task "cerebri_rdd2" "Exercise Betaflight native figure-eight mode on the common FMI plant." ''
           cargo run --release --locked --package cerebri-rdd2-xtask -- betaflight-probe \

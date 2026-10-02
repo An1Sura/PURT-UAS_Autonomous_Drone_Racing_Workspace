@@ -76,6 +76,12 @@ a 25-second autonomous pattern window on the same plant, with native HOLD mode
 confirmed in 119 telemetry samples. Betaflight has no comparable timed tracking
 score yet. See [full results and limitations](docs/figure-eight.md).
 
+The [October 1 Betaflight tuning experiments](docs/betaflight-tuning.md) reduce
+simulated yaw/altitude oscillation with model-specific yaw integral tuning.
+The shared physics remain unchanged; an intermittent estimator abort is still
+open. These altitude diagnostics are not CogniPilot-versus-Betaflight tracking
+scores. The existing replay preserves the original flights.
+
 ## Earlier square-flight evidence
 
 These are recorded simulation results, not physical flight measurements.
