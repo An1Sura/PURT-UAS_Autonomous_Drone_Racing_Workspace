@@ -59,9 +59,9 @@ function strut(a,b,r,mat,parent=scene){const av=new T.Vector3(...a),bv=new T.Vec
 // These lines are visual guides, not a physics geofence or collision surface.
 const grid=new T.GridHelper(60,120,palette.line,palette.line);grid.rotation.x=Math.PI/2;grid.position.z=0;grid.material.toneMapped=false;scene.add(grid);
 const bounds=new T.Group();bounds.position.set(...environment.flyable_volume.min_enu_m.map((v,i)=>(v+environment.flyable_volume.max_enu_m[i])/2));scene.add(bounds);
-const boundaryMaterial=new T.MeshBasicMaterial({color:color('--flight-boundary'),toneMapped:false});
+const boundaryMaterial=new T.MeshBasicMaterial({color:color('--flight-boundary'),toneMapped:false,fog:false});
 const edges=new T.EdgesGeometry(new T.BoxGeometry(...environment.flyable_volume.max_enu_m.map((v,i)=>v-environment.flyable_volume.min_enu_m[i])));const edgePoints=edges.attributes.position;
-for(let i=0;i<edgePoints.count;i+=2)strut([edgePoints.getX(i),edgePoints.getY(i),edgePoints.getZ(i)],[edgePoints.getX(i+1),edgePoints.getY(i+1),edgePoints.getZ(i+1)],.006,boundaryMaterial,bounds);
+for(let i=0;i<edgePoints.count;i+=2)strut([edgePoints.getX(i),edgePoints.getY(i),edgePoints.getZ(i)],[edgePoints.getX(i+1),edgePoints.getY(i+1),edgePoints.getZ(i+1)],.04,boundaryMaterial,bounds);
 edges.dispose();
 function label(text,pos,size=.3){const c=document.createElement('canvas');c.width=512;c.height=96;const ctx=c.getContext('2d');ctx.clearRect(0,0,512,96);ctx.font='500 45px sans-serif';ctx.textAlign='center';ctx.fillStyle='#'+palette.light.getHexString();ctx.fillText(text,256,62);const tx=new T.CanvasTexture(c);const s=new T.Sprite(new T.SpriteMaterial({map:tx,transparent:true,depthWrite:false}));s.position.set(...pos);s.scale.set(size*5.33,size,1);scene.add(s);return s;}
 label('East (m)',[2.1,0,.08],.16);label('North (m)',[0,2.2,.08],.16);
