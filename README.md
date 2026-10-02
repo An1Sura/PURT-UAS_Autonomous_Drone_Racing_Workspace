@@ -1,40 +1,168 @@
-# Autonomous Drone Benchmark
+# Autonomous Drone Racing Benchmark
 
-Compare **Betaflight and CogniPilot** flying an autonomous figure eight on the same Rumoca-generated quadrotor plant.
+**Which flight stack can fly the same figure-eight course as fast as possible while still completing it accurately and reliably?**
 
-[Flight Simulation & Stats](https://an1sura.github.io/autonomous-drone-bench/sim/) · [VM-connected simulation](http://127.0.0.1:8766/sim/)
+The semester goal is to fly **two identical drones autonomously**, one running **Betaflight** and one running **CogniPilot**, and find each stack's **fastest repeatable, valid one-lap time**. Tracking error, overshoot, actuator saturation and timing measurements explain what limits that speed. They are constraints and diagnostics for the racing comparison, not a replacement for it.
 
-The fixed course is **8 × 4 m**, at **1.5 m altitude**, with **one figure eight**, then landing. CogniPilot uses a 45-second reference; Betaflight’s native cycle is 25.13 seconds and its recorded lap count is checked independently. The page shows actual firmware recordings and fixed stats. PURT's approximate 53.34 × 28.956 × 9.144 m envelope is drawn over the black grid; current calibrated coverage remains unverified.
+Simulation develops the waypoint, control-input and measurement software before physical flights at PURT. Software-in-the-loop (SIL) is the working foundation; hardware-in-the-loop (HIL) can reuse the same simulation boundary as a stretch goal.
 
-The benchmark now has [checked Lean mathematics](docs/formal-verification.md), using pinned CogniPilot `gnc_lean` proofs. This covers the reference equations and timing/scaling identities, not universal firmware or hardware correctness.
+[**Watch the Flight Simulation & Stats page**](https://an1sura.github.io/autonomous-drone-bench/sim/) · [Open the VM-connected simulation](http://127.0.0.1:8766/sim/) · [Read the speed-benchmark plan](docs/speed-benchmark.md)
 
-## Run locally
+**Current milestone:** both real flight-stack executables have flown a figure eight on the same Rumoca-generated quadrotor model. The latest Betaflight recording passes the one-lap geometric check, lands and disarms; CogniPilot passes its timed-reference diagnostic. These demonstrate the connections and recorded flights. **We have not yet measured either stack's maximum valid racing speed or established a winner.**
 
-Use `./setup rdd2`, then the existing Devenv tasks:
+## What this project does
+
+The simulator acts as the drone: it produces sensor readings, receives motor commands from the flight software, and calculates the resulting motion. The runner records the flight so performance can be measured and experiments repeated.
+
+```mermaid
+flowchart LR
+    R[Trajectory and experiment settings] --> B[Benchmark runner]
+    B --> A[Flight-stack adapter]
+    A --> F[Selected flight stack]
+    F --> M[Motor commands]
+    M --> P[Shared quadrotor physics]
+    P --> S[Sensor observations]
+    S --> A
+    P --> L[Recorded motion and metrics]
+    B --> L
+```
+
+One stack runs at a time. Selecting Betaflight or CogniPilot changes the flight software and its adapter; it does not select an unrelated physics simulator. The adapter translates observations, reference commands and motor outputs between the runner and each stack's own interfaces.
+
+The comparison must hold these conditions constant:
+
+- Course geometry, initial position and attitude, and the control level being tested.
+- Vehicle mass, inertia, propulsion model, motor order and actuator limits.
+- Sensor models, update rates, noise, delays and disturbances.
+- Lap start/finish rules, tracking tolerances, failure criteria and scoring windows.
+
+Shared physics is working. Matching sensor conditions, reference timing and takeoff/landing remains active work. The physical drones are intended to be identical; the current RDD2 plant is a shared test vehicle, **not yet a measured calibration of those drones**.
+
+## How we will find the fastest valid lap
+
+Keep the **same course size** for both stacks, then progressively shorten the requested lap duration. Each stack may be tuned for performance under the same vehicle and evaluation constraints. Do not shrink the path, skip a lobe or loosen the acceptance rules to get a faster result.
+
+1. Establish a completed one-lap baseline with valid takeoff, tracking and landing.
+2. Align the command interface, sensor conditions and lap-timing rules before ranking stacks.
+3. Run a coarse sweep of shorter lap targets, then refine around the pass/fail boundary.
+4. Repeat candidate settings and retain every failed attempt as well as successful ones.
+5. Report each stack's fastest repeatable accepted lap, tracking error and failure rate, with the conditions and tuning budget stated.
+
+The lap clock measures **flight around the course**, separately from estimator warmup, arming, takeoff, end hold and landing. Total mission time is still reported. Simulation time is not the computer's execution time or the replay playback speed.
+
+The acceptance thresholds, repeat count and common start/finish implementation still need to be fixed before a speed ranking. This procedure is the next benchmark milestone, **not an automated speed sweep already implemented in the current page**. See [the speed-benchmark definition and remaining work](docs/speed-benchmark.md).
+
+## Current implementation
+
+| Component | Implemented and exercised | Remaining work |
+| --- | --- | --- |
+| **CogniPilot** | Real Zephyr `native_sim` firmware, shared-memory lockstep, common plant, external timed figure-eight reference and recorded landing | Match comparison conditions; find its fastest valid lap; validate hardware feedback and timing/drivers |
+| **Betaflight** | Pinned development SITL, sensor/motor exchange, native figure-eight pattern, independent recorded-lap check and landing/disarm checks | Support the common speed experiment; match sensors and timing; confirm the hardware firmware/interface |
+| **Shared plant** | Modelica quadrotor dynamics compiled by Rumoca into a generated-C/FMI artifact | Calibrate mass, inertia, motor response and limits against the identical physical drones |
+| **Simulation page** | Fixed one-lap PURT course, actual recordings, stats, black grid and green facility outline | Display future speed-sweep results once the runner and acceptance rules are implemented |
+| **Formal mathematics** | 40 named Lean-checked benchmark theorems using `gnc_lean`; build and axiom audit pass | Numerical error bounds, implementation refinement and controller/hardware proofs remain outside current coverage |
+
+## What the current recordings show
+
+The course is **8 × 4 m**, at **1.5 m altitude**, with **one figure eight**, then landing. Betaflight is orange; CogniPilot is blue. The green PURT outline uses an approximate **53.34 × 28.956 × 9.144 m** envelope. Actual calibrated coverage and obstacle locations still need measurement.
+
+| Stack | Current pattern timing | Full recorded run | Observed result |
+| --- | --- | --- | --- |
+| **Betaflight** | 25.132741 s native period; 25.2 s HOLD | 40.315 s | One geometric lap, zero extra quadrant gates, landed and disarmed |
+| **CogniPilot** | 45 s reference, followed by a 5 s hold | 74.000 s | Reference diagnostic passed; 0.294747 m 3D tracking RMS over its scored window |
+
+These are October 2 simulation recordings from run `1790925641463995931`, not physical-flight measurements. Recorded totals include setup and landing. **The table does not show Betaflight beating CogniPilot:** the two flights currently use different time laws, sensor paths and timing arrangements, and neither has undergone a maximum-speed search.
+
+Betaflight's native planner has a 1 m/s cruise floor and a 0.25 rad/s pattern-rate cap. On this course, those produce the 25.13-second cycle. The old 45-second HOLD unintentionally commanded about 1.79 cycles; the corrected adapter requests 252 deciseconds and checks the recorded lap. That native planner cap is **not a measurement of Betaflight's ultimate control capability**. See [the timing diagnosis](docs/betaflight-timing.md).
+
+Earlier [Betaflight tuning experiments](docs/betaflight-tuning.md) addressed simulated yaw/altitude oscillation without changing the shared plant. Intermittent estimator aborts and provisioning failures remain documented. Failed runs are preserved. The [current timing rundown](docs/timing-rundown.md) explains scoring and the limits of comparison.
+
+## What the repositories and tools do
+
+| Repository / tool | Role in this project |
+| --- | --- |
+| [This benchmark workspace](https://github.com/An1Sura/autonomous-drone-bench) | Experiment configuration, dependency patches, documentation, published recordings and site |
+| [CogniPilot/cognipilot_workspace](https://github.com/CogniPilot/cognipilot_workspace) | Basis of this workspace's Devenv setup and development profiles |
+| [CogniPilot/cerebri_rdd2](https://github.com/CogniPilot/cerebri_rdd2) | RDD2 firmware, native Rust simulation runner and patched benchmark interfaces |
+| [CogniPilot/modelica_models](https://github.com/CogniPilot/modelica_models) | Modelica vehicle/plant definitions |
+| [CogniPilot/rumoca](https://github.com/CogniPilot/rumoca) | Compiles the Modelica model into the simulation artifact used by the runner |
+| [Betaflight](https://github.com/betaflight/betaflight) | Pinned flight-stack executable and its native SITL interfaces |
+| [CogniPilot/gnc_lean](https://github.com/CogniPilot/gnc_lean) | Pinned verified mathematics used by our benchmark proof project |
+| Zephyr, Devenv and native build tools | Firmware runtime, environment/task coordination, and project-owned builds |
+
+Modelica defines the plant; Rumoca compiles it; the native Rust runner exchanges sensor and actuator data with the flight stack. Three.js displays the recorded positions and attitudes—it does not calculate the benchmark physics or invent a successful landing.
+
+The [Lean coverage report](docs/formal-verification.md) explains the proofs of path closure, derivatives, smooth starts/stops, scaling laws, conditional containment and Betaflight timing. These proofs support the equations. They do not prove that either drone always tracks correctly, that PURT is safe to fly in, or that the current results form a fair ranking.
+
+## Run the work
+
+The exercised flight environment is an Ubuntu 24.04 ARM64 Linux VM. Use this repository as the workspace:
+
+```sh
+git clone https://github.com/An1Sura/autonomous-drone-bench.git
+cd autonomous-drone-bench
+./setup rdd2
+```
+
+On a fresh checkout, follow the [tested revision and patch instructions](patches/README.md). Editable dependencies live under `src/`; this repository preserves native runner changes as patches against documented commits. The existing development VM already has the patches applied.
+
+Inside the RDD2 environment:
+
+```sh
+# Check the shared boundary, protocol and reference behavior.
+devenv -P rdd2 tasks run rdd2:benchmark:test
+
+# Run the current stack-specific figure-eight diagnostics.
+devenv -P rdd2 tasks run rdd2:benchmark:betaflight:figure-eight
+devenv -P rdd2 tasks run rdd2:benchmark:cognipilot:figure-eight
+
+# Open the local simulation service; use Rerun both on its page.
+devenv -P rdd2 up mission-planner
+```
+
+The service's internal process name is `mission-planner`; the user-facing page is **Flight Simulation & Stats**. It currently uses a fixed configuration with no editable stats controls. The local page reruns native firmware while the VM is on; GitHub Pages serves saved recordings. The [startup guide](docs/mission-planner.md) explains both.
+
+The original qualification workflow remains available:
 
 ```sh
 devenv -P rdd2 tasks run rdd2:simulation:modelica:test
 devenv -P rdd2 tasks run rdd2:simulation:sil:test
 devenv -P rdd2 tasks run rdd2:simulation:compare
-devenv -P rdd2 tasks run rdd2:benchmark:betaflight:figure-eight
-devenv -P rdd2 tasks run rdd2:benchmark:cognipilot:figure-eight
-devenv -P rdd2 up mission-planner
 ```
 
-Apply the [tested dependency patches](patches/README.md) first on a fresh checkout. Native Cargo and West workflows remain available. The local web process runs only Betaflight and CogniPilot sequentially. Use **Rerun both** while the VM is on. GitHub Pages shows saved recordings.
+These are qualification commands, not a claim that every qualification currently passes. Consult the [validation record](docs/rdd2-validation.md) and retain failed logs. Native Cargo and West workflows remain usable without Devenv. The separate [Lean project](proofs/README.md) uses `lake build`.
 
-## What the comparison establishes
+### Where the results go
 
-Both stacks use the same plant and requested figure-eight geometry. CogniPilot follows the shared timed reference; Betaflight uses a native phase law constrained by a speed floor and rate cap ([diagnosis and fix](docs/betaflight-timing.md)). Sensors, execution timing and takeoff/landing differ. A passed run establishes this diagnostic completed, not sensor parity or a fair stack ranking. SIL is the software-first target; HIL reuses the same plant boundary as a stretch goal.
+| Location | Contents |
+| --- | --- |
+| `src/cerebri_rdd2/artifacts/mission-planner/<run-id>/` | Exact config, per-stack logs, reports and full recorded trajectories from the local service |
+| `src/cerebri_rdd2/artifacts/sil/` | CogniPilot baseline SIL report and trajectory |
+| `docs/results/single-lap/` | Current published replay data with native reports and final samples retained |
+| `docs/results/betaflight-timing-fix/` | Compact records of successful and failed timing-fix attempts |
+| `proofs/` | Lean source, pinned dependencies, axiom audit and verification record |
 
-## Guides
+Reports preserve completion/failure details and plant/firmware fingerprints. Full native logs and generated binaries stay in the editable dependency workspace; selected reports and replay samples are committed for review.
 
-- [Simulation page and startup](docs/mission-planner.md)
-- [Current timing rundown](docs/timing-rundown.md)
-- [Common benchmark architecture](docs/common-benchmark.md)
-- [Shared reference](docs/shared-reference.md)
-- [PURT evidence and survey](docs/purt-environment.md)
-- [RDD2 workflow](docs/rdd2.md)
+## What comes next
+
+1. Give both stacks a common speed-test reference and lap start/finish definition; resolve sensor and execution-timing differences.
+2. Implement shorter-lap sweeps, fixed acceptance criteria and repeatability reporting to locate each stack's fastest valid lap.
+3. Identify hardware firmware/configuration and position feedback, then calibrate the plant against the identical drones.
+4. Finish assembly and soldering of the CogniPilot drone, validate its timing/drivers, and transfer the tested waypoint/control interfaces to autonomous physical figure-eight flights.
+
+A controller that cuts the course or fails tracking does not win because it finishes quickly. A conservative demonstration setting also does not establish a controller's speed limit. The goal is the fastest **valid, repeatable** flight under the same declared constraints.
+
+## Project guides
+
+- [Speed-benchmark objective and experiment plan](docs/speed-benchmark.md)
+- [Flight Simulation & Stats and startup](docs/mission-planner.md)
+- [Current recordings and timing rundown](docs/timing-rundown.md)
+- [Betaflight timing fix](docs/betaflight-timing.md) and [tuning experiments](docs/betaflight-tuning.md)
+- [Shared reference](docs/shared-reference.md) and [common architecture](docs/common-benchmark.md)
+- [PURT evidence and measurement checklist](docs/purt-environment.md)
+- [Checked mathematics and limitations](docs/formal-verification.md)
+- [Validation record](docs/rdd2-validation.md), [dependency patches](patches/README.md), and [RDD2 workflow](docs/rdd2.md)
 
 <details>
 <summary>Underlying CogniPilot workspace reference: profiles, tools and maintenance</summary>
@@ -431,7 +559,3 @@ packages. Native editable outputs are intentionally not Cachix artifacts.
 cache downloads.
 
 </details>
-
-## Connected Flight Simulation & Stats
-
-[Flight Simulation & Stats](https://an1sura.github.io/autonomous-drone-bench/sim/) now combines settings and recorded flights. Use the [VM-connected page](http://127.0.0.1:8766/sim/) to rerun both native stacks using the fixed single-lap configuration. [Startup, job behavior and limits](docs/mission-planner.md).

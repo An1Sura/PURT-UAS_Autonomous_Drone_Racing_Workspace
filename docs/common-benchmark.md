@@ -1,5 +1,7 @@
 # Common benchmark architecture
 
+The goal is the fastest repeatable, valid one-lap figure eight for Betaflight and CogniPilot under the same course and vehicle constraints. Tracking and timing diagnostics explain the speed limit. The [speed-benchmark plan](speed-benchmark.md) separates that goal from the current integration recordings.
+
 The benchmark compares Betaflight and CogniPilot on one Rumoca-generated quadrotor plant. The plant supplies sensor observations to each stack's adapter and receives its motor commands. Geometry, requested trajectory, actuator model and physical initial conditions belong to the benchmark rather than separate simulator models.
 
 CogniPilot uses Zephyr native_sim and shared-memory lockstep, with external position/velocity/yaw reference ingress. Betaflight uses its native SITL sensor/motor transport and native figure-eight planner. The latter's quantized phase clock differs from the shared minimum-jerk reference. Sensor and scheduler parity remain unresolved, so results are integration diagnostics rather than a stack ranking.

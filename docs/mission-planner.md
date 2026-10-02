@@ -1,5 +1,7 @@
 # Flight Simulation & Stats
 
+The project goal is to find each stack’s fastest repeatable valid figure-eight lap. This page currently shows fixed diagnostic runs, not a maximum-speed sweep or a ranking. The 45-second reference is a baseline setting, not the intended final racing pace. See the [speed-benchmark plan](speed-benchmark.md).
+
 The [simulation page](https://an1sura.github.io/autonomous-drone-bench/sim/) now uses a fixed PURT single-lap configuration. There are no editable mission, profile or environment controls.
 
 The course is 8 × 4 m at 1.5 m altitude. CogniPilot follows one 45-second reference, holds for five seconds and lands. Betaflight uses its native figure-eight pattern: the firmware's speed floor and rate cap give a 25.13-second cycle, so the corrected adapter requests a 25.2-second HOLD before LAND. Ground-truth lap verification is required in addition to landing. See [the timing diagnosis](betaflight-timing.md).
