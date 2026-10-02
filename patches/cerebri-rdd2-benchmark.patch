@@ -1483,10 +1483,10 @@ index 0000000..b94b49c
 +}
 diff --git a/xtask/src/betaflight_probe.rs b/xtask/src/betaflight_probe.rs
 new file mode 100644
-index 0000000..660b316
+index 0000000..86c69bc
 --- /dev/null
 +++ b/xtask/src/betaflight_probe.rs
-@@ -0,0 +1,655 @@
+@@ -0,0 +1,763 @@
 +//! Real Betaflight SITL connected to the common FMI plant. Native HOLD/FIGURE8
 +//! is an integration diagnostic: its phase law differs from the timed reference.
 +use crate::physics::{self, Plant};
@@ -1678,6 +1678,57 @@ index 0000000..660b316
 +    ];
 +    values.iter().flat_map(|x| x.to_le_bytes()).collect()
 +}
++// Pinned Betaflight 744f95f flight_plan_nav.c: FP_MIN_CRUISE_MPS and
++// FP_PATTERN_MAX_RATE_RADS. Keep these explicit when updating the firmware pin.
++fn native_timing(radius_cm: f64, requested_lap_s: f64, laps: u32) -> serde_json::Value {
++    let requested_speed_cm_s = (std::f64::consts::TAU * radius_cm / requested_lap_s).round();
++    let effective_rate = ((requested_speed_cm_s * 0.01).max(1.0) / (radius_cm * 0.01)).min(0.25);
++    let period = std::f64::consts::TAU / effective_rate;
++    json!({"requested_lap_s":requested_lap_s,"requested_speed_cm_s":requested_speed_cm_s,
++        "minimum_cruise_m_s":1.0,"maximum_pattern_rate_rad_s":0.25,
++        "effective_pattern_rate_rad_s":effective_rate,"native_period_s":period,
++        "hold_deciseconds":(period * laps as f64 * 10.).ceil() as u64,
++        "requested_laps":laps,"timer_includes_pattern_settling":true})
++}
++
++// Geometric verification is independent of elapsed time and native mission state.
++// A complete figure eight visits all four quadrants in order, then returns to
++// the centre at flight altitude. Tolerances are fractions of the configured axes.
++fn verify_laps(
++    rows: impl Iterator<Item = [f64; 4]>,
++    a: f64,
++    b: f64,
++    altitude: f64,
++    requested: u32,
++) -> serde_json::Value {
++    let mut gate = 0usize;
++    let mut completions = Vec::new();
++    for [t, x, y, z] in rows {
++        if z < altitude * 0.8 {
++            continue;
++        }
++        let reached = match gate {
++            0 => x > 0.4 * a && y > 0.4 * b,
++            1 => x > 0.4 * a && y < -0.4 * b,
++            2 => x < -0.4 * a && y > 0.4 * b,
++            3 => x < -0.4 * a && y < -0.4 * b,
++            _ => x.abs() <= 0.25 * a && y.abs() <= 0.5 * b,
++        };
++        if reached {
++            gate += 1;
++            if gate == 5 {
++                completions.push(t);
++                gate = 0;
++            }
++        }
++    }
++    json!({"passed":completions.len()==requested as usize && gate==0,
++        "completed_laps":completions.len(),"requested_laps":requested,
++        "extra_quadrant_gates":gate,"completion_times_s":completions,
++        "method":"ordered four quadrant gates plus centre return above 80% target altitude",
++        "quadrant_threshold_fraction":0.4,"centre_tolerance_x_m":0.25*a,"centre_tolerance_y_m":0.5*b})
++}
++
 +pub fn run(args: impl Iterator<Item = std::ffi::OsString>) -> Result<()> {
 +    let args: Vec<_> = args.collect();
 +    if args.len() < 3 {
@@ -1800,9 +1851,11 @@ index 0000000..660b316
 +    } else {
 +        config.to_string()
 +    };
++    let mut timing = serde_json::Value::Null;
 +    let config = if let Some(c) = &figure_config {
 +        let radius_cm = (c.width_m * c.scale * 50.).round();
-+        let speed_cm = (std::f64::consts::TAU * radius_cm / c.lap_time_s).round();
++        timing = native_timing(radius_cm, c.lap_time_s, c.laps as u32);
++        let speed_cm = timing["requested_speed_cm_s"].as_f64().unwrap();
 +        if !(10.0..=1000.0).contains(&radius_cm)
 +            || speed_cm < 10.
 +            || std::f64::consts::TAU / c.lap_time_s > 0.5
@@ -1816,7 +1869,10 @@ index 0000000..660b316
 +            )
 +            .replace(
 +                "20150 30 hold 250",
-+                &format!("20150 {speed_cm} hold {}", (c.total_time() * 10.).round()),
++                &format!(
++                    "20150 {speed_cm} hold {}",
++                    timing["hold_deciseconds"].as_u64().unwrap()
++                ),
 +            )
 +    } else {
 +        config
@@ -2098,18 +2154,70 @@ index 0000000..660b316
 +        .map_err(|_| anyhow::anyhow!("plant worker panicked"))?;
 +    let _ = child.kill();
 +    let _ = child.wait();
-+    let report = json!({"adapter":"betaflight","config":figure_config,"timed_reference_parity":false,"phase_law":"native constant phase; cruise speed quantized to cm/s","yaw_p":yaw_p,"yaw_i":yaw_i,"heading_p":heading_p,"sensor_hz":sensor_hz,"scenario":if hover {"hover"} else {"figure-eight"},"takeoff_ms":takeoff_ms,"hold_throttle_us":hold_throttle,"phase":phase,"native_holding_samples":holding_samples,"landing_observed":landing_observed,"native_disarmed":native_disarmed,"touchdown_altitude_m":touchdown_altitude_m,"passed":result.is_ok()&&worker_result.is_ok(),"plant_sha256":plant_hash,"executable_sha256":physics::file_sha256(&binary)?,"qualification":"integration only; native planner diagnostic is not the timed common reference; landing checked against ground truth and motor output; wall-clock coupled SITL","control_error":result.as_ref().err().map(|e|format!("{e:#}")),"plant_error":worker_result.as_ref().err().map(|e|format!("{e:#}")),"plant":worker_result.as_ref().ok()});
++    let lap_check = if let Some(c) = &figure_config {
++        let csv = fs::read_to_string(out.join("mission-trajectory.csv"))?;
++        let rows = csv
++            .lines()
++            .skip(1)
++            .map(|line| -> Result<[f64; 4]> {
++                let mut values = line.split(',');
++                let mut row = [0.; 4];
++                for value in &mut row {
++                    *value = values.next().context("missing trajectory value")?.parse()?;
++                }
++                Ok(row)
++            })
++            .collect::<Result<Vec<_>>>()?;
++        verify_laps(
++            rows.into_iter(),
++            c.width_m * c.scale / 2.,
++            c.height_m * c.scale / 2.,
++            c.altitude_m,
++            c.laps as u32,
++        )
++    } else {
++        serde_json::Value::Null
++    };
++    let laps_ok = lap_check.is_null() || lap_check["passed"] == true;
++    let report = json!({"native_timing":timing,"lap_verification":lap_check,"adapter":"betaflight","config":figure_config,"timed_reference_parity":false,"phase_law":"native constant phase; cruise speed quantized to cm/s","yaw_p":yaw_p,"yaw_i":yaw_i,"heading_p":heading_p,"sensor_hz":sensor_hz,"scenario":if hover {"hover"} else {"figure-eight"},"takeoff_ms":takeoff_ms,"hold_throttle_us":hold_throttle,"phase":phase,"native_holding_samples":holding_samples,"landing_observed":landing_observed,"native_disarmed":native_disarmed,"touchdown_altitude_m":touchdown_altitude_m,"passed":result.is_ok()&&worker_result.is_ok()&&laps_ok,"plant_sha256":plant_hash,"executable_sha256":physics::file_sha256(&binary)?,"qualification":"integration only; native planner diagnostic is not the timed common reference; landing checked against ground truth and motor output; wall-clock coupled SITL","control_error":result.as_ref().err().map(|e|format!("{e:#}")),"plant_error":worker_result.as_ref().err().map(|e|format!("{e:#}")),"plant":worker_result.as_ref().ok()});
 +    telemetry.flush()?;
 +    fs::write(out.join("report.json"), serde_json::to_vec_pretty(&report)?)?;
 +    println!("{report}");
 +    result?;
 +    worker_result?;
++    if !laps_ok {
++        bail!("recorded figure-eight lap verification failed: {lap_check}");
++    }
 +    Ok(())
 +}
 +
 +#[cfg(test)]
 +mod tests {
 +    use super::*;
++    #[test]
++    fn timing_accounts_for_firmware_floor_and_cap() {
++        let timing = native_timing(400., 45., 1);
++        assert_eq!(timing["requested_speed_cm_s"], 56.);
++        assert_eq!(timing["hold_deciseconds"], 252);
++        assert!((timing["native_period_s"].as_f64().unwrap() - 25.1327412287).abs() < 1e-8);
++        assert_eq!(native_timing(1000., 100., 1)["hold_deciseconds"], 629);
++        assert_eq!(native_timing(400., 20., 1)["hold_deciseconds"], 252);
++    }
++    #[test]
++    fn geometry_rejects_extra_and_incomplete_laps() {
++        for (turns, expected) in [(1., true), (2., false), (1.75, false), (0., false)] {
++            let rows = (0..=1000).map(|i| {
++                let phase = std::f64::consts::TAU * turns * i as f64 / 1000.;
++                [
++                    i as f64 / 100.,
++                    4. * phase.sin(),
++                    2. * (2. * phase).sin(),
++                    1.5,
++                ]
++            });
++            assert_eq!(verify_laps(rows, 4., 2., 1.5, 1)["passed"], expected);
++        }
++    }
 +    #[test]
 +    fn landing_requires_ground_contact_rest_and_stopped_motors() {
 +        assert!(grounded(0.0984, 0.0, [0.0; 4]));

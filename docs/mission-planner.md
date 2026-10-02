@@ -2,7 +2,7 @@
 
 The [simulation page](https://an1sura.github.io/autonomous-drone-bench/sim/) now uses a fixed PURT single-lap configuration. There are no editable mission, profile or environment controls.
 
-The course is 8 × 4 m at 1.5 m altitude, with one requested 45-second figure-eight lap, a five-second hold and landing. Forty-five seconds is within the existing Betaflight native pattern adapter’s supported duration. Betaflight’s quantized native clock is not exactly the CogniPilot reference clock; a requested lap is not proof of actual completion, particularly on failed attempts.
+The course is 8 × 4 m at 1.5 m altitude. CogniPilot follows one 45-second reference, holds for five seconds and lands. Betaflight uses its native figure-eight pattern: the firmware's speed floor and rate cap give a 25.13-second cycle, so the corrected adapter requests a 25.2-second HOLD before LAND. Ground-truth lap verification is required in addition to landing. See [the timing diagnosis](betaflight-timing.md).
 
 The green envelope comes from the PURT configuration (approximately 53.34 × 28.956 × 9.144 m). The viewer retains the black grid, orange Betaflight and blue CogniPilot paths. PURT overview shows the facility extent; close camera views keep the small drone visible. Actual calibrated coverage and obstacle positions are still unknown.
 
@@ -13,4 +13,4 @@ Runs are sequential, save their exact config and preserve failed partial traject
 
 The current course scales both horizontal dimensions by four while keeping altitude fixed. Its path is 24.3889 m, peak required speed 1.4810 m/s and peak lateral acceleration 0.5260 m/s² at a 45-second lap target. This fits the assumed profile limits including their reserve factor; actual calibrated PURT coverage remains unverified.
 
-The 8 × 4 m, one-lap / 45-second configuration was rerun on both stacks. All passed; every public recording embeds this exact config. Recorded durations include setup and landing, not just the lap.
+Each public recording embeds its exact config and native report. The shared 45-second request is not Betaflight’s effective native cycle; use the reported native timing and geometric lap check. Recorded durations include setup and landing, not just the lap.

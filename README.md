@@ -4,7 +4,7 @@ Compare **Betaflight and CogniPilot** flying an autonomous figure eight on the s
 
 [Flight Simulation & Stats](https://an1sura.github.io/autonomous-drone-bench/sim/) · [VM-connected simulation](http://127.0.0.1:8766/sim/)
 
-The fixed course is **8 × 4 m**, at **1.5 m altitude**, with **one requested 45-second lap**, hold and landing. The page shows actual firmware recordings and fixed stats. PURT's approximate 53.34 × 28.956 × 9.144 m envelope is drawn over the black grid; current calibrated coverage remains unverified.
+The fixed course is **8 × 4 m**, at **1.5 m altitude**, with **one figure eight**, then landing. CogniPilot uses a 45-second reference; Betaflight’s native cycle is 25.13 seconds and its recorded lap count is checked independently. The page shows actual firmware recordings and fixed stats. PURT's approximate 53.34 × 28.956 × 9.144 m envelope is drawn over the black grid; current calibrated coverage remains unverified.
 
 ## Run locally
 
@@ -23,7 +23,7 @@ Apply the [tested dependency patches](patches/README.md) first on a fresh checko
 
 ## What the comparison establishes
 
-Both stacks use the same plant and requested figure-eight geometry. CogniPilot follows the shared timed reference; Betaflight uses a quantized native phase law. Sensors, execution timing and takeoff/landing differ. A passed run establishes this diagnostic completed, not sensor parity or a fair stack ranking. SIL is the software-first target; HIL reuses the same plant boundary as a stretch goal.
+Both stacks use the same plant and requested figure-eight geometry. CogniPilot follows the shared timed reference; Betaflight uses a native phase law constrained by a speed floor and rate cap ([diagnosis and fix](docs/betaflight-timing.md)). Sensors, execution timing and takeoff/landing differ. A passed run establishes this diagnostic completed, not sensor parity or a fair stack ranking. SIL is the software-first target; HIL reuses the same plant boundary as a stretch goal.
 
 ## Guides
 

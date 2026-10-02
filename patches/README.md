@@ -55,3 +55,5 @@ large simulation logs are intentionally outside this repository.
 
 Read [validation and limits](../docs/rdd2-validation.md) before interpreting a
 successful SIL result as a matched two-stack benchmark.
+
+The Betaflight adapter accounts for the pinned firmware's 1 m/s cruise floor and 0.25 rad/s pattern-rate cap, then verifies the recorded figure-eight count independently of native landing state. See [timing diagnosis and validation](../docs/betaflight-timing.md).
