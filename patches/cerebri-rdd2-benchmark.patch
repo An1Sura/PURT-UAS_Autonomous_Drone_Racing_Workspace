@@ -2252,10 +2252,10 @@ index 0000000..86c69bc
 +}
 diff --git a/xtask/src/cognipilot.rs b/xtask/src/cognipilot.rs
 new file mode 100644
-index 0000000..5c753ae
+index 0000000..940076c
 --- /dev/null
 +++ b/xtask/src/cognipilot.rs
-@@ -0,0 +1,279 @@
+@@ -0,0 +1,289 @@
 +//! CogniPilot wire-format conversion; no physics or sensor scheduling here.
 +use crate::benchmark::{ActuatorFrame, FlightStackAdapter, PilotCommand, SensorFrame};
 +use crate::{protocol, shared_memory::LockstepOutputs};
@@ -2334,6 +2334,7 @@ index 0000000..5c753ae
 +        .position_enu_m
 +        .iter()
 +        .chain(r.velocity_enu_m_s.iter())
++        .chain(r.acceleration_enu_m_s2.iter())
 +        .chain(std::iter::once(&r.yaw_enu_rad))
 +        .all(|x| x.is_finite() && x.abs() < 10000.)
 +    {
@@ -2351,7 +2352,11 @@ index 0000000..5c753ae
 +            r.velocity_enu_m_s[1] as f32,
 +            r.velocity_enu_m_s[2] as f32,
 +        ),
-+        &Vec3f::new(0., 0., 0.),
++        &Vec3f::new(
++            r.acceleration_enu_m_s2[0] as f32,
++            r.acceleration_enu_m_s2[1] as f32,
++            r.acceleration_enu_m_s2[2] as f32,
++        ),
 +        r.yaw_enu_rad as f32,
 +        0.,
 +        0,
@@ -2367,12 +2372,17 @@ index 0000000..5c753ae
 +        let r = crate::reference::Reference {
 +            position_enu_m: [1., 2., 3.],
 +            velocity_enu_m_s: [4., 5., 6.],
++            acceleration_enu_m_s2: [0.1, -0.2, 0.3],
 +            yaw_enu_rad: 0.2,
 +        };
 +        let wire = reference_wire(1, 1, r).unwrap();
 +        assert_eq!(wire.position_enu_m().x(), 1.);
 +        assert_eq!(wire.position_enu_m().y(), 2.);
 +        assert_eq!(wire.velocity_enu_m_s().z(), 6.);
++        assert_eq!(wire.acceleration_or_force_enu().y(), -0.2f32);
++        let mut bad_accel = r;
++        bad_accel.acceleration_enu_m_s2[0] = f64::NAN;
++        assert!(reference_wire(1, 1, bad_accel).is_err());
 +        assert!(reference_wire(2, 1, r).is_err());
 +        assert!(reference_wire(1, 100_000_002, r).is_err());
 +        let mut invalid = r;
@@ -2537,10 +2547,10 @@ index 0000000..5c753ae
 +}
 diff --git a/xtask/src/cognipilot_reference.rs b/xtask/src/cognipilot_reference.rs
 new file mode 100644
-index 0000000..47ecf78
+index 0000000..3128f1f
 --- /dev/null
 +++ b/xtask/src/cognipilot_reference.rs
-@@ -0,0 +1,304 @@
+@@ -0,0 +1,305 @@
 +//! Shared square reference diagnostic. Takeoff/landing still use the legacy
 +//! simulator-assisted throttle law; this is not full sensor/control parity.
 +use crate::{
@@ -2796,6 +2806,7 @@ index 0000000..47ecf78
 +    }
 +    let mut value = serde_json::to_value(&report)?;
 +    value["config"] = serde_json::to_value(cfg)?;
++    value["acceleration_feedforward"] = "analytic_reference_second_derivative".into();
 +    value["reference_start_s"] =
 +        (report.mission_epoch_ns.unwrap_or(0) as f64 * 1e-9 + start).into();
 +    value["reference_end_s"] = (report.mission_epoch_ns.unwrap_or(0) as f64 * 1e-9 + end).into();
@@ -2847,10 +2858,10 @@ index 0000000..47ecf78
 +}
 diff --git a/xtask/src/figure_config.rs b/xtask/src/figure_config.rs
 new file mode 100644
-index 0000000..2e537e2
+index 0000000..f493896
 --- /dev/null
 +++ b/xtask/src/figure_config.rs
-@@ -0,0 +1,371 @@
+@@ -0,0 +1,401 @@
 +//! Shared geometry, timing and planning assumptions. No measured stack limits implied.
 +use crate::reference::Reference;
 +use anyhow::{Context, Result, bail};
@@ -3005,7 +3016,9 @@ index 0000000..2e537e2
 +        };
 +        let q = std::f64::consts::TAU * u.powi(3) * (10. + u * (-15. + 6. * u));
 +        let dq = std::f64::consts::TAU * 30. * u * u * (1. - u).powi(2) / self.lap_time_s;
-+        let (p, d, _) = self.geometry(q);
++        let ddq =
++            std::f64::consts::TAU * 60. * u * (1. - u) * (1. - 2. * u) / self.lap_time_s.powi(2);
++        let (p, d, dd) = self.geometry(q);
 +        Reference {
 +            position_enu_m: [
 +                p[0] + self.center_enu_m[0],
@@ -3013,6 +3026,11 @@ index 0000000..2e537e2
 +                self.altitude_m,
 +            ],
 +            velocity_enu_m_s: [d[0] * dq, d[1] * dq, 0.],
++            acceleration_enu_m_s2: [
++                dd[0] * dq * dq + d[0] * ddq,
++                dd[1] * dq * dq + d[1] * ddq,
++                0.,
++            ],
 +            yaw_enu_rad: self.yaw_rad,
 +        }
 +    }
@@ -3220,6 +3238,29 @@ index 0000000..2e537e2
 +        assert_eq!(fit(&c, &e)["status"], "fits configured boxes");
 +        e["obstacles"] = json!([{"min_enu_m":[-0.1,-0.1,0],"max_enu_m":[0.1,0.1,2]}]);
 +        assert_eq!(fit(&c, &e)["status"], "reject");
++    }
++}
++
++#[cfg(test)]
++mod feedforward_tests {
++    use super::*;
++    #[test]
++    fn acceleration_matches_velocity_derivative_and_endpoint_holds() {
++        let c: Config =
++            serde_json::from_str(include_str!("../missions/figure-eight.json")).unwrap();
++        for fraction in [0.03, 0.17, 0.39, 0.5, 0.73, 0.97] {
++            let t = fraction * c.lap_time_s;
++            let h = 1e-4;
++            for i in 0..3 {
++                let numerical = (c.sample(t + h).velocity_enu_m_s[i]
++                    - c.sample(t - h).velocity_enu_m_s[i])
++                    / (2. * h);
++                assert!((numerical - c.sample(t).acceleration_enu_m_s2[i]).abs() < 1e-7);
++            }
++        }
++        for t in [-1., 0., c.total_time(), c.total_time() + 1.] {
++            assert_eq!(c.sample(t).acceleration_enu_m_s2, [0.; 3]);
++        }
 +    }
 +}
 diff --git a/xtask/src/mission.rs b/xtask/src/mission.rs
@@ -3693,16 +3734,17 @@ index 0000000..8e9b6c4
 +}
 diff --git a/xtask/src/reference.rs b/xtask/src/reference.rs
 new file mode 100644
-index 0000000..447c22e
+index 0000000..d88a859
 --- /dev/null
 +++ b/xtask/src/reference.rs
-@@ -0,0 +1,91 @@
+@@ -0,0 +1,101 @@
 +//! Stack-independent diagnostic reference; not the legacy RDD2 qualification.
 +use serde::Serialize;
 +#[derive(Clone, Copy, Debug, Serialize)]
 +pub struct Reference {
 +    pub position_enu_m: [f64; 3],
 +    pub velocity_enu_m_s: [f64; 3],
++    pub acceleration_enu_m_s2: [f64; 3],
 +    pub yaw_enu_rad: f64,
 +}
 +pub const ID: &str = "enu-square-diagnostic-v1";
@@ -3726,6 +3768,9 @@ index 0000000..447c22e
 +            corners[edge][i] + s * (corners[edge + 1][i] - corners[edge][i])
 +        }),
 +        velocity_enu_m_s: std::array::from_fn(|i| ds * (corners[edge + 1][i] - corners[edge][i])),
++        acceleration_enu_m_s2: std::array::from_fn(|i| {
++            60. * u * (1. - u) * (1. - 2. * u) / 25. * (corners[edge + 1][i] - corners[edge][i])
++        }),
 +        yaw_enu_rad: 0.,
 +    }
 +}
@@ -3761,9 +3806,15 @@ index 0000000..447c22e
 +    let u = time_s.clamp(0., 20.) / 20.;
 +    let phase = std::f64::consts::TAU * u.powi(3) * (10. + u * (-15. + 6. * u));
 +    let rate = std::f64::consts::TAU * 30. * u * u * (1. - u) * (1. - u) / 20.;
++    let accel = std::f64::consts::TAU * 60. * u * (1. - u) * (1. - 2. * u) / 400.;
 +    Reference {
 +        position_enu_m: [phase.sin(), phase.sin() * phase.cos(), 1.5],
 +        velocity_enu_m_s: [phase.cos() * rate, (2. * phase).cos() * rate, 0.],
++        acceleration_enu_m_s2: [
++            -phase.sin() * rate * rate + phase.cos() * accel,
++            -2. * (2. * phase).sin() * rate * rate + (2. * phase).cos() * accel,
++            0.,
++        ],
 +        yaw_enu_rad: 0.,
 +    }
 +}

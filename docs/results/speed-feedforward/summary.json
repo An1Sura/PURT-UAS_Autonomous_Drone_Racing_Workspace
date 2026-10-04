@@ -1,0 +1,75 @@
+{
+  "date": "2026-10-04",
+  "purpose": "CogniPilot acceleration feedforward and shorter reference trial, not a qualified stack ranking",
+  "runner_sha256": "06955039aa0280afd340960c8d0a6c983fd7dabb22d26a5449c73a381e30f5cf",
+  "cognipilot_firmware_sha256": "c4649110c5eaf43fb218fb34cdb492129faa235d1f99887264ca5a68a93f284e",
+  "betaflight_firmware_sha256": "b77543e3df275d8fc58a7dd7f1a7b17eaf6e20c3fba87390de6334a4a849990e",
+  "trials": [
+    {
+      "id": "1790925641463995931",
+      "lap_reference_s": 45,
+      "acceleration_feedforward": false,
+      "cognipilot_passed": true,
+      "position_rmse_m": 0.2947469972733677,
+      "position_max_error_m": 0.6380140197816538,
+      "recorded_total_s": 74.0,
+      "reference_start_s": 9.0,
+      "reference_end_including_hold_s": 59.0,
+      "final_armed": false,
+      "other_outcome": "Historical baseline; both stacks passed"
+    },
+    {
+      "id": "1791151903636643508",
+      "lap_reference_s": 40,
+      "acceleration_feedforward": false,
+      "cognipilot_passed": true,
+      "position_rmse_m": 0.313304651513183,
+      "position_max_error_m": 0.6964175484095434,
+      "recorded_total_s": 69.0,
+      "reference_start_s": 9.0,
+      "reference_end_including_hold_s": 54.0,
+      "final_armed": false,
+      "other_outcome": "Betaflight configuration failure before takeoff"
+    },
+    {
+      "id": "1791151996186426613",
+      "lap_reference_s": 45,
+      "acceleration_feedforward": true,
+      "cognipilot_passed": true,
+      "position_rmse_m": 0.24559544992096416,
+      "position_max_error_m": 0.5073716252779672,
+      "recorded_total_s": 74.0,
+      "reference_start_s": 9.0,
+      "reference_end_including_hold_s": 59.0,
+      "final_armed": false,
+      "other_outcome": "Both stacks passed; retained Betaflight baseline"
+    },
+    {
+      "id": "1791152091975648141",
+      "lap_reference_s": 40,
+      "acceleration_feedforward": true,
+      "cognipilot_passed": true,
+      "position_rmse_m": 0.257485714004461,
+      "position_max_error_m": 0.5582265678528354,
+      "recorded_total_s": 69.0,
+      "reference_start_s": 9.0,
+      "reference_end_including_hold_s": 54.0,
+      "final_armed": false,
+      "other_outcome": "Betaflight disarmed at z=1.2434 m before touchdown; failed"
+    },
+    {
+      "id": "1791152185013782398",
+      "lap_reference_s": 40,
+      "acceleration_feedforward": true,
+      "cognipilot_passed": true,
+      "position_rmse_m": 0.257485714004461,
+      "position_max_error_m": 0.5582265678528354,
+      "recorded_total_s": 69.0,
+      "reference_start_s": 9.0,
+      "reference_end_including_hold_s": 54.0,
+      "final_armed": false,
+      "other_outcome": "Betaflight connection refused; failed partial flight"
+    }
+  ],
+  "runner_hash_scope": "Feedforward trials only; pre-change runner was the prior published patch"
+}

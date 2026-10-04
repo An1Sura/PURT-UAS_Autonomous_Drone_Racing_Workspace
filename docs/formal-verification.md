@@ -43,4 +43,4 @@ The proof files leave these claims out rather than admitting them. There is no m
 
 ## Reproduction and provenance
 
-Use the [native Lake instructions](../proofs/README.md). The [verification record](../proofs/verification.json) lists toolchain, pins, theorem names and hashes. The [source snapshot](../proofs/source-snapshot.sha256) records the reviewed math, native patch and config. The new CI job checks both the snapshot and proofs. No flight logic or saved trajectory was changed for this proof work.
+Use the [native Lake instructions](../proofs/README.md). The [verification record](../proofs/verification.json) lists toolchain, pins, theorem names and hashes. The [source snapshot](../proofs/source-snapshot.sha256) records the reviewed math, native patch and config. The new CI job checks both the snapshot and proofs. The original October 2 proof work did not change flight logic. On October 4, the acceleration feedforward implementation was reviewed against the existing ax/ay derivative specification, the config changed to 40 seconds, and the source snapshot was updated after a successful Lean build/audit. This review is not a formal refinement proof.

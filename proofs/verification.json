@@ -69,7 +69,7 @@
     "lakefile.toml": "30ba337ed8acd97ae756f5ca398c82128413625851713de8b34f9428dcf4f204",
     "lake-manifest.json": "f0dafc1f4c2ed02eb91ae002d860c9faf6f976c65418d526a1c9bc10ce5b353b",
     "lean-toolchain": "7dc000621e0046d1aada809e2b7177e64454645cf4c741e9daaf79c99ec2e7a2",
-    "source-snapshot.sha256": "884704e9e52b3d03aa488921ad333b9e069d8ab910eabb0688c7e8f8c1972417"
+    "source-snapshot.sha256": "804bb8ff2fe46dde7612c9af41a869b3d0bb9cb382b75804efac0d056f5b8cca"
   },
   "limits": [
     "GNC imported modules only, not the full upstream library",
@@ -77,5 +77,10 @@
     "No certified numerical quadrature or global extrema",
     "No formal controller, adapter protocol, scheduler, plant-to-hardware or lap-checker proof",
     "No proved PURT tracking-error or calibrated-coverage assumptions"
-  ]
+  ],
+  "implementation_review_2026_10_04": {
+    "changes": "Analytic acceleration feedforward and 40 s config; reviewed against unchanged ax/ay and derivative/scaling theorems",
+    "lake_build": "passed, 71-theorem audit",
+    "refinement_proof": false
+  }
 }

@@ -1,4 +1,21 @@
-# Flight timing rundown
+# Flight timing rundown — current October 4 recordings
+
+One 8 × 4 m figure eight at 1.5 m altitude. The current CogniPilot reference is 40 seconds with acceleration feedforward; five seconds of terminal hold follow. Betaflight is the retained successful baseline with its original 45-second request, 25.132741-second native period and 25.2-second HOLD. Configurations remain attached to their own recordings.
+
+| Stack | Source run | Pattern timing | Recorded total | Tracking / outcome |
+|---|---|---|---|---|
+| Betaflight | 1791151996186426613 | 25.132741 s native | 41.745 s | One geometric lap, zero extra gates; landed and disarmed |
+| CogniPilot | 1791152185013782398 | 40 s reference + 5 s hold | 69.000 s | 0.257486 m RMS, 0.558227 m max; diagnostic passed, landed/disarmed |
+
+CogniPilot's cumulative reference lap ends at 49 s (9 s setup + 40 s); hold ends at 54 s, full recording at 69 s. This is a scheduled reference boundary, not a ground-truth gate time. Betaflight's completion gate is at timestamp 33.69 s including setup, not a lap duration. Betaflight rests on the ground with stopped motors for 3.0575 s. Different sensors, timing, takeoff/landing and phase laws prevent a qualified speed ranking.
+
+Current 40-second geometry stats: path 24.3889 m per lap and total, mean reference speed 0.60972 m/s, peak speed 1.66608 m/s, peak lateral acceleration 0.66573 m/s² / 0.06789 g, tightest radius 0.83502 m. These come from analytic derivatives and numerical sampling, not measured hardware limits.
+
+The nominal course fits the approximate configured PURT boxes. Actual clearance remains unqualified: the measured tracking maximum exceeds the assumed 0.15 m margin, and calibrated coverage/obstacles require measurements. See the [complete experiment history](cognipilot-speed-experiment.md), including both failed subsequent Betaflight attempts and the exact RMS window.
+
+---
+
+# Historical October 2 timing rundown
 
 The fixed course is 8 × 4 m at 1.5 m altitude. One figure eight is requested. The common planning target is 45 seconds, but the native Betaflight mode cannot follow that target with its current speed floor. Its effective pattern period is 25.132741 seconds; the adapter requests a 25.2-second HOLD then LAND. CogniPilot follows the 45-second minimum-jerk reference, holds for five seconds, then lands.
 

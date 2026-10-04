@@ -68,10 +68,10 @@ The course is **8 × 4 m**, at **1.5 m altitude**, with **one figure eight**, th
 
 | Stack | Current pattern timing | Full recorded run | Observed result |
 | --- | --- | --- | --- |
-| **Betaflight** | 25.132741 s native period; 25.2 s HOLD | 40.315 s | One geometric lap, zero extra quadrant gates, landed and disarmed |
-| **CogniPilot** | 45 s reference, followed by a 5 s hold | 74.000 s | Reference diagnostic passed; 0.294747 m 3D tracking RMS over its scored window |
+| **Betaflight** | 25.132741 s native period; 25.2 s HOLD | 41.745 s | One geometric lap, zero extra quadrant gates, landed and disarmed |
+| **CogniPilot** | 40 s reference + acceleration feedforward, followed by a 5 s hold | 69.000 s | Reference diagnostic passed; 0.257486 m 3D tracking RMS over its scored window |
 
-These are October 2 simulation recordings from run `1790925641463995931`, not physical-flight measurements. Recorded totals include setup and landing. **The table does not show Betaflight beating CogniPilot:** the two flights currently use different time laws, sensor paths and timing arrangements, and neither has undergone a maximum-speed search.
+These are October 4 simulation recordings: retained Betaflight baseline `1791151996186426613` and CogniPilot feedforward repeat `1791152185013782398`, not physical-flight measurements. Betaflight keeps its original 45-second request; two subsequent 40-second-request attempts failed. [All trials and technical next steps](docs/cognipilot-speed-experiment.md) are retained. Recorded totals include setup and landing. **The table does not show Betaflight beating CogniPilot:** the two flights currently use different time laws, sensor paths and timing arrangements, and neither has undergone a maximum-speed search.
 
 Betaflight's native planner has a 1 m/s cruise floor and a 0.25 rad/s pattern-rate cap. On this course, those produce the 25.13-second cycle. The old 45-second HOLD unintentionally commanded about 1.79 cycles; the corrected adapter requests 252 deciseconds and checks the recorded lap. That native planner cap is **not a measurement of Betaflight's ultimate control capability**. See [the timing diagnosis](docs/betaflight-timing.md).
 

@@ -1,0 +1,56 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>CogniPilot speed experiment</title><style>body{max-width:1050px;margin:30px auto;padding:20px;font:16px system-ui;background:#0b0e12;color:#ecf0f4}pre{white-space:pre-wrap;line-height:1.6;font:inherit}a{color:#72b7ff}</style><a href="sim/">Flight Simulation &amp; Stats</a><pre># CogniPilot speed experiment — October 4, 2026
+
+The goal remains making CogniPilot faster than a documented Betaflight baseline. This first change enables missing acceleration feedforward and shortens CogniPilot&#x27;s reference from 45 to 40 seconds. The original black grid, green PURT outline, blue CogniPilot and orange Betaflight replay remain.
+
+## Technical ideas, in priority order
+
+1. **Acceleration feedforward — implemented here.** The adapter already supplied position and velocity, but sent zero in the acceleration field. The native `guidance_controller.c` copies that field into `accelerationWorld_m_s2`. Supplying the analytic acceleration lets guidance anticipate the force needed for the turn. It does not change controller gains, firmware, motors or plant limits.
+2. **Speed scheduling around turns.** Retain the same geometric course, accelerate where curvature is low and slow down for tight turns. Enforce both tangential and lateral acceleration plus jerk limits. Our current global minimum-jerk phase law is smooth, but is not a minimum-time solution. Compare measured gate times under common acceptance rules before claiming a faster lap.
+3. **Guidance and rate-loop tuning.** Log position/velocity errors, commanded versus actual attitude/rates and motor saturation. Tune the inner response before increasing outer-loop gains. Raising gains blindly can create oscillation and lose more time than it saves. Hold Betaflight&#x27;s declared baseline fixed while logging every CogniPilot revision.
+4. **Measure and reduce delay.** Timestamp sensor acquisition, estimator update, guidance, rate control and motor output. Then address the largest measured delay, stale queues and jitter. Current host exchange timings are not RT1060 driver latency; validate this separately in HIL and hardware.
+5. **Calibrate dynamics and actuator response.** Measure the identical drones&#x27; mass, inertia, thrust curve, motor lag and drag. Improve model-based compensation against those measurements; do not improve the score by changing only CogniPilot&#x27;s simulated plant or lifting its actuator limits.
+
+Feedforward and trajectory shaping are established control techniques; see [PX4&#x27;s controller diagram](https://docs.px4.io/main/en/flight_stack/controller_diagrams) and [trajectory tuning guidance](https://docs.px4.io/main/en/config_mc/mc_trajectory_tuning). These references explain the concepts; the actual implementation here uses CogniPilot&#x27;s existing guidance input, not PX4 code.
+
+## What changed in the native adapter
+
+`Reference` now carries ENU acceleration in m/s². For phase q(t), x=A sin(q), y=B sin(2q):
+
+- ax = -A sin(q) q̇² + A cos(q) q̈
+- ay = -4B sin(2q) q̇² + 2B cos(2q) q̈
+- az = 0 for the level reference.
+
+The same calculation is used in the configurable figure eight and legacy diagnostic references. Velocity and acceleration vanish at endpoint holds, while position returns to the course start; origin translation affects only position. Nonfinite acceleration is rejected before encoding. The native guidance message is unchanged. Reports identify `acceleration_feedforward: analytic_reference_second_derivative`.
+
+The existing Lean `vx_derivative` and `vy_derivative` theorems specify these exact-real derivatives. Source correspondence was reviewed and hashes updated. Lean does not prove floating-point encoding, controller stability, tracking improvement or hardware safety.
+
+## All attempts
+
+RMS and maximum error are full-rate ground-truth position error against the timed reference, **including the five-second terminal hold**. A native diagnostic pass checks mode/navigation continuity, state bounds, reference echo and landed/disarmed completion; it is not a preregistered racing accuracy threshold or a common measured lap clock.
+
+| Run | Reference | Feedforward | CogniPilot RMS | Maximum error | Full recording | Other outcome |
+|---|---|---|---|---|---|---|
+| `1790925641463995931` | 45 s | Off | 0.294747 m | 0.638014 m | 74 s | Historical baseline; both stacks passed |
+| `1791151903636643508` | 40 s | Off | 0.313305 m | 0.696418 m | 69 s | Betaflight configuration failure before takeoff |
+| `1791151996186426613` | 45 s | On | 0.245595 m | 0.507372 m | 74 s | Both stacks passed; retained Betaflight baseline |
+| `1791152091975648141` | 40 s | On | 0.257486 m | 0.558227 m | 69 s | Betaflight disarmed at z=1.2434 m before touchdown; failed |
+| `1791152185013782398` | 40 s | On | 0.257486 m | 0.558227 m | 69 s | Betaflight connection refused; failed partial flight |
+
+At the same 40-second reference, RMS fell from 0.313305 m to 0.257486 m (17.82%); maximum error fell from 0.696418 m to 0.558227 m. Both feedforward repeats returned the same tracking metrics in this deterministic setup. This does not measure performance under noise, disturbance or hardware variability. The historical 45-second baseline comparison is supportive, but was not rerun before this change; the 40-second before/after pair is the direct experiment.
+
+The configured reference duration is 11.11% shorter (45 → 40 s); the full CogniPilot recording is 74 → 69 s. Those are reference/schedule changes, not a measured 11.11% controller execution improvement or proof of beating Betaflight. Setup is 9 s; one reference lap ends at 49 s; its five-second hold ends at 54 s; landing/disarm and trailing recording end at 69 s.
+
+## Current page and limitations
+
+The page shows the 40-second feedforward CogniPilot repeat and the successful Betaflight trial from run `1791151996186426613`. Betaflight retains its original 45-second request and actual 25.132741-second native period / 25.2-second HOLD. It is explicitly a retained baseline because later attempts failed. No recording&#x27;s config has been relabeled to manufacture a matched experiment.
+
+The course is still one 8 × 4 m figure eight at 1.5 m. At 40 seconds: path length 24.3889 m, peak reference speed 1.6661 m/s, peak lateral acceleration 0.66573 m/s² (0.06789 g), tightest radius 0.83502 m. The assumed 2 m/s speed limit with 1.2 tracking factor implies a minimum reference duration of about 39.986 s. We did not raise assumed limits to force a faster setting through the checks. The next speed experiment needs justified limits or a better phase schedule, not simply a smaller number.
+
+The maximum measured tracking error exceeds the configured 0.15 m planning margin. The PURT box fit is therefore a nominal geometry check, not proof of the actual flight corridor or clearance. Room coverage, obstacles, sensor parity and common start/finish scoring remain unqualified. Betaflight uses native constant-phase streaming; CogniPilot uses a minimum-jerk reference and lockstep. Betaflight&#x27;s 25.13-second planner cap is not its ultimate control limit.
+
+## Reproduction and validation
+
+Run the fixed [VM-connected page](http://127.0.0.1:8766/sim/) using the existing RDD2 environment; `Rerun both` queues both stacks using the current 40-second config. Native artifacts are retained under `src/cerebri_rdd2/artifacts/mission-planner/&lt;run-id&gt;/`, including exact config, reports, full-rate trajectory CSVs and runner logs. Published JSONs contain downsampled replay positions/attitudes and full-rate report metrics. The [machine-readable summary](results/speed-feedforward/summary.json) records every trial and runner/firmware hashes.
+
+Validation: 39 runner tests passed; the separate native firmware reference-echo/invalid-ingress test passed; clean-base patch application passed; Lean build and the 71-theorem axiom audit passed. The unrelated opt-in odometry test was not run. No firmware, plant or controller gains changed. The updated native patch and config are recorded in the proof source snapshot, without claiming a formal implementation-equivalence proof.
+</pre></html>

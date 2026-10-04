@@ -41,9 +41,9 @@ After the SIL baseline and separate latency tests, the improvement evaluation sh
 
 A fastest tested valid setting is evidence within the explored range and conditions, not a proof of a global physical optimum. Replay speed, host runtime and simulation throughput are not racing lap time.
 
-## Why the current 25.13 s versus 45 s is not the answer
+## Why 25.13 s versus the configured reference is not the answer
 
-The latest Betaflight mode uses native constant-phase motion; CogniPilot follows a 45-second minimum-jerk reference. Those are configured diagnostic behaviors, not independently optimized speed limits. Their 40.315 s and 74.000 s full recordings include setup and landing.
+The latest Betaflight mode uses native constant-phase motion; CogniPilot now follows a 40-second minimum-jerk reference with acceleration feedforward. Those are configured diagnostic behaviors, not independently optimized speed limits. Their 41.745 s and 69.000 s full recordings include setup and landing.
 
 Betaflight's pinned native pattern is capped at 0.25 rad/s, giving a minimum native cycle of approximately 25.13 seconds for this mode. Requesting a shorter lap or increasing its cruise parameter alone does not bypass that cap. A sweep must report this as a **native planner limit**, not conclude that Betaflight's controller or hardware cannot fly faster.
 
@@ -52,3 +52,7 @@ The next implementation step is a common reference/control interface with observ
 ## Hardware path
 
 Complete the CogniPilot drone's assembly and soldering, identify both firmware/configuration versions, and establish the position-feedback interface. Measure the shared vehicle dynamics and validate the drivers and timing. SIL develops the command, scoring and logging software first; hardware tests then evaluate the same declared experiment under measured facility conditions.
+
+## First implemented experiment
+
+Acceleration feedforward and the 40-second reference are now tested and published. See the [October 4 before/after study](cognipilot-speed-experiment.md) for all attempts, unchanged assumed limits, and why this is progress toward the goal rather than a win over Betaflight.

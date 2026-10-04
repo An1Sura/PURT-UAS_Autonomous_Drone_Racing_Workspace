@@ -19,4 +19,4 @@ From the repository root, `shasum -a 256 -c proofs/source-snapshot.sha256` check
 
 ## Scope
 
-See [the coverage ledger](../docs/formal-verification.md), [the theorem source](ADR/Benchmark.lean), and [local verification record](verification.json). Proofs do not change flight logic; the October 2 native recordings remain the flight evidence. The whole upstream GNC library is not rebuilt here: only imported proof modules and their dependencies are checked.
+See [the coverage ledger](../docs/formal-verification.md), [the theorem source](ADR/Benchmark.lean), and [local verification record](verification.json). Proofs do not themselves change flight logic. The October 4 acceleration-feedforward experiment supplies new empirical evidence; the snapshot records the reviewed source/config update. The whole upstream GNC library is not rebuilt here: only imported proof modules and their dependencies are checked.
