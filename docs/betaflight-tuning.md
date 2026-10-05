@@ -1,5 +1,7 @@
 # Betaflight wobble investigation — October 1, 2026
 
+> Historical baseline. The October 5 SITL research patch and speed-search results supersede the current-setting descriptions below; see [speed search](speed-search.md).
+
 Betaflight's large yaw oscillation is substantially reduced by changing **yaw
 integral gain from 80 to 20** for the shared 2 kg RDD2 simulation. This is a
 model-specific controller configuration change. The physics model, motor mapping,

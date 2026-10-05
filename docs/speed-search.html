@@ -1,0 +1,84 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Speed search results</title><style>body{background:#0b0e12;color:#e9edf4;max-width:1100px;margin:auto;padding:24px;font:16px system-ui}a{color:#72b7ff}pre{white-space:pre-wrap;line-height:1.6}</style><a href="sim/">Back to simulation</a><pre># Fast, accurate single-lap SIL — October 5, 2026
+
+Same 8 × 4 m figure eight, 1.5 m altitude, 24.388894 m path, identical Rumoca RDD2 plant and motor limits. The aim remains making CogniPilot faster than Betaflight before separate latency tests. This is a bounded search, not a global maximum-speed proof or a matched-sensor stack ranking.
+
+## Remaining blocker
+
+Three selected lap repeats passed for each stack. An additional VM-page rerun passed CogniPilot but Betaflight aborted during the pre-lap hover because its XY estimator became invalid (native reason 1). The check was not disabled. Selected-setting observations are therefore 3/4 successful Betaflight attempts and 4/4 CogniPilot attempts in this final set; these small counts are not reliability estimates. Startup/estimator freshness remains unresolved. [Additional page-rerun reports](results/speed-search/page-rerun.json).
+
+## Selected recorded settings
+
+| Stack | Selected target / native period | Course RMS / maximum | Full recording |
+| --- | --- | --- | --- |
+| CogniPilot | 23.7 s smooth-phase reference | 0.1279 / 0.2240 m | 52.700 s |
+| Betaflight research SITL | 23.7 s request / 23.700000 s native period | 0.1939 / 0.3463 m | 50.023 s |
+
+Each selected setting must pass three consecutive campaign repeats. All preceding failures remain below. CogniPilot repeats are deterministic, noise-free repeatability tests; identical trajectories are not independent evidence of real-world robustness. Betaflight is coupled to host scheduling and can vary across runs. Three passes do not certify reliability outside these conditions.
+
+## Accuracy and timing rules
+
+- Full-rate ground truth is scored against a 2048-segment polyline of the unchanged 3D course. RMS must be ≤0.25 m and maximum ≤0.50 m. Both lobes must reach their extrema within 0.50 m, visit four ordered quadrant gates, return within 0.50 m horizontally and vertically of the centre, and not enter another lap.
+- CogniPilot window: reference start through the end of the requested lap. The five-second end hold is excluded from course error. Its separately reported same-time RMS includes that hold and compares against the original, unshifted reference. The 0.2-second lead changes commands only.
+- Betaflight window: observed native pattern HOLD waypoint through native LAND. MSP observations and plant timestamps are recorded; the native period is calculated from firmware rate, not claimed as an exact measured start/finish lap clock. The completion timestamp is entry into the finish tolerance, not an exact centre crossing.
+- Native success is also required: no abort, bounded position/attitude, one lap, landing, native disarm and ground rest with stopped motors. Betaflight adds a ten-second native hover before the course. CogniPilot retains its simulator-assisted takeoff/landing. Full recorded duration includes these differences.
+- Assumed planning limits remain 2 m/s and 2 m/s² with a 1.2 reserve factor. These are not measured hardware maxima. A smooth-phase 23.7 s request is just above its 23.6954 s speed-bound floor. Constant phase has a 21.3258 s floor, but its fast Betaflight trials did not pass repeated accuracy. Both selected builds now use the smooth-phase schedule; the discarded constant-phase attempt history is retained. Other controllers or time laws could improve further.
+
+## What changed technically
+
+CogniPilot retains the analytic position, velocity and acceleration reference, now with a quintic speed ramp over the first and last 10% of the phase schedule, 200 Hz commands and a 0.2 s command lead. The old 40 s minimum-jerk reference concentrated speed in the centre; the new schedule reaches 1.66634 m/s peak required speed and 0.72964 m/s² peak lateral acceleration. Its lap target is 40.75% shorter than 40 s. That percentage is a configured-reference improvement, not a measured win over Betaflight. Native timestamped reference echoes are matched to transmitted command history and checked throughout the run.
+
+Betaflight is pinned to 744f95fa31542c4c906f18072348a366ab11b6b7 with the published SITL research patch: 100 Hz moving-target updates, analytic velocity feedforward, and a smooth start/stop using the same phase law as CogniPilot. The adapter enforces a 0.35 rad/s peak phase-rate cap and rounds duration up to deciseconds. The selected navigation P/I/D/A/F gains are [60,10,30,0,30]. The inner flight controller, 0.8 rad benchmark tilt bound, plant and motor limits remain unchanged. High gains and abrupt starts produced rejected runs; settling before the lap helps. This is not stock Betaflight or a hardware-ready tune.
+
+A separate startup defect was diagnosed with AddressSanitizer: concurrent Dyad stream creation and update freed a stream while it was being initialized. Locking stream operations, initializing before thread start and yielding between updates passed ten fresh sanitized provisioning trials. The [diagnostic excerpt](results/speed-search/betaflight-startup-sanitizer.txt) records the failure; optimized release binaries were used for flights.
+
+## Every retained native attempt
+
+| Attempt | Requested seconds | Course RMS / max (m) | Outcome |
+| --- | --- | --- | --- |
+| [bf-22-1](results/speed-search/bf-22-1/report.json) | 22 | — / — | Native/landing failed |
+| [bf-22-gains-1](results/speed-search/bf-22-gains-1/report.json) | 22 | 0.3288 / 0.5780 | Native/landing failed |
+| [bf-22-gains60-shorttakeoff-1](results/speed-search/bf-22-gains60-shorttakeoff-1/report.json) | 22 | 0.3545 / 0.8851 | Accuracy failed |
+| [bf-22-gains90-1](results/speed-search/bf-22-gains90-1/report.json) | 22 | 0.3602 / 0.9750 | Native/landing failed |
+| [bf-22-settled-1](results/speed-search/bf-22-settled-1/report.json) | 22 | 0.2939 / 0.5941 | Accuracy failed |
+| [bf-22-settled30-1](results/speed-search/bf-22-settled30-1/report.json) | 22 | 0.3383 / 0.6213 | Accuracy failed |
+| [bf-22-settled90-1](results/speed-search/bf-22-settled90-1/report.json) | 22 | 0.3453 / 0.8148 | Native/landing failed |
+| [bf-23.5-final-1](results/speed-search/bf-23.5-final-1/report.json) | 23.5 | 0.2692 / 0.6117 | Accuracy failed |
+| [bf-23.8-final-1](results/speed-search/bf-23.8-final-1/report.json) | 23.8 | 0.2548 / 0.4762 | Accuracy failed |
+| [bf-24-final-1](results/speed-search/bf-24-final-1/report.json) | 24 | 0.2296 / 0.4640 | Pass |
+| [bf-24-final-2](results/speed-search/bf-24-final-2/report.json) | 24 | 0.2443 / 0.4773 | Pass |
+| [bf-24-final-3](results/speed-search/bf-24-final-3/report.json) | 24 | 0.2620 / 0.5313 | Accuracy failed |
+| [bf-24-settled30-1](results/speed-search/bf-24-settled30-1/report.json) | 24 | 0.2684 / 0.4524 | Accuracy failed |
+| [bf-24-settled60-1](results/speed-search/bf-24-settled60-1/report.json) | 24 | 0.2406 / 0.4615 | Pass |
+| [bf-25-repeat-1](results/speed-search/bf-25-repeat-1/report.json) | 25 | 0.2742 / 0.6319 | Accuracy failed |
+| [bf-25-settled60-1](results/speed-search/bf-25-settled60-1/report.json) | 25 | 0.2334 / 0.4501 | Pass |
+| [bf-smooth-23.7-final-1](results/speed-search/bf-smooth-23.7-final-1/report.json) | 23.7 | 0.1939 / 0.3463 | Pass |
+| [bf-smooth-23.7-final-2](results/speed-search/bf-smooth-23.7-final-2/report.json) | 23.7 | 0.1962 / 0.3726 | Pass |
+| [bf-smooth-23.7-final-3](results/speed-search/bf-smooth-23.7-final-3/report.json) | 23.7 | 0.1950 / 0.3468 | Pass |
+| [cg-25.2-1](results/speed-search/cg-25.2-1/report.json) | 25.2 | 0.1207 / 0.2285 | Pass |
+| [cg-25.2-2](results/speed-search/cg-25.2-2/report.json) | 25.2 | 0.1207 / 0.2285 | Pass |
+| [cg-25.2-3](results/speed-search/cg-25.2-3/report.json) | 25.2 | 0.1207 / 0.2285 | Pass |
+| [cg-26-1](results/speed-search/cg-26-1/report.json) | 26 | 0.1190 / 0.2247 | Pass |
+| [cg-28-1](results/speed-search/cg-28-1/report.json) | 28 | 0.1188 / 0.2325 | Pass |
+| [cg-constant-22-1](results/speed-search/cg-constant-22-1/report.json) | 22 | 0.1470 / 0.2719 | Accuracy failed |
+| [cg-constant-lead02-1](results/speed-search/cg-constant-lead02-1/report.json) | 21.4 | 0.3691 / 0.6687 | Native/landing failed |
+| [cg-smooth-23.7-final-1](results/speed-search/cg-smooth-23.7-final-1/report.json) | 23.7 | 0.1279 / 0.2240 | Pass |
+| [cg-smooth-23.7-final-2](results/speed-search/cg-smooth-23.7-final-2/report.json) | 23.7 | 0.1279 / 0.2240 | Pass |
+| [cg-smooth-23.7-final-3](results/speed-search/cg-smooth-23.7-final-3/report.json) | 23.7 | 0.1279 / 0.2240 | Pass |
+| [cg-smooth-23.8-1](results/speed-search/cg-smooth-23.8-1/report.json) | 23.8 | 0.1293 / 0.2325 | Pass |
+| [cg-smooth-24-1](results/speed-search/cg-smooth-24-1/report.json) | 24 | 0.1302 / 0.2362 | Pass |
+| [cg-smooth-lead02-1](results/speed-search/cg-smooth-lead02-1/report.json) | 23.8 | 0.1281 / 0.2249 | Native/landing failed |
+
+Earlier high-rate CogniPilot attempts failed the old echo-check implementation; fresh repeats were run after fixing timestamp-history validation. These failed reports are not retroactively relabeled as passes. Early trials predate stricter motor-rest or timing-observation checks; only final candidates use the final checks. A reused draft ID inside a historical config does not override its recorded lap_time_s or unique attempt directory.
+
+## Reproduce and inspect
+
+Apply the [pinned dependency patches](../patches/README.md), build the native runner and Betaflight SITL, and load docs/config/stack-configs.json. The VM page sends those two configs to the existing server; geometry must match. Rerun both makes one new attempt for each stack, scores it, and exports actual motion including the final sample. GitHub Pages shows saved recordings; it cannot run firmware itself.
+
+Full-rate CSVs and logs remain in src/cerebri_rdd2/artifacts/speed-search/ in the VM. Reports, exact configs, scores and the selected approximately 20 Hz replays are published. Replay speed is unchanged and is not part of tuning. Unit tests: 43 passed, two firmware-dependent tests skipped. Both patches pass clean-base application checks. Numerical JavaScript schedule derivative/scaling checks pass. The historical Lean build and 71-theorem audit pass, but do not prove the newly added schedules, code, controllers or hardware.
+
+## PURT and comparability
+
+The black-grid environment and approximate green 53.34 × 28.956 × 9.144 m facility envelope are unchanged. The path is inside the assumed rectangular outline, but the combined PURT fit result is UNVERIFIED because calibrated MoCap coverage is null and obstacles still require measurement. No photo-derived dimensions were invented.
+
+CG ingests at 1600 Hz with lockstep; BF uses 400 Hz wall-clock-coupled SITL and a distinct native planner/sensor path. No added ingress noise or delay was used. Sensor parity, common race timing, disturbances, actuator calibration, driver latency, and equal takeoff/landing must be addressed before claiming CogniPilot beats Betaflight or transferring this to the identical physical drones.
+</pre></html>

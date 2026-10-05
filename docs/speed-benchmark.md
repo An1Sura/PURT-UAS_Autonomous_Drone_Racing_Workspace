@@ -1,5 +1,7 @@
 # Improving CogniPilot against a Betaflight baseline
 
+> Current implementation: [October 5 bounded speed search](speed-search.md) has a shared geometric accuracy gate and repeated candidates. The longer-term matched-sensor race-clock experiment below is still future work. Historical 40/45-second and 0.25 rad/s examples below describe the pre-search baseline.
+
 The objective is **to make CogniPilot faster than Betaflight on the same figure-eight course and identical drones**, while preserving accurate and reliable flight. Betaflight provides a documented performance baseline; CogniPilot is the optimization target.
 
 The current work is the **SIL foundation before separate latency tests**. First establish autonomous flight, shared physics, command interfaces and recorded baseline behavior. Then use the latency experiments to investigate control, communication and driver timing, guide CogniPilot changes, and test whether those changes improve flight performance. Existing SIL transport timings are not isolated controller-latency measurements.

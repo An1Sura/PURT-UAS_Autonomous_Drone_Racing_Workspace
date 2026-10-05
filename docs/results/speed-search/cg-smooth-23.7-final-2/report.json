@@ -1,0 +1,120 @@
+{
+  "acceleration_feedforward": "analytic_reference_second_derivative",
+  "adapter": "cognipilot",
+  "armed_observed": true,
+  "config": {
+    "altitude_m": 1.5,
+    "center_enu_m": [
+      0.0,
+      0.0
+    ],
+    "end_hold_s": 5.0,
+    "height_m": 1.0,
+    "id": "cg-smooth-23.7-lead02",
+    "lap_time_s": 23.7,
+    "laps": 1,
+    "phase_law": "smooth_phase_ramp",
+    "profiles": [
+      {
+        "arm_takeoff_s": 5.0,
+        "estimator_warmup_s": 3.0,
+        "lag_s": 0.1,
+        "landing_s": 10.0,
+        "limits_status": "assumed",
+        "max_lateral_accel_m_s2": 2.0,
+        "max_speed_m_s": 2.0,
+        "mode": "native_pattern",
+        "reference_lead_s": 0.0,
+        "reference_rate_hz": 20,
+        "sensor_delay_ms": 0.0,
+        "sensor_noise_std_m": 0.0,
+        "sensor_rate_hz": 400.0,
+        "sensor_status": "declared ingress only; internal sensor paths differ",
+        "stack": "betaflight",
+        "tracking_lag_factor": 1.2
+      },
+      {
+        "arm_takeoff_s": 8.0,
+        "estimator_warmup_s": 1.0,
+        "lag_s": 0.1,
+        "landing_s": 10.0,
+        "limits_status": "assumed",
+        "max_lateral_accel_m_s2": 2.0,
+        "max_speed_m_s": 2.0,
+        "mode": "external_reference",
+        "reference_lead_s": 0.2,
+        "reference_rate_hz": 200,
+        "sensor_delay_ms": 0.0,
+        "sensor_noise_std_m": 0.0,
+        "sensor_rate_hz": 1600.0,
+        "sensor_status": "declared ingress only; internal sensor paths differ",
+        "stack": "cognipilot",
+        "tracking_lag_factor": 1.2
+      }
+    ],
+    "scale": 4.0,
+    "schema_version": 1,
+    "sweep_lap_times_s": [
+      5.0,
+      10.0,
+      20.0,
+      30.0,
+      40.0
+    ],
+    "sweep_scales": [
+      0.5,
+      1.0,
+      2.0,
+      3.0
+    ],
+    "tracking_margin_m": 0.15,
+    "vehicle_radius_m": 0.4,
+    "width_m": 2.0,
+    "yaw_rad": 0.0
+  },
+  "description_sha256": "fdb12c3379b56d2d18f0ccaab3c62d15d2f97281f55270f37b837ea9c980b91c",
+  "error": null,
+  "exchange_metrics": {
+    "armed_motor_samples": 297276,
+    "armed_motor_samples_at_limit": 1600,
+    "round_trip_max_us": 3265.891,
+    "round_trip_mean_us": 118.20187463238963,
+    "round_trip_p95_us": 175.589,
+    "round_trip_stddev_us": 69.93564207591987,
+    "samples": 84320
+  },
+  "executable_sha256": "c4649110c5eaf43fb218fb34cdb492129faa235d1f99887264ca5a68a93f284e",
+  "final_armed": false,
+  "final_motors": [
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "final_position_enu_m": [
+    0.6090807036630127,
+    0.02417959939199416,
+    0.09836555833334269
+  ],
+  "maximum_altitude_m": 1.5624586744550522,
+  "mission_epoch_ns": 1000000000,
+  "navigation_origin_enu_m": [
+    0.0,
+    0.0,
+    0.09800000000001319
+  ],
+  "passed": true,
+  "plant_sha256": "284cced3ceec15128886d05753900b8ae47f38570ce0112c50e801356de97654",
+  "position_max_error_m": 0.2513262265109416,
+  "position_rmse_m": 0.16588682019505677,
+  "qualification": "shared trajectory reference diagnostic; legacy simulator-assisted takeoff/landing and unmatched sensor paths",
+  "reference_echo_checks": 45759,
+  "reference_end_s": 37.7,
+  "reference_id": "enu-figure-eight-v1",
+  "reference_samples": 45920,
+  "reference_start_s": 9.0,
+  "references_sent": 5740,
+  "simulated_seconds": 52.7,
+  "steps": 84320,
+  "stopped_motor_ground_samples": 8001
+}

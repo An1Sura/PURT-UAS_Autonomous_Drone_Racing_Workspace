@@ -1,0 +1,53 @@
+==11177==ERROR: AddressSanitizer: heap-use-after-free on address 0xe4da31be00f8 at pc 0xbdbb8e9438f4 bp 0xffffe77662a0 sp 0xffffe77662b8
+WRITE of size 4 at 0xe4da31be00f8 thread T0
+    #0 0xbdbb8e9438f0 in stream_initSocket lib/main/dyad/dyad.c:502
+    #1 0xbdbb8e9447e4 in dyad_listenEx lib/main/dyad/dyad.c:977
+    #2 0xbdbb8e949078 in tcpReconfigure src/main/drivers/serial_tcp.c:119
+    #3 0xbdbb8e94958c in serTcpOpen src/main/drivers/serial_tcp.c:134
+    #4 0xbdbb8e971438 in openSerialPort src/main/io/serial.c:545
+    #5 0xbdbb8e984818 in mspSerialOpenPort src/main/msp/msp_serial.c:96
+    #6 0xbdbb8e9867e0 in mspSerialAllocatePorts src/main/msp/msp_serial.c:131
+    #7 0xbdbb8e986e00 in mspSerialInit src/main/msp/msp_serial.c:707
+    #8 0xbdbb8e98b2ac in initPhase3 src/main/fc/init.c:926
+    #9 0xbdbb8e94a654 in main src/main/main.c:112
+    #10 0xe82a32b26570 in __libc_start_call_main (/nix/store/jp8avbmpfcdnm0axwrzyk072nmq9cr0d-glibc-2.42-67/lib/libc.so.6+0x26570) (BuildId: a4bce88670f3024efd13e6a0b91933011523e233)
+    #11 0xe82a32b26654 in __libc_start_main_impl (/nix/store/jp8avbmpfcdnm0axwrzyk072nmq9cr0d-glibc-2.42-67/lib/libc.so.6+0x26654) (BuildId: a4bce88670f3024efd13e6a0b91933011523e233)
+    #12 0xbdbb8e940f6c in _start (/home/suraa.guest/autonomous-drone-bench/src/betaflight/obj/main/betaflight_SITL.elf+0x50f6c)
+
+0xe4da31be00f8 is located 8 bytes inside of 112-byte region [0xe4da31be00f0,0xe4da31be0160)
+freed by thread T1 here:
+    #0 0xe82a32ea4248 in free.part.0 (/nix/store/m3v5jbl1y7hxb1yimlyp0067acslkxf2-gcc-15.2.0-lib/lib/libasan.so.8+0xd4248)
+    #1 0xbdbb8e941378 in dyad_free lib/main/dyad/dyad.c:102
+    #2 0xbdbb8e941854 in stream_destroy lib/main/dyad/dyad.c:418
+    #3 0xbdbb8e941900 in destroyClosedStreams lib/main/dyad/dyad.c:341
+    #4 0xbdbb8e943dd8 in dyad_update lib/main/dyad/dyad.c:687
+    #5 0xbdbb8e945624 in tcpThread src/platform/SIMULATOR/sitl.c:573
+    #6 0xe82a32e31c84 in asan_thread_start(void*) (/nix/store/m3v5jbl1y7hxb1yimlyp0067acslkxf2-gcc-15.2.0-lib/lib/libasan.so.8+0x61c84)
+    #7 0xe82a32c02618 in thread_start (/nix/store/jp8avbmpfcdnm0axwrzyk072nmq9cr0d-glibc-2.42-67/lib/libc.so.6+0x102618) (BuildId: a4bce88670f3024efd13e6a0b91933011523e233)
+
+previously allocated by thread T0 here:
+    #0 0xe82a32ea4430 in realloc.part.0 (/nix/store/m3v5jbl1y7hxb1yimlyp0067acslkxf2-gcc-15.2.0-lib/lib/libasan.so.8+0xd4430)
+    #1 0xbdbb8e941b0c in dyad_realloc lib/main/dyad/dyad.c:93
+    #2 0xbdbb8e942654 in dyad_newStream lib/main/dyad/dyad.c:877
+    #3 0xbdbb8e949000 in tcpReconfigure src/main/drivers/serial_tcp.c:115
+    #4 0xbdbb8e94958c in serTcpOpen src/main/drivers/serial_tcp.c:134
+asan-fair-lock-1: [FLASH_Lock] saved 'eeprom.bin'
+[CONFIG] Config file processed, EEPROM saved
+asan-fair-lock-2: [FLASH_Lock] saved 'eeprom.bin'
+[CONFIG] Config file processed, EEPROM saved
+asan-fair-lock-3: [FLASH_Lock] saved 'eeprom.bin'
+[CONFIG] Config file processed, EEPROM saved
+asan-fair-lock-4: [FLASH_Lock] saved 'eeprom.bin'
+[CONFIG] Config file processed, EEPROM saved
+asan-fair-lock-5: [FLASH_Lock] saved 'eeprom.bin'
+[CONFIG] Config file processed, EEPROM saved
+asan-fair-lock-6: [FLASH_Lock] saved 'eeprom.bin'
+[CONFIG] Config file processed, EEPROM saved
+asan-fair-lock-7: [FLASH_Lock] saved 'eeprom.bin'
+[CONFIG] Config file processed, EEPROM saved
+asan-fair-lock-8: [FLASH_Lock] saved 'eeprom.bin'
+[CONFIG] Config file processed, EEPROM saved
+asan-fair-lock-9: [FLASH_Lock] saved 'eeprom.bin'
+[CONFIG] Config file processed, EEPROM saved
+asan-fair-lock-10: [FLASH_Lock] saved 'eeprom.bin'
+[CONFIG] Config file processed, EEPROM saved

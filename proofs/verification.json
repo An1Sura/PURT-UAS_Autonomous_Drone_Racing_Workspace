@@ -69,7 +69,7 @@
     "lakefile.toml": "30ba337ed8acd97ae756f5ca398c82128413625851713de8b34f9428dcf4f204",
     "lake-manifest.json": "f0dafc1f4c2ed02eb91ae002d860c9faf6f976c65418d526a1c9bc10ce5b353b",
     "lean-toolchain": "7dc000621e0046d1aada809e2b7177e64454645cf4c741e9daaf79c99ec2e7a2",
-    "source-snapshot.sha256": "804bb8ff2fe46dde7612c9af41a869b3d0bb9cb382b75804efac0d056f5b8cca"
+    "source-snapshot.sha256": "6a1d34115f42a75dc030b7f2d5d767a8dc090220214cd4a5ae31b79396c62366"
   },
   "limits": [
     "GNC imported modules only, not the full upstream library",
@@ -81,6 +81,13 @@
   "implementation_review_2026_10_04": {
     "changes": "Analytic acceleration feedforward and 40 s config; reviewed against unchanged ax/ay and derivative/scaling theorems",
     "lake_build": "passed, 71-theorem audit",
+    "refinement_proof": false
+  },
+  "implementation_review_2026_10_05": {
+    "lake_build": "passed; historical specification and 71-theorem audit",
+    "coverage": "new schedules, scorer, lead and Betaflight 0.35 rad/s cap are not formally proved",
+    "rust_tests": "43 passed, 2 firmware-dependent skipped",
+    "numerical_schedule_tests": "JavaScript derivative and scaling checks passed",
     "refinement_proof": false
   }
 }

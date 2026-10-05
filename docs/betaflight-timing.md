@@ -1,5 +1,7 @@
 # Betaflight native figure-eight timing
 
+> Historical baseline. The October 5 SITL research patch and speed-search results supersede the current-setting descriptions below; see [speed search](speed-search.md).
+
 The pinned adapter used to request 56 cm/s and hold the native figure-eight pattern for 45 seconds. This did **not** produce a 45-second lap. Betaflight raised the cruise speed to its 1 m/s minimum, and its pattern rate reached the 0.25 rad/s cap. With the configured 4 m radius, a native cycle takes 25.132741 seconds. A 45-second hold therefore commanded about 1.79 cycles.
 
 The corrected adapter calculates the firmware's effective rate before setting the HOLD duration:

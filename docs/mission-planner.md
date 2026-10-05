@@ -1,18 +1,14 @@
 # Flight Simulation & Stats
 
-The project goal is to make CogniPilot faster than Betaflight while maintaining accurate, reliable flight. This SIL page establishes baseline behavior before the separate latency tests. This page currently shows fixed diagnostic runs, not a maximum-speed sweep or a ranking. The 45-second reference is a baseline setting, not the intended final racing pace. See the [speed-benchmark plan](speed-benchmark.md).
+The [public simulation](https://an1sura.github.io/autonomous-drone-bench/sim/) shows the selected October 5 speed-search recordings: one 8 × 4 m figure eight at 1.5 m altitude. CogniPilot uses a 23.7-second smooth reference. Betaflight uses its separately tested native-pattern setting. See [exact settings, errors and repeats](speed-search.md).
 
-The [simulation page](https://an1sura.github.io/autonomous-drone-bench/sim/) now uses a fixed PURT single-lap configuration. There are no editable mission, profile or environment controls.
-
-The course is 8 × 4 m at 1.5 m altitude. CogniPilot follows one 45-second reference, holds for five seconds and lands. Betaflight uses its native figure-eight pattern: the firmware's speed floor and rate cap give a 25.13-second cycle, so the corrected adapter requests a 25.2-second HOLD before LAND. Ground-truth lap verification is required in addition to landing. See [the timing diagnosis](betaflight-timing.md).
+The fixed page has no editable stats controls. `docs/config/stack-configs.json` holds each tested configuration, while `figure-eight.json` supplies the shared geometry and CogniPilot reference. The native server rejects mismatched geometry. **Rerun both** runs one fresh attempt per stack, preserving failures and scoring accuracy separately from native completion. Three-repeat selection is documented in the campaign; a single button click is not that qualification.
 
 The green envelope comes from the PURT configuration (approximately 53.34 × 28.956 × 9.144 m). The viewer retains the black grid, orange Betaflight and blue CogniPilot paths. PURT overview shows the facility extent; close camera views keep the small drone visible. Actual calibrated coverage and obstacle positions are still unknown.
 
-Use the public page for saved recordings. To rerun both stacks, open [the local page](http://127.0.0.1:8766/sim/) while the Mac and VM are running. Start its existing native server using `devenv -P rdd2 up mission-planner` in the VM repository. The process name remains unchanged for compatibility with the current installation. The page’s **Rerun both** button uses only the fixed config.
+Use the public page for saved recordings. To rerun both stacks, open [the local page](http://127.0.0.1:8766/sim/) while the Mac and VM are running. Start its existing native server using `devenv -P rdd2 up mission-planner` in the VM repository. The process name remains unchanged for compatibility with the current installation. The page’s **Rerun both** button sends both fixed stack configs.
 
 Runs are sequential, save their exact config and preserve failed partial trajectories. Each recorded result is labeled passed or failed. Sensor/timing differences remain; do not rank the stacks from these results. Native artifacts stay under `src/cerebri_rdd2/artifacts/mission-planner/`. Historical measurements for both remaining stacks are retained; the public page uses their current recordings.
 
 
-The current course scales both horizontal dimensions by four while keeping altitude fixed. Its path is 24.3889 m, peak required speed 1.4810 m/s and peak lateral acceleration 0.5260 m/s² at a 45-second lap target. This fits the assumed profile limits including their reserve factor; actual calibrated PURT coverage remains unverified.
-
-Each public recording embeds its exact config and native report. The shared 45-second request is not Betaflight’s effective native cycle; use the reported native timing and geometric lap check. Recorded durations include setup and landing, not just the lap.
+Three selected lap repeats passed for each stack. An additional VM-page rerun passed CogniPilot but Betaflight aborted during the pre-lap hover because its XY estimator became invalid (native reason 1). The check was not disabled. Selected-setting observations are therefore 3/4 successful Betaflight attempts and 4/4 CogniPilot attempts in this final set; these small counts are not reliability estimates. Startup/estimator freshness remains unresolved.

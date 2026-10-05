@@ -8,7 +8,7 @@ Betaflight is the performance baseline; CogniPilot is the stack we aim to improv
 
 [**Watch the Flight Simulation & Stats page**](https://an1sura.github.io/autonomous-drone-bench/sim/) · [Open the VM-connected simulation](http://127.0.0.1:8766/sim/) · [Read the speed-benchmark plan](docs/speed-benchmark.md)
 
-**Current milestone:** both real flight-stack executables have flown a figure eight on the same Rumoca-generated quadrotor model. The latest Betaflight recording passes the one-lap geometric check, lands and disarms; CogniPilot passes its timed-reference diagnostic. These demonstrate the connections and recorded flights. **We have not yet measured either stack's maximum valid racing speed or established a winner.**
+**Current milestone:** a bounded speed search now scores full-rate course accuracy, lap completion and landing. Both selected settings passed three consecutive campaign repeats. **A later page rerun aborted Betaflight during pre-lap estimator validation; startup reliability remains unresolved.** The [October 5 results](docs/speed-search.md) preserve failed candidates and exact configs. These are fastest repeatedly passing tested settings within the explored range, not global maxima or a matched-sensor winner.
 
 ## What this project does
 
@@ -50,7 +50,7 @@ Keep the **same course size** for both stacks, then progressively shorten the re
 
 The lap clock measures **flight around the course**, separately from estimator warmup, arming, takeoff, end hold and landing. Total mission time is still reported. Simulation time is not the computer's execution time or the replay playback speed.
 
-The acceptance thresholds, repeat count and common start/finish implementation still need to be fixed before a speed ranking. This procedure is the next benchmark milestone, **not an automated speed sweep already implemented in the current page**. See [the speed-benchmark definition and remaining work](docs/speed-benchmark.md).
+The current search uses ≤0.25 m course RMS, ≤0.50 m maximum, complete-course gates and verified landing, with three repeats. Same-time tracking is reported separately. The page reruns the selected settings; it does not perform an unattended global optimization. See [the speed-search evidence](docs/speed-search.md).
 
 ## Current implementation
 
@@ -59,23 +59,21 @@ The acceptance thresholds, repeat count and common start/finish implementation s
 | **CogniPilot** | Real Zephyr `native_sim` firmware, shared-memory lockstep, common plant, external timed figure-eight reference and recorded landing | Establish SIL baseline; use later latency tests to guide performance improvements; validate hardware feedback and timing/drivers |
 | **Betaflight** | Pinned development SITL, sensor/motor exchange, native figure-eight pattern, independent recorded-lap check and landing/disarm checks | Support the common speed experiment; match sensors and timing; confirm the hardware firmware/interface |
 | **Shared plant** | Modelica quadrotor dynamics compiled by Rumoca into a generated-C/FMI artifact | Calibrate mass, inertia, motor response and limits against the identical physical drones |
-| **Simulation page** | Fixed one-lap PURT course, actual recordings, stats, black grid and green facility outline | Display future speed-sweep results once the runner and acceptance rules are implemented |
+| **Simulation page** | Fixed one-lap PURT course, actual recordings, stats, black grid and green facility outline | Show selected speed-search recordings, geometric accuracy, failures and reruns |
 | **Formal mathematics** | 40 named Lean-checked benchmark theorems using `gnc_lean`; build and axiom audit pass | Numerical error bounds, implementation refinement and controller/hardware proofs remain outside current coverage |
 
 ## What the current recordings show
 
 The course is **8 × 4 m**, at **1.5 m altitude**, with **one figure eight**, then landing. Betaflight is orange; CogniPilot is blue. The green PURT outline uses an approximate **53.34 × 28.956 × 9.144 m** envelope. Actual calibrated coverage and obstacle locations still need measurement.
 
-| Stack | Current pattern timing | Full recorded run | Observed result |
+| Stack | Selected timing | Course RMS / maximum | Full recording |
 | --- | --- | --- | --- |
-| **Betaflight** | 25.132741 s native period; 25.2 s HOLD | 41.745 s | One geometric lap, zero extra quadrant gates, landed and disarmed |
-| **CogniPilot** | 40 s reference + acceleration feedforward, followed by a 5 s hold | 69.000 s | Reference diagnostic passed; 0.257486 m 3D tracking RMS over its scored window |
+| Betaflight research SITL | 23.7 s request; 23.700 s native period | 0.194 / 0.346 m | 50.023 s |
+| CogniPilot | 23.7 s smooth-phase reference | 0.128 / 0.224 m | 52.700 s |
 
-These are October 4 simulation recordings: retained Betaflight baseline `1791151996186426613` and CogniPilot feedforward repeat `1791152185013782398`, not physical-flight measurements. Betaflight keeps its original 45-second request; two subsequent 40-second-request attempts failed. [All trials and technical next steps](docs/cognipilot-speed-experiment.md) are retained. Recorded totals include setup and landing. **The table does not show Betaflight beating CogniPilot:** the two flights currently use different time laws, sensor paths and timing arrangements, and neither has undergone a maximum-speed search.
+These are October 5 native firmware recordings. CogniPilot's same-time reference RMS is 0.166 m, measured against the original reference despite command lead. Betaflight uses a separately versioned SITL patch for startup stability, 100 Hz navigation targets, velocity feedforward and smooth start/stop; the adapter enforces a 0.35 rad/s peak phase-rate cap. Its selected P/I/D/A/F gains are 60/10/30/0/30. Physical tilt/motor/plant limits are unchanged. All rejected speed/tuning trials are [preserved](docs/speed-search.md).
 
-Betaflight's native planner has a 1 m/s cruise floor and a 0.25 rad/s pattern-rate cap. On this course, those produce the 25.13-second cycle. The old 45-second HOLD unintentionally commanded about 1.79 cycles; the corrected adapter requests 252 deciseconds and checks the recorded lap. That native planner cap is **not a measurement of Betaflight's ultimate control capability**. See [the timing diagnosis](docs/betaflight-timing.md).
-
-Earlier [Betaflight tuning experiments](docs/betaflight-tuning.md) addressed simulated yaw/altitude oscillation without changing the shared plant. Intermittent estimator aborts and provisioning failures remain documented. Failed runs are preserved. The [current timing rundown](docs/timing-rundown.md) explains scoring and the limits of comparison.
+The native period and requested reference duration are different timing measures. Betaflight has a ten-second pre-course hover; CogniPilot retains simulator-assisted takeoff/landing. Noise-free sensor paths and timing remain unmatched. **This is not proof that one stack beats the other.** The original [timing diagnosis](docs/betaflight-timing.md) and [October 4 experiment](docs/cognipilot-speed-experiment.md) remain historical evidence.
 
 ## What the repositories and tools do
 

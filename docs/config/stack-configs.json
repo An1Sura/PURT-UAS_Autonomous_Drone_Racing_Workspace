@@ -1,0 +1,143 @@
+{
+  "betaflight": {
+    "altitude_m": 1.5,
+    "center_enu_m": [
+      0,
+      0
+    ],
+    "end_hold_s": 5,
+    "height_m": 1,
+    "id": "bf-smooth-23.7-settled60",
+    "lap_time_s": 23.7,
+    "laps": 1,
+    "phase_law": "smooth_phase_ramp",
+    "profiles": [
+      {
+        "arm_takeoff_s": 5,
+        "estimator_warmup_s": 3,
+        "lag_s": 0.1,
+        "landing_s": 10,
+        "limits_status": "assumed",
+        "max_lateral_accel_m_s2": 2,
+        "max_speed_m_s": 2,
+        "mode": "native_pattern",
+        "navigation_gains": [
+          60,
+          10,
+          30,
+          0,
+          30
+        ],
+        "sensor_delay_ms": 0,
+        "sensor_noise_std_m": 0,
+        "sensor_rate_hz": 400,
+        "sensor_status": "declared ingress only; internal sensor paths differ",
+        "stack": "betaflight",
+        "tracking_lag_factor": 1.2
+      },
+      {
+        "arm_takeoff_s": 8,
+        "estimator_warmup_s": 1,
+        "lag_s": 0.1,
+        "landing_s": 10,
+        "limits_status": "assumed",
+        "max_lateral_accel_m_s2": 2,
+        "max_speed_m_s": 2,
+        "mode": "external_reference",
+        "sensor_delay_ms": 0,
+        "sensor_noise_std_m": 0,
+        "sensor_rate_hz": 1600,
+        "sensor_status": "declared ingress only; internal sensor paths differ",
+        "stack": "cognipilot",
+        "tracking_lag_factor": 1.2
+      }
+    ],
+    "scale": 4,
+    "schema_version": 1,
+    "sweep_lap_times_s": [
+      5,
+      10,
+      20,
+      30,
+      40
+    ],
+    "sweep_scales": [
+      0.5,
+      1,
+      2,
+      3
+    ],
+    "tracking_margin_m": 0.15,
+    "vehicle_radius_m": 0.4,
+    "width_m": 2,
+    "yaw_rad": 0
+  },
+  "cognipilot": {
+    "altitude_m": 1.5,
+    "center_enu_m": [
+      0,
+      0
+    ],
+    "end_hold_s": 5,
+    "height_m": 1,
+    "id": "cg-smooth-23.7-lead02",
+    "lap_time_s": 23.7,
+    "laps": 1,
+    "phase_law": "smooth_phase_ramp",
+    "profiles": [
+      {
+        "arm_takeoff_s": 5,
+        "estimator_warmup_s": 3,
+        "lag_s": 0.1,
+        "landing_s": 10,
+        "limits_status": "assumed",
+        "max_lateral_accel_m_s2": 2,
+        "max_speed_m_s": 2,
+        "mode": "native_pattern",
+        "sensor_delay_ms": 0,
+        "sensor_noise_std_m": 0,
+        "sensor_rate_hz": 400,
+        "sensor_status": "declared ingress only; internal sensor paths differ",
+        "stack": "betaflight",
+        "tracking_lag_factor": 1.2
+      },
+      {
+        "arm_takeoff_s": 8,
+        "estimator_warmup_s": 1,
+        "lag_s": 0.1,
+        "landing_s": 10,
+        "limits_status": "assumed",
+        "max_lateral_accel_m_s2": 2,
+        "max_speed_m_s": 2,
+        "mode": "external_reference",
+        "reference_lead_s": 0.2,
+        "reference_rate_hz": 200,
+        "sensor_delay_ms": 0,
+        "sensor_noise_std_m": 0,
+        "sensor_rate_hz": 1600,
+        "sensor_status": "declared ingress only; internal sensor paths differ",
+        "stack": "cognipilot",
+        "tracking_lag_factor": 1.2
+      }
+    ],
+    "scale": 4,
+    "schema_version": 1,
+    "sweep_lap_times_s": [
+      5,
+      10,
+      20,
+      30,
+      40
+    ],
+    "sweep_scales": [
+      0.5,
+      1,
+      2,
+      3
+    ],
+    "tracking_margin_m": 0.15,
+    "vehicle_radius_m": 0.4,
+    "width_m": 2,
+    "yaw_rad": 0
+  }
+}

@@ -1,5 +1,7 @@
 # What the benchmark mathematics proves
 
+> October 5 scope: the existing Lean build and 71-theorem axiom audit still pass. The new smooth-phase/arc-length schedules, 200 Hz command lead, geometric scorer, and Betaflight 0.35 rad/s research cap are numerically tested and flight-tested, **not covered by the historical minimum-jerk / 0.25 rad/s proofs**. Source hashes identify a snapshot; they are not an implementation-refinement proof.
+
 The project now uses CogniPilot's [gnc_lean](https://github.com/CogniPilot/gnc_lean/tree/0c01537b94677d38c0547a72c1dc12a7e87db234) as an actual pinned Lean dependency. The checked statements are in [ADR/Benchmark.lean](../proofs/ADR/Benchmark.lean). They describe exact real-number equations. A passing proof is conditional on its hypotheses and on those equations matching the implementation being used.
 
 ## Checked claims

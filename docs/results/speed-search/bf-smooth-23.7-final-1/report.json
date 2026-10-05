@@ -1,0 +1,170 @@
+{
+  "adapter": "betaflight",
+  "config": {
+    "altitude_m": 1.5,
+    "center_enu_m": [
+      0.0,
+      0.0
+    ],
+    "end_hold_s": 5.0,
+    "height_m": 1.0,
+    "id": "bf-smooth-23.7-settled60",
+    "lap_time_s": 23.7,
+    "laps": 1,
+    "phase_law": "smooth_phase_ramp",
+    "profiles": [
+      {
+        "arm_takeoff_s": 5.0,
+        "estimator_warmup_s": 3.0,
+        "lag_s": 0.1,
+        "landing_s": 10.0,
+        "limits_status": "assumed",
+        "max_lateral_accel_m_s2": 2.0,
+        "max_speed_m_s": 2.0,
+        "mode": "native_pattern",
+        "navigation_gains": [
+          60,
+          10,
+          30,
+          0,
+          30
+        ],
+        "reference_lead_s": 0.0,
+        "reference_rate_hz": 20,
+        "sensor_delay_ms": 0.0,
+        "sensor_noise_std_m": 0.0,
+        "sensor_rate_hz": 400.0,
+        "sensor_status": "declared ingress only; internal sensor paths differ",
+        "stack": "betaflight",
+        "tracking_lag_factor": 1.2
+      },
+      {
+        "arm_takeoff_s": 8.0,
+        "estimator_warmup_s": 1.0,
+        "lag_s": 0.1,
+        "landing_s": 10.0,
+        "limits_status": "assumed",
+        "max_lateral_accel_m_s2": 2.0,
+        "max_speed_m_s": 2.0,
+        "mode": "external_reference",
+        "reference_lead_s": 0.0,
+        "reference_rate_hz": 20,
+        "sensor_delay_ms": 0.0,
+        "sensor_noise_std_m": 0.0,
+        "sensor_rate_hz": 1600.0,
+        "sensor_status": "declared ingress only; internal sensor paths differ",
+        "stack": "cognipilot",
+        "tracking_lag_factor": 1.2
+      }
+    ],
+    "scale": 4.0,
+    "schema_version": 1,
+    "sweep_lap_times_s": [
+      5.0,
+      10.0,
+      20.0,
+      30.0,
+      40.0
+    ],
+    "sweep_scales": [
+      0.5,
+      1.0,
+      2.0,
+      3.0
+    ],
+    "tracking_margin_m": 0.15,
+    "vehicle_radius_m": 0.4,
+    "width_m": 2.0,
+    "yaw_rad": 0.0
+  },
+  "control_error": null,
+  "course_end_s": 42.72,
+  "course_start_s": 19.195,
+  "executable_sha256": "41c0aadb5b34ab744903e8bb35f1d40ac876573bfba9d45718f945f59bc6ddfb",
+  "heading_p": 30,
+  "hold_throttle_us": 1690,
+  "landing_observed": true,
+  "lap_verification": {
+    "centre_tolerance_x_m": 1.0,
+    "centre_tolerance_y_m": 1.0,
+    "completed_laps": 1,
+    "completion_times_s": [
+      40.505
+    ],
+    "extra_quadrant_gates": 0,
+    "method": "ordered four quadrant gates plus centre return above 80% target altitude",
+    "passed": true,
+    "quadrant_threshold_fraction": 0.4,
+    "requested_laps": 1
+  },
+  "native_disarmed": true,
+  "native_holding_samples": 99,
+  "native_timing": {
+    "hold_deciseconds": 237,
+    "maximum_pattern_rate_rad_s": 0.35,
+    "minimum_cruise_m_s": 1.0,
+    "native_period_s": 23.7,
+    "peak_pattern_rate_rad_s": 0.29457033788933834,
+    "phase_law": "smooth_phase_ramp",
+    "ramp_fraction": 0.1,
+    "requested_lap_s": 23.7,
+    "requested_laps": 1,
+    "requested_speed_cm_s": 118.0,
+    "timer_includes_pattern_settling": false
+  },
+  "navigation_gains_pidaf": [
+    60,
+    10,
+    30,
+    0,
+    30
+  ],
+  "passed": true,
+  "phase": "landed and disarmed",
+  "phase_law": "native smooth-phase ramp; duration rounded up to deciseconds",
+  "plant": {
+    "final_position_enu_m": [
+      -0.005887011682643462,
+      -0.015976857455663792,
+      0.09836555833288411
+    ],
+    "final_vertical_speed_m_s": 8.979864989592122e-13,
+    "ground_settled_samples": 1218,
+    "last_15s_before_landing_observed": {
+      "altitude_max_m": 1.534549143787017,
+      "altitude_min_m": 1.45679523454517,
+      "altitude_rmse_m": 0.02324250619973396,
+      "altitude_target_m": 1.5,
+      "fraction_samples_any_motor_within_1pct_of_limit": 0.0,
+      "mean_motor_spread_normalized": 0.004908161073923111,
+      "samples": 6000,
+      "window_end_s": 42.72,
+      "window_start_s": 27.7225
+    },
+    "maximum_altitude_m": 1.8031403926108969,
+    "motor_packets": 17551,
+    "simulated_seconds": 50.0225,
+    "trailing_15s_diagnostics": {
+      "altitude_max_m": 1.534549143787017,
+      "altitude_min_m": 0.0981972497049012,
+      "altitude_rmse_m": 0.8073669831373058,
+      "altitude_target_m": 1.5,
+      "fraction_samples_any_motor_within_1pct_of_limit": 0.2065,
+      "mean_motor_spread_normalized": 0.01723666501045227,
+      "samples": 6000,
+      "window_end_s": 50.0225,
+      "window_start_s": 35.025
+    }
+  },
+  "plant_error": null,
+  "plant_sha256": "284cced3ceec15128886d05753900b8ae47f38570ce0112c50e801356de97654",
+  "pre_course_settle_hold_s": 10,
+  "qualification": "integration only; native planner diagnostic is not the timed common reference; landing checked against ground truth and motor output; wall-clock coupled SITL",
+  "scenario": "figure-eight",
+  "sensor_hz": 400,
+  "takeoff_ms": 1000,
+  "timed_reference_parity": false,
+  "touchdown_altitude_m": 0.09847146687571674,
+  "yaw_i": 20,
+  "yaw_p": 45
+}

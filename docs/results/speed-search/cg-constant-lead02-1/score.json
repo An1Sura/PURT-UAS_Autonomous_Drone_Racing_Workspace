@@ -1,0 +1,21 @@
+{
+  "centre_return": false,
+  "completion_timestamp_s": null,
+  "course_max_error_m": 0.6687187074230082,
+  "course_rms_m": 0.3690573468461515,
+  "extents_covered": false,
+  "extra_lap_started": false,
+  "geometric_accuracy_passed": false,
+  "max_limit_m": 0.5,
+  "method": "3D distance to 2048-segment course polyline, ordered quadrants, centre return and extremum coverage",
+  "native_passed": false,
+  "ordered_quadrants": 4,
+  "qualification": "geometric course accuracy; temporal lag reported separately; no matched-sensor stack ranking",
+  "qualified": false,
+  "rms_limit_m": 0.25,
+  "samples": 34241,
+  "timed_reference_max_error_m": 0.6971031736871184,
+  "timed_reference_rms_m": 0.4840168925312376,
+  "window_end_s": 30.4,
+  "window_start_s": 9.0
+}

@@ -288,10 +288,11 @@ index 753d72f..0fa90f4 100644
      fs::write(&report_path, serde_json::to_vec_pretty(&report)?)?;
  
 diff --git a/xtask/src/main.rs b/xtask/src/main.rs
-index e11a7c8..884abe7 100644
+index e11a7c8..46a70c2 100644
 --- a/xtask/src/main.rs
 +++ b/xtask/src/main.rs
-@@ -1,7 +1,15 @@
+@@ -1,7 +1,16 @@
++mod speed_score;
 +mod benchmark;
 +mod betaflight_probe;
 +mod cognipilot;
@@ -307,7 +308,7 @@ index e11a7c8..884abe7 100644
  mod shared_memory;
  
  use std::env;
-@@ -13,29 +21,21 @@ use std::thread;
+@@ -13,29 +22,21 @@ use std::thread;
  use std::time::{Duration, Instant};
  
  use anyhow::{Context, Result, anyhow, bail};
@@ -343,7 +344,7 @@ index e11a7c8..884abe7 100644
      report: PathBuf,
      trajectory: PathBuf,
      duration: f64,
-@@ -52,6 +52,9 @@ struct Options {
+@@ -52,6 +53,9 @@ struct Options {
  
  #[derive(Debug, Default, Serialize)]
  struct Report {
@@ -353,7 +354,7 @@ index e11a7c8..884abe7 100644
      passed: bool,
      /// Which providers produced the firmware under test. A pass built from
      /// caller-selected sources is not a qualifying result, and the report
-@@ -108,7 +111,7 @@ fn options(args: impl IntoIterator<Item = String>) -> Result<Options> {
+@@ -108,7 +112,7 @@ fn options(args: impl IntoIterator<Item = String>) -> Result<Options> {
      let mut trajectory = env::var_os("RDD2_MISSION_TRAJECTORY")
          .map(PathBuf::from)
          .unwrap_or_else(|| PathBuf::from("out/mission-trajectory.csv"));
@@ -362,7 +363,7 @@ index e11a7c8..884abe7 100644
      let mut timeout_ms = 2_000_u64;
      let mut controller_benchmark = env::var("RDD2_FASTDYN_CONTROLLER_BENCHMARK_S")
          .ok()
-@@ -124,10 +127,39 @@ fn options(args: impl IntoIterator<Item = String>) -> Result<Options> {
+@@ -124,10 +128,39 @@ fn options(args: impl IntoIterator<Item = String>) -> Result<Options> {
          .map(|value| value.parse())
          .transpose()?
          .unwrap_or(0.0);
@@ -402,7 +403,7 @@ index e11a7c8..884abe7 100644
              "--report" => report = args.next().ok_or_else(value)?.into(),
              "--trajectory" => trajectory = args.next().ok_or_else(value)?.into(),
              "--duration" => duration = args.next().ok_or_else(value)?.parse()?,
-@@ -145,20 +177,48 @@ fn options(args: impl IntoIterator<Item = String>) -> Result<Options> {
+@@ -145,20 +178,48 @@ fn options(args: impl IntoIterator<Item = String>) -> Result<Options> {
              "--minimum-speedup" => minimum_speedup = args.next().ok_or_else(value)?.parse()?,
              "-h" | "--help" => {
                  println!(
@@ -454,7 +455,7 @@ index e11a7c8..884abe7 100644
          report,
          trajectory,
          duration,
-@@ -171,29 +231,29 @@ fn options(args: impl IntoIterator<Item = String>) -> Result<Options> {
+@@ -171,29 +232,29 @@ fn options(args: impl IntoIterator<Item = String>) -> Result<Options> {
              .context("--plant-library or RDD2_RUMOCA_PLANT_LIBRARY is required")?,
          plant_description: plant_description
              .context("--plant-description or RDD2_RUMOCA_PLANT_DESCRIPTION is required")?,
@@ -494,7 +495,7 @@ index e11a7c8..884abe7 100644
  }
  
  fn rc_channels(mission_time: Option<f64>, plant: &Plant) -> [i32; 16] {
-@@ -204,15 +264,16 @@ fn rc_channels(mission_time: Option<f64>, plant: &Plant) -> [i32; 16] {
+@@ -204,15 +265,16 @@ fn rc_channels(mission_time: Option<f64>, plant: &Plant) -> [i32; 16] {
          channels[5] = 1000;
          return channels;
      };
@@ -519,7 +520,7 @@ index e11a7c8..884abe7 100644
      if throttle_must_be_low(time) {
          channels[2] = 1000;
      } else {
-@@ -381,8 +442,7 @@ fn evaluate(report: &mut Report) {
+@@ -381,8 +443,7 @@ fn evaluate(report: &mut Report) {
              .push("vehicle had excessive vertical speed at completion".into());
      }
      report.passed = report.failures.is_empty();
@@ -529,7 +530,7 @@ index e11a7c8..884abe7 100644
  }
  
  fn advance_square_corner(
-@@ -448,7 +508,11 @@ where
+@@ -448,7 +509,11 @@ where
      let warmup_target_ns = 5_000_000_u64;
      let ready_deadline = Instant::now() + Duration::from_secs(60);
      loop {
@@ -542,7 +543,7 @@ index e11a7c8..884abe7 100644
          let inputs = protocol::lockstep_inputs(
              gyro,
              accel,
-@@ -466,7 +530,8 @@ where
+@@ -466,7 +531,8 @@ where
      }
  
      let target_ns = warmup_target_ns + (benchmark_seconds * 1.0e9).round() as u64;
@@ -552,7 +553,7 @@ index e11a7c8..884abe7 100644
      let inputs = protocol::lockstep_inputs(
          gyro,
          accel,
-@@ -489,8 +554,12 @@ fn run_mission<F>(options: &Options, exchange: &mut F) -> Result<()>
+@@ -489,8 +555,12 @@ fn run_mission<F>(options: &Options, exchange: &mut F) -> Result<()>
  where
      F: FnMut(&protocol::LockstepInputs, Duration) -> Result<LockstepOutputs>,
  {
@@ -565,7 +566,7 @@ index e11a7c8..884abe7 100644
          position_mission_continuous: true,
          mission_status_current: true,
          navigation_estimate_finite: true,
-@@ -500,7 +569,15 @@ where
+@@ -500,7 +570,15 @@ where
      let wall_start = Instant::now();
      let mut firmware_ready = false;
      let mut synthetic_gnss = SyntheticGnss::default();
@@ -582,7 +583,7 @@ index e11a7c8..884abe7 100644
      let mut plan_sent = false;
      let mut mission_epoch = None;
      let mut last_outputs: Option<LockstepOutputs> = None;
-@@ -529,26 +606,38 @@ where
+@@ -529,26 +607,38 @@ where
          let channels = rc_channels(mission_time, &plant);
          let (gyro, accel) = plant.imu_flu();
          let target_time = ((simulated_time + options.plant_dt) * 1.0e9).round() as u64;
@@ -635,7 +636,7 @@ index e11a7c8..884abe7 100644
          simulated_time += options.plant_dt;
          report.plant_steps += 1;
          let state = outputs.flight_state;
-@@ -619,7 +708,8 @@ where
+@@ -619,7 +709,8 @@ where
              .all(f32::is_finite);
          report.fresh_planner_reference_observed |= reference_current;
          if mission_time.is_some_and(|time| {
@@ -645,7 +646,7 @@ index e11a7c8..884abe7 100644
          }) {
              let required = MissionStatusWire::SOURCE_READY
                  | MissionStatusWire::ORIGIN_VALID
-@@ -641,14 +731,14 @@ where
+@@ -641,14 +732,14 @@ where
                  &mut report.planner_corners_reached,
                  planner_origin_value,
                  planner_position,
@@ -662,7 +663,7 @@ index e11a7c8..884abe7 100644
                  VEHICLE_CORNER_TOLERANCE_M,
              );
          }
-@@ -671,7 +761,8 @@ where
+@@ -671,7 +762,8 @@ where
          if mission_epoch.is_none() && status.mission_state == 1 {
              mission_epoch = Some(simulated_time);
          }
@@ -672,7 +673,7 @@ index e11a7c8..884abe7 100644
              report.firmware_disarmed_after_flight = true;
          }
  
-@@ -708,6 +799,7 @@ where
+@@ -708,6 +800,7 @@ where
          last_outputs = Some(outputs);
      }
  
@@ -680,17 +681,19 @@ index e11a7c8..884abe7 100644
      report.simulated_seconds = report.plant_steps as f64 * options.plant_dt;
      report.wall_seconds = wall_start.elapsed().as_secs_f64();
      report.speedup_over_realtime = report.simulated_seconds / report.wall_seconds;
-@@ -824,6 +916,9 @@ fn main() -> Result<()> {
+@@ -824,6 +917,11 @@ fn main() -> Result<()> {
      };
  
      match command.to_string_lossy().as_ref() {
 +        "mission-server" => mission_server::run(args),
 +        "figure-plan" => figure_config::run(args),
++        "speed-score" => speed_score::run(args),
++        "speed-export" => speed_score::export(args),
 +        "betaflight-probe" => betaflight_probe::run(args),
          "fastdyn-ci" => fastdyn_ci::run(),
          "fastdyn-mission" => {
              let args = args
-@@ -870,7 +965,7 @@ mod tests {
+@@ -870,7 +968,7 @@ mod tests {
              vehicle_corners_reached: 5,
              navigation_estimate_finite: true,
              max_navigation_horizontal_error_m: 0.1,
@@ -699,7 +702,7 @@ index e11a7c8..884abe7 100644
              maximum_gnss_generation: 441,
              maximum_reference_generation: 100,
              maximum_plan_generation: 1,
-@@ -904,16 +999,19 @@ mod tests {
+@@ -904,16 +1002,19 @@ mod tests {
  
      #[test]
      fn takeoff_schedule_preserves_a_low_throttle_arming_window() {
@@ -726,7 +729,7 @@ index e11a7c8..884abe7 100644
          );
      }
  
-@@ -926,7 +1024,7 @@ mod tests {
+@@ -926,7 +1027,7 @@ mod tests {
              &mut progress,
              origin,
              origin,
@@ -735,7 +738,7 @@ index e11a7c8..884abe7 100644
              VEHICLE_CORNER_TOLERANCE_M,
          );
          assert_eq!(progress, 1);
-@@ -934,15 +1032,15 @@ mod tests {
+@@ -934,15 +1035,15 @@ mod tests {
              &mut progress,
              origin,
              origin,
@@ -754,7 +757,7 @@ index e11a7c8..884abe7 100644
              VEHICLE_CORNER_TOLERANCE_M,
          );
          assert_eq!(progress, 2);
-@@ -1063,7 +1161,7 @@ mod tests {
+@@ -1063,7 +1164,7 @@ mod tests {
          let result = (|| -> Result<()> {
              for _ in 0..4_000 {
                  target_ns += 625_000;
@@ -763,7 +766,7 @@ index e11a7c8..884abe7 100644
                  let inputs = protocol::lockstep_inputs(
                      [0.0; 3],
                      [0.0, 0.0, 9.806_65],
-@@ -1096,7 +1194,7 @@ mod tests {
+@@ -1096,7 +1197,7 @@ mod tests {
              let mut last_quality = 0_i8;
              for _ in 0..320 {
                  target_ns += 625_000;
@@ -772,7 +775,7 @@ index e11a7c8..884abe7 100644
                  let inputs = protocol::lockstep_inputs(
                      [0.0; 3],
                      [0.0, 0.0, 9.806_65],
-@@ -1125,7 +1223,7 @@ mod tests {
+@@ -1125,7 +1226,7 @@ mod tests {
              let mut last_flight_armed = false;
              for _ in 0..1_600 {
                  target_ns += 625_000;
@@ -1483,10 +1486,10 @@ index 0000000..b94b49c
 +}
 diff --git a/xtask/src/betaflight_probe.rs b/xtask/src/betaflight_probe.rs
 new file mode 100644
-index 0000000..86c69bc
+index 0000000..d740ee3
 --- /dev/null
 +++ b/xtask/src/betaflight_probe.rs
-@@ -0,0 +1,763 @@
+@@ -0,0 +1,804 @@
 +//! Real Betaflight SITL connected to the common FMI plant. Native HOLD/FIGURE8
 +//! is an integration diagnostic: its phase law differs from the timed reference.
 +use crate::physics::{self, Plant};
@@ -1516,6 +1519,7 @@ index 0000000..86c69bc
 +}
 +#[derive(Clone, Copy, Default)]
 +struct GroundState {
++    time_s: f64,
 +    altitude: f64,
 +    vertical_speed: f64,
 +    settled_samples: u64,
@@ -1678,17 +1682,17 @@ index 0000000..86c69bc
 +    ];
 +    values.iter().flat_map(|x| x.to_le_bytes()).collect()
 +}
-+// Pinned Betaflight 744f95f flight_plan_nav.c: FP_MIN_CRUISE_MPS and
-+// FP_PATTERN_MAX_RATE_RADS. Keep these explicit when updating the firmware pin.
++// ADR SITL research patch on pinned 744f95f: 1 m/s floor and 0.35 rad/s cap.
++// Pair this adapter with the published Betaflight optimization patch.
 +fn native_timing(radius_cm: f64, requested_lap_s: f64, laps: u32) -> serde_json::Value {
-+    let requested_speed_cm_s = (std::f64::consts::TAU * radius_cm / requested_lap_s).round();
-+    let effective_rate = ((requested_speed_cm_s * 0.01).max(1.0) / (radius_cm * 0.01)).min(0.25);
-+    let period = std::f64::consts::TAU / effective_rate;
-+    json!({"requested_lap_s":requested_lap_s,"requested_speed_cm_s":requested_speed_cm_s,
-+        "minimum_cruise_m_s":1.0,"maximum_pattern_rate_rad_s":0.25,
-+        "effective_pattern_rate_rad_s":effective_rate,"native_period_s":period,
-+        "hold_deciseconds":(period * laps as f64 * 10.).ceil() as u64,
-+        "requested_laps":laps,"timer_includes_pattern_settling":true})
++    let period = (requested_lap_s.max(std::f64::consts::TAU / (0.9 * 0.35)) * 10.).ceil() / 10.;
++    let peak_rate = std::f64::consts::TAU / (0.9 * period);
++    let speed = (peak_rate * radius_cm).round();
++    json!({"requested_lap_s":requested_lap_s,"requested_speed_cm_s":speed,
++       "minimum_cruise_m_s":1.0,"maximum_pattern_rate_rad_s":0.35,
++       "peak_pattern_rate_rad_s":peak_rate,"native_period_s":period,
++       "hold_deciseconds":(period*10.).round() as u64,"requested_laps":laps,
++       "timer_includes_pattern_settling":false,"phase_law":"smooth_phase_ramp","ramp_fraction":0.1})
 +}
 +
 +// Geometric verification is independent of elapsed time and native mission state.
@@ -1744,6 +1748,7 @@ index 0000000..86c69bc
 +    let mut hover = false;
 +    let mut takeoff_ms = 1000u64;
 +    let mut hold_throttle = 1690u16;
++    let mut nav_gains = [30u16; 5];
 +    let mut figure_config = None;
 +    let mut extra = args[3..].iter();
 +    while let Some(arg) = extra.next() {
@@ -1752,6 +1757,21 @@ index 0000000..86c69bc
 +                figure_config = Some(crate::figure_config::Config::load(&PathBuf::from(
 +                    extra.next().context("missing config")?,
 +                ))?)
++            }
++            Some("--nav-gains") => {
++                let text = extra
++                    .next()
++                    .context("missing navigation gains")?
++                    .to_str()
++                    .context("invalid navigation gains")?;
++                let values = text
++                    .split(',')
++                    .map(str::parse::<u16>)
++                    .collect::<std::result::Result<Vec<_>, _>>()?;
++                if values.len() != 5 || values.iter().any(|v| *v > 200) {
++                    bail!("navigation gains require P,I,D,A,F in 0..200");
++                }
++                nav_gains.copy_from_slice(&values);
 +            }
 +            Some("--hover") => hover = true,
 +            Some("--yaw-p") => {
@@ -1816,6 +1836,9 @@ index 0000000..86c69bc
 +    }
 +    if let Some(c) = &figure_config {
 +        let p = c.check_profile("betaflight", "native_pattern")?;
++        if let Some(gains) = p.navigation_gains {
++            nav_gains = gains;
++        }
 +        if (c.width_m - 2. * c.height_m).abs() > 1e-9
 +            || c.center_enu_m != [0., 0.]
 +            || c.yaw_rad != 0.
@@ -1832,8 +1855,11 @@ index 0000000..86c69bc
 +            bail!("unsupported Betaflight ingress profile");
 +        }
 +        sensor_hz = p.sensor_rate_hz as u64;
-+        if c.total_time() > 90. || c.total_time() < 25. {
-+            bail!("Betaflight native diagnostic requires a 25..90 second pattern window");
++        if c.phase_law != "smooth_phase_ramp" || c.laps != 1 {
++            bail!("research Betaflight build requires a single smooth-phase lap");
++        }
++        if c.total_time() > 90. || c.total_time() < 20. {
++            bail!("Betaflight native diagnostic requires a 20..90 second pattern window");
 +        }
 +    }
 +    let bridge_dt = 1.0 / sensor_hz as f64;
@@ -1845,7 +1871,7 @@ index 0000000..86c69bc
 +    if out.join("eeprom.bin").exists() {
 +        bail!("use a fresh output directory to preserve prior evidence");
 +    }
-+    let config = "feature GPS\nset gps_provider = VIRTUAL\nset debug_mode = FLIGHT_PLAN\nset failsafe_procedure = AUTO-LAND\naux 0 0 0 1700 2100 0 0\naux 1 56 1 1700 2100 0 0\naux 2 1 2 1700 2100 0 0\nset mag_calibration = 1,1,1\nset ap_hover_throttle = 1690\nset ap_yaw_mode = FIXED\nset ap_waypoint_hold_radius = 100\nwaypoint insert 0 40.4237000 -86.9212000 20150 30 hold 250 figure8\nwaypoint insert 1 40.4237000 -86.9212000 20150 30 land 0 none\n";
++    let config = "feature GPS\nset gps_provider = VIRTUAL\nset debug_mode = FLIGHT_PLAN\nset failsafe_procedure = AUTO-LAND\naux 0 0 0 1700 2100 0 0\naux 1 56 1 1700 2100 0 0\naux 2 1 2 1700 2100 0 0\nset mag_calibration = 1,1,1\nset ap_hover_throttle = 1690\nset ap_yaw_mode = FIXED\nset ap_waypoint_hold_radius = 100\nwaypoint insert 0 40.4237000 -86.9212000 20150 30 hold 100 none\nwaypoint insert 1 40.4237000 -86.9212000 20150 30 hold 250 figure8\nwaypoint insert 2 40.4237000 -86.9212000 20150 30 land 0 none\n";
 +    let config = if hover {
 +        config.replace("hold 250 figure8", "hold 250 none")
 +    } else {
@@ -1885,6 +1911,10 @@ index 0000000..86c69bc
 +    }
 +    let config =
 +        format!("{config}set p_yaw = {yaw_p}\nset i_yaw = {yaw_i}\nset ap_yaw_p = {heading_p}\n");
++    let config = format!(
++        "{config}set ap_position_p = {}\nset ap_position_i = {}\nset ap_position_d = {}\nset ap_position_a = {}\nset ap_position_f = {}\n",
++        nav_gains[0], nav_gains[1], nav_gains[2], nav_gains[3], nav_gains[4]
++    );
 +    fs::write(out.join("config.txt"), config)?;
 +    let provision = Command::new(&binary)
 +        .args(["--config", out.join("config.txt").to_str().unwrap()])
@@ -1980,6 +2010,7 @@ index 0000000..86c69bc
 +            max_alt = max_alt.max(p[2]);
 +            {
 +                let mut g = worker_ground.lock().unwrap();
++                g.time_s = step as f64 * bridge_dt;
 +                g.altitude = p[2];
 +                g.vertical_speed = plant.vertical_speed();
 +                g.settled_samples = if grounded(g.altitude, g.vertical_speed, m) {
@@ -2035,6 +2066,8 @@ index 0000000..86c69bc
 +    });
 +    let mut phase = "connect";
 +    let mut holding_samples = 0u64;
++    let mut course_start_s = None;
++    let mut course_end_s = None;
 +    let mut landing_observed = false;
 +    let mut native_disarmed = false;
 +    let mut touchdown_altitude_m = None;
@@ -2101,13 +2134,19 @@ index 0000000..86c69bc
 +                telemetry,
 +                "{sample},{state},{abort},{index},{altitude_cm},{vario_cm_s}"
 +            )?;
-+            if state == 2 && abort == 0 {
++            if state == 2 && abort == 0 && index == 1 {
 +                holding_samples += 1;
++                if course_start_s.is_none() {
++                    course_start_s = Some(ground.lock().unwrap().time_s);
++                }
 +            }
 +            if state == 5 || abort != 0 {
 +                bail!("native mission aborted: state={state} reason={abort}");
 +            }
 +            if state == 4 {
++                if course_end_s.is_none() {
++                    course_end_s = Some(ground.lock().unwrap().time_s);
++                }
 +                landing_observed = true;
 +                landing.store(true, Ordering::Relaxed);
 +                phase = "native landing";
@@ -2136,8 +2175,13 @@ index 0000000..86c69bc
 +        if !native_disarmed {
 +            bail!("native landing/disarm timeout");
 +        }
-+        if holding_samples < 100 {
-+            bail!("native HOLD not observed for at least 100 samples");
++        let requested_hold_s = timing["hold_deciseconds"].as_u64().unwrap_or(250) as f64 / 10.;
++        if holding_samples < 10
++            || course_end_s
++                .zip(course_start_s)
++                .is_none_or(|(end, start)| end - start < 0.9 * requested_hold_s)
++        {
++            bail!("native HOLD observations did not cover 90% of the requested interval");
 +        }
 +        // Lower the RC arm switch only after firmware has disarmed itself.
 +        channels.lock().unwrap()[4] = 1000;
@@ -2179,7 +2223,7 @@ index 0000000..86c69bc
 +        serde_json::Value::Null
 +    };
 +    let laps_ok = lap_check.is_null() || lap_check["passed"] == true;
-+    let report = json!({"native_timing":timing,"lap_verification":lap_check,"adapter":"betaflight","config":figure_config,"timed_reference_parity":false,"phase_law":"native constant phase; cruise speed quantized to cm/s","yaw_p":yaw_p,"yaw_i":yaw_i,"heading_p":heading_p,"sensor_hz":sensor_hz,"scenario":if hover {"hover"} else {"figure-eight"},"takeoff_ms":takeoff_ms,"hold_throttle_us":hold_throttle,"phase":phase,"native_holding_samples":holding_samples,"landing_observed":landing_observed,"native_disarmed":native_disarmed,"touchdown_altitude_m":touchdown_altitude_m,"passed":result.is_ok()&&worker_result.is_ok()&&laps_ok,"plant_sha256":plant_hash,"executable_sha256":physics::file_sha256(&binary)?,"qualification":"integration only; native planner diagnostic is not the timed common reference; landing checked against ground truth and motor output; wall-clock coupled SITL","control_error":result.as_ref().err().map(|e|format!("{e:#}")),"plant_error":worker_result.as_ref().err().map(|e|format!("{e:#}")),"plant":worker_result.as_ref().ok()});
++    let report = json!({"pre_course_settle_hold_s":10,"navigation_gains_pidaf":nav_gains,"course_start_s":course_start_s,"course_end_s":course_end_s,"native_timing":timing,"lap_verification":lap_check,"adapter":"betaflight","config":figure_config,"timed_reference_parity":false,"phase_law":"native smooth-phase ramp; duration rounded up to deciseconds","yaw_p":yaw_p,"yaw_i":yaw_i,"heading_p":heading_p,"sensor_hz":sensor_hz,"scenario":if hover {"hover"} else {"figure-eight"},"takeoff_ms":takeoff_ms,"hold_throttle_us":hold_throttle,"phase":phase,"native_holding_samples":holding_samples,"landing_observed":landing_observed,"native_disarmed":native_disarmed,"touchdown_altitude_m":touchdown_altitude_m,"passed":result.is_ok()&&worker_result.is_ok()&&laps_ok,"plant_sha256":plant_hash,"executable_sha256":physics::file_sha256(&binary)?,"qualification":"integration only; native planner diagnostic is not the timed common reference; landing checked against ground truth and motor output; wall-clock coupled SITL","control_error":result.as_ref().err().map(|e|format!("{e:#}")),"plant_error":worker_result.as_ref().err().map(|e|format!("{e:#}")),"plant":worker_result.as_ref().ok()});
 +    telemetry.flush()?;
 +    fs::write(out.join("report.json"), serde_json::to_vec_pretty(&report)?)?;
 +    println!("{report}");
@@ -2196,12 +2240,12 @@ index 0000000..86c69bc
 +    use super::*;
 +    #[test]
 +    fn timing_accounts_for_firmware_floor_and_cap() {
-+        let timing = native_timing(400., 45., 1);
-+        assert_eq!(timing["requested_speed_cm_s"], 56.);
-+        assert_eq!(timing["hold_deciseconds"], 252);
-+        assert!((timing["native_period_s"].as_f64().unwrap() - 25.1327412287).abs() < 1e-8);
-+        assert_eq!(native_timing(1000., 100., 1)["hold_deciseconds"], 629);
-+        assert_eq!(native_timing(400., 20., 1)["hold_deciseconds"], 252);
++        let timing = native_timing(400., 23.7, 1);
++        assert_eq!(timing["hold_deciseconds"], 237);
++        assert_eq!(timing["native_period_s"], 23.7);
++        assert!(timing["peak_pattern_rate_rad_s"].as_f64().unwrap() <= 0.35);
++        assert_eq!(native_timing(400., 19., 1)["hold_deciseconds"], 200);
++        assert_eq!(native_timing(400., 23.71, 1)["hold_deciseconds"], 238);
 +    }
 +    #[test]
 +    fn geometry_rejects_extra_and_incomplete_laps() {
@@ -2547,10 +2591,10 @@ index 0000000..940076c
 +}
 diff --git a/xtask/src/cognipilot_reference.rs b/xtask/src/cognipilot_reference.rs
 new file mode 100644
-index 0000000..3128f1f
+index 0000000..692bce5
 --- /dev/null
 +++ b/xtask/src/cognipilot_reference.rs
-@@ -0,0 +1,305 @@
+@@ -0,0 +1,334 @@
 +//! Shared square reference diagnostic. Takeoff/landing still use the legacy
 +//! simulator-assisted throttle law; this is not full sensor/control parity.
 +use crate::{
@@ -2588,6 +2632,8 @@ index 0000000..3128f1f
 +    final_position_enu_m: [f64; 3],
 +    armed_observed: bool,
 +    final_armed: bool,
++    final_motors: [f32; 4],
++    stopped_motor_ground_samples: u64,
 +    exchange_metrics: ExchangeMetrics,
 +    error: Option<String>,
 +    navigation_origin_enu_m: Option<[f64; 3]>,
@@ -2603,6 +2649,8 @@ index 0000000..3128f1f
 +    let profile = cfg
 +        .map(|c| c.profile("cognipilot", "external_reference"))
 +        .transpose()?;
++    let reference_period_ns = 1_000_000_000u64 / profile.map_or(20, |p| p.reference_rate_hz) as u64;
++    let reference_lead_s = profile.map_or(0., |p| p.reference_lead_s);
 +    let start = profile.map_or(8., |p| p.arm_takeoff_s);
 +    let end = start + cfg.map_or(25., |c| c.window());
 +    let landing = profile.map_or(7., |p| p.landing_s);
@@ -2647,6 +2695,7 @@ index 0000000..3128f1f
 +    let mut commands = BufWriter::new(File::create(&command_path)?);
 +    writeln!(commands, "time_s,x_m,y_m,z_m,vx_m_s,vy_m_s,vz_m_s,yaw_rad")?;
 +    let mut held_reference = None;
++    let mut reference_history = std::collections::BTreeMap::new();
 +    let mut squared_sum = 0.;
 +    let steps = (options.duration / options.plant_dt).round() as u64;
 +    let result = (|| -> Result<()> {
@@ -2658,10 +2707,17 @@ index 0000000..3128f1f
 +                .map(|epoch| (target_ns - epoch) as f64 * 1e-9);
 +            if let Some(t) = mission_time {
 +                if held_reference.is_none()
-+                    || (target_ns - report.mission_epoch_ns.unwrap()) % 50_000_000 == 0
++                    || (target_ns - report.mission_epoch_ns.unwrap()) % reference_period_ns == 0
 +                {
-+                    let r = sample((t - start).max(0.));
++                    // Compensate only the command; scoring below keeps the original time target.
++                    let r = sample(if t < start {
++                        0.
++                    } else {
++                        t - start + reference_lead_s
++                    });
 +                    held_reference = Some((target_ns, r));
++                    reference_history.insert(target_ns, r);
++                    reference_history.retain(|stamp, _| target_ns - *stamp <= 200_000_000);
 +                    if (start..end).contains(&t) {
 +                        report.references_sent += 1;
 +                        writeln!(
@@ -2709,6 +2765,7 @@ index 0000000..3128f1f
 +                .record(elapsed, response.motors, output.flight_state.armed);
 +            report.armed_observed |= output.flight_state.armed;
 +            report.final_armed = output.flight_state.armed;
++            report.final_motors = response.motors;
 +            let required = MissionStatusWire::SOURCE_READY | MissionStatusWire::ORIGIN_VALID;
 +            if report.mission_epoch_ns.is_none()
 +                && output.mission_status.flags & required == required
@@ -2733,6 +2790,15 @@ index 0000000..3128f1f
 +            report.simulated_seconds = time_s;
 +            report.final_position_enu_m = p;
 +            report.maximum_altitude_m = report.maximum_altitude_m.max(p[2]);
++            report.stopped_motor_ground_samples = if (0.05..=0.2).contains(&p[2])
++                && plant.vertical_speed().abs() <= 0.1
++                && !output.flight_state.armed
++                && response.motors.iter().all(|m| *m <= 0.001)
++            {
++                report.stopped_motor_ground_samples + 1
++            } else {
++                0
++            };
 +            if !p.iter().chain(e.iter()).all(|x| x.is_finite())
 +                || p[0].abs() > 5.
 +                || p[1].abs() > 5.
@@ -2766,8 +2832,14 @@ index 0000000..3128f1f
 +                squared_sum += err;
 +                report.reference_samples += 1;
 +                report.position_max_error_m = report.position_max_error_m.max(err.sqrt());
-+                let (stamp, held) = held_reference.unwrap();
-+                if target_ns - stamp > 10_000_000 {
++                if t > start + 0.1 {
++                    let stamp = output.planner_reference.timestamp_ns();
++                    if stamp > target_ns || target_ns - stamp > 100_000_000 {
++                        bail!("stale native reference echo");
++                    }
++                    let held = *reference_history
++                        .get(&stamp)
++                        .context("native reference echo was not sent")?;
 +                    let expected = crate::cognipilot::reference_wire(
 +                        stamp,
 +                        target_ns,
@@ -2782,6 +2854,7 @@ index 0000000..3128f1f
 +        }
 +        if !report.armed_observed
 +            || report.final_armed
++            || report.stopped_motor_ground_samples < 1600
 +            || report.maximum_altitude_m < 1.
 +            || plant.position()[2] > 0.2
 +            || report.reference_samples != ((end - start) * 1600.).round() as u64
@@ -2858,10 +2931,10 @@ index 0000000..3128f1f
 +}
 diff --git a/xtask/src/figure_config.rs b/xtask/src/figure_config.rs
 new file mode 100644
-index 0000000..f493896
+index 0000000..92dfd35
 --- /dev/null
 +++ b/xtask/src/figure_config.rs
-@@ -0,0 +1,401 @@
+@@ -0,0 +1,564 @@
 +//! Shared geometry, timing and planning assumptions. No measured stack limits implied.
 +use crate::reference::Reference;
 +use anyhow::{Context, Result, bail};
@@ -2871,6 +2944,12 @@ index 0000000..f493896
 +#[derive(Clone, Debug, Deserialize, Serialize)]
 +#[serde(deny_unknown_fields)]
 +pub struct Profile {
++    #[serde(default)]
++    pub reference_lead_s: f64,
++    #[serde(default = "default_reference_rate")]
++    pub reference_rate_hz: u32,
++    #[serde(default, skip_serializing_if = "Option::is_none")]
++    pub navigation_gains: Option<[u16; 5]>,
 +    pub stack: String,
 +    pub mode: String,
 +    pub max_speed_m_s: f64,
@@ -2886,9 +2965,11 @@ index 0000000..f493896
 +    pub limits_status: String,
 +    pub sensor_status: String,
 +}
-+#[derive(Clone, Debug, Deserialize, Serialize)]
++#[derive(Debug, Deserialize, Serialize)]
 +#[serde(deny_unknown_fields)]
 +pub struct Config {
++    #[serde(skip)]
++    arc_table: std::sync::OnceLock<Vec<(f64, f64)>>,
 +    pub schema_version: u32,
 +    pub id: String,
 +    pub width_m: f64,
@@ -2919,6 +3000,14 @@ index 0000000..f493896
 +    pub tightest_turn_radius_m: f64,
 +    pub timed_path_s: f64,
 +}
++fn default_reference_rate() -> u32 {
++    20
++}
++impl Clone for Config {
++    fn clone(&self) -> Self {
++        serde_json::from_value(serde_json::to_value(self).unwrap()).unwrap()
++    }
++}
 +impl Config {
 +    pub fn load(p: &Path) -> Result<Self> {
 +        let c: Self = serde_json::from_str(&fs::read_to_string(p)?)?;
@@ -2926,7 +3015,15 @@ index 0000000..f493896
 +        Ok(c)
 +    }
 +    pub fn validate(&self) -> Result<()> {
-+        if self.schema_version != 1 || self.phase_law != "minimum_jerk_each_lap" {
++        if self.schema_version != 1
++            || ![
++                "minimum_jerk_each_lap",
++                "arc_length_smooth_ramp",
++                "smooth_phase_ramp",
++                "constant_phase",
++            ]
++            .contains(&self.phase_law.as_str())
++        {
 +            bail!("unsupported schema or phase law");
 +        }
 +        for x in [
@@ -2964,6 +3061,14 @@ index 0000000..f493896
 +            }
 +        }
 +        for p in &self.profiles {
++            if !p.reference_lead_s.is_finite()
++                || !(0.0..=0.5).contains(&p.reference_lead_s)
++                || ![20, 50, 100, 200].contains(&p.reference_rate_hz)
++                || p.navigation_gains
++                    .is_some_and(|g| p.stack != "betaflight" || g.iter().any(|v| *v > 200))
++            {
++                bail!("invalid reference compensation or navigation gains");
++            }
 +            if ![p.max_speed_m_s, p.max_lateral_accel_m_s2, p.sensor_rate_hz]
 +                .iter()
 +                .all(|x| x.is_finite() && *x > 0.)
@@ -3006,18 +3111,88 @@ index 0000000..f493896
 +            [-a * q.sin(), -4. * b * (2. * q).sin()],
 +        )
 +    }
++    fn arc_table(&self) -> &Vec<(f64, f64)> {
++        self.arc_table.get_or_init(|| {
++            let n = 4096;
++            let h = std::f64::consts::TAU / n as f64;
++            let mut out = vec![(0., 0.)];
++            let mut length = 0.;
++            for i in 1..=n {
++                let q = i as f64 * h;
++                let (_, before, _) = self.geometry(q - h);
++                let (_, after, _) = self.geometry(q);
++                length += 0.5 * h * (before[0].hypot(before[1]) + after[0].hypot(after[1]));
++                out.push((q, length));
++            }
++            out
++        })
++    }
++    fn phase(&self, t: f64) -> (f64, f64, f64) {
++        let tau = std::f64::consts::TAU;
++        if t < 0. {
++            return (0., 0., 0.);
++        }
++        if t >= self.total_time() {
++            return (tau, 0., 0.);
++        }
++        let local = t % self.lap_time_s;
++        let u = local / self.lap_time_s;
++        if self.phase_law == "constant_phase" {
++            return (tau * u, tau / self.lap_time_s, 0.);
++        }
++        if ["arc_length_smooth_ramp", "smooth_phase_ramp"].contains(&self.phase_law.as_str()) {
++            let table = self.arc_table();
++            let length = if self.phase_law == "smooth_phase_ramp" {
++                tau
++            } else {
++                table.last().unwrap().1
++            };
++            let ramp = 0.1 * self.lap_time_s;
++            let cruise = length / (self.lap_time_s - ramp);
++            let integral = |w: f64| 2.5 * w.powi(4) - 3. * w.powi(5) + w.powi(6);
++            let blend = |w: f64| w.powi(3) * (10. + w * (-15. + 6. * w));
++            let derivative = |w: f64| 30. * w * w * (1. - w).powi(2);
++            let (distance, speed, acceleration) = if local < ramp {
++                let w = local / ramp;
++                (
++                    cruise * ramp * integral(w),
++                    cruise * blend(w),
++                    cruise / ramp * derivative(w),
++                )
++            } else if local > self.lap_time_s - ramp {
++                let w = (self.lap_time_s - local) / ramp;
++                (
++                    length - cruise * ramp * integral(w),
++                    cruise * blend(w),
++                    -cruise / ramp * derivative(w),
++                )
++            } else {
++                (cruise * (local - 0.5 * ramp), cruise, 0.)
++            };
++            if self.phase_law == "smooth_phase_ramp" {
++                return (distance, speed, acceleration);
++            }
++            let i = table
++                .partition_point(|entry| entry.1 < distance)
++                .clamp(1, table.len() - 1);
++            let (q0, s0) = table[i - 1];
++            let (q1, s1) = table[i];
++            let q = q0 + (q1 - q0) * (distance - s0) / (s1 - s0);
++            let (_, d, dd) = self.geometry(q);
++            let norm = d[0].hypot(d[1]);
++            let rate = speed / norm;
++            let accel =
++                acceleration / norm - speed * speed * (d[0] * dd[0] + d[1] * dd[1]) / norm.powi(4);
++            return (q, rate, accel);
++        }
++        (
++            tau * u.powi(3) * (10. + u * (-15. + 6. * u)),
++            tau * 30. * u * u * (1. - u).powi(2) / self.lap_time_s,
++            tau * 60. * u * (1. - u) * (1. - 2. * u) / self.lap_time_s.powi(2),
++        )
++    }
 +    pub fn sample(&self, t: f64) -> Reference {
-+        let u = if t <= 0. {
-+            0.
-+        } else if t >= self.total_time() {
-+            1.
-+        } else {
-+            (t % self.lap_time_s) / self.lap_time_s
-+        };
-+        let q = std::f64::consts::TAU * u.powi(3) * (10. + u * (-15. + 6. * u));
-+        let dq = std::f64::consts::TAU * 30. * u * u * (1. - u).powi(2) / self.lap_time_s;
-+        let ddq =
-+            std::f64::consts::TAU * 60. * u * (1. - u) * (1. - 2. * u) / self.lap_time_s.powi(2);
++        let (q, dq, ddq) = self.phase(t);
 +        let (p, d, dd) = self.geometry(q);
 +        Reference {
 +            position_enu_m: [
@@ -3047,11 +3222,7 @@ index 0000000..f493896
 +            let speed = d[0].hypot(d[1]);
 +            length += speed * h * if i == 0 || i == n { 0.5 } else { 1. };
 +            curvature = curvature.max((d[0] * dd[1] - d[1] * dd[0]).abs() / speed.powi(3));
-+            let u = i as f64 / n as f64;
-+            let q = std::f64::consts::TAU * u.powi(3) * (10. + u * (-15. + 6. * u));
-+            let dq = std::f64::consts::TAU * 30. * u * u * (1. - u).powi(2) / self.lap_time_s;
-+            let ddq = std::f64::consts::TAU * 60. * u * (1. - u) * (1. - 2. * u)
-+                / self.lap_time_s.powi(2);
++            let (q, dq, ddq) = self.phase(i as f64 / n as f64 * self.lap_time_s);
 +            let (_, d, dd) = self.geometry(q);
 +            let v = d[0].hypot(d[1]) * dq;
 +            let lat = (d[0] * dd[1] - d[1] * dd[0]).abs() / d[0].hypot(d[1]) * dq * dq;
@@ -3263,6 +3434,71 @@ index 0000000..f493896
 +        }
 +    }
 +}
++
++#[cfg(test)]
++mod arc_schedule_tests {
++    use super::*;
++    #[test]
++    fn arc_reference_is_smooth_closed_and_numerically_consistent() {
++        let mut c: Config =
++            serde_json::from_str(include_str!("../missions/figure-eight.json")).unwrap();
++        c.phase_law = "arc_length_smooth_ramp".into();
++        c.laps = 1;
++        c.lap_time_s = 28.;
++        c.scale = 4.;
++        for t in [0., 28., 29.] {
++            let r = c.sample(t);
++            assert_eq!(r.velocity_enu_m_s, [0.; 3]);
++            assert_eq!(r.acceleration_enu_m_s2, [0.; 3]);
++        }
++        for i in 1..1000 {
++            let t = 28. * i as f64 / 1000.;
++            let h = 1e-3;
++            for j in 0..3 {
++                let v = (c.sample(t + h).position_enu_m[j] - c.sample(t - h).position_enu_m[j])
++                    / (2. * h);
++                let a = (c.sample(t + h).velocity_enu_m_s[j] - c.sample(t - h).velocity_enu_m_s[j])
++                    / (2. * h);
++                assert!((v - c.sample(t).velocity_enu_m_s[j]).abs() < 0.003);
++                assert!((a - c.sample(t).acceleration_enu_m_s2[j]).abs() < 0.003);
++            }
++        }
++        let a = c.stats();
++        let mut d = c.clone();
++        d.scale *= 2.;
++        assert!((d.stats().path_length_per_lap_m / a.path_length_per_lap_m - 2.).abs() < 1e-8);
++    }
++}
++
++#[cfg(test)]
++mod speed_phase_tests {
++    use super::*;
++    #[test]
++    fn smooth_phase_derivatives_and_limits_scale_consistently() {
++        let mut c: Config =
++            serde_json::from_str(include_str!("../missions/figure-eight.json")).unwrap();
++        c.phase_law = "smooth_phase_ramp".into();
++        c.lap_time_s = 23.7;
++        c.laps = 1;
++        for u in [0.02, 0.07, 0.11, 0.49, 0.89, 0.93, 0.98] {
++            let t = u * c.lap_time_s;
++            let h = 1e-5;
++            let (q, dq, ddq) = c.phase(t);
++            let (plus, dp, _) = c.phase(t + h);
++            let (minus, dm, _) = c.phase(t - h);
++            assert!(q.is_finite());
++            assert!(((plus - minus) / (2. * h) - dq).abs() < 1e-7);
++            assert!(((dp - dm) / (2. * h) - ddq).abs() < 1e-7);
++        }
++        assert_eq!(c.phase(0.), (0., 0., 0.));
++        assert_eq!(c.phase(c.lap_time_s), (std::f64::consts::TAU, 0., 0.));
++        let a = c.stats();
++        c.lap_time_s *= 2.;
++        let b = c.stats();
++        assert!((a.peak_speed_m_s / 2. - b.peak_speed_m_s).abs() < 1e-9);
++        assert!((a.peak_lateral_accel_m_s2 / 4. - b.peak_lateral_accel_m_s2).abs() < 1e-9);
++    }
++}
 diff --git a/xtask/src/mission.rs b/xtask/src/mission.rs
 new file mode 100644
 index 0000000..037c2ad
@@ -3310,10 +3546,10 @@ index 0000000..037c2ad
 +}
 diff --git a/xtask/src/mission_server.rs b/xtask/src/mission_server.rs
 new file mode 100644
-index 0000000..8e9b6c4
+index 0000000..209c0c7
 --- /dev/null
 +++ b/xtask/src/mission_server.rs
-@@ -0,0 +1,418 @@
+@@ -0,0 +1,501 @@
 +//! Loopback-only UI and bounded, serialized native simulation jobs.
 +use anyhow::{Context, Result, bail};
 +use serde_json::{Value, json};
@@ -3349,7 +3585,7 @@ index 0000000..8e9b6c4
 +    }
 +    None
 +}
-+fn rows(path: &Path) -> Result<Vec<Vec<f64>>> {
++pub(crate) fn rows(path: &Path) -> Result<Vec<Vec<f64>>> {
 +    let text = fs::read_to_string(path)?;
 +    let mut out = vec![];
 +    let mut last = None;
@@ -3393,6 +3629,47 @@ index 0000000..8e9b6c4
 +    }
 +    Ok(out)
 +}
++fn stack_configs(input: &Value) -> Result<Value> {
++    let base: crate::figure_config::Config = serde_json::from_value(input["config"].clone())?;
++    base.validate()?;
++    let mut result = json!({});
++    for stack in STACKS {
++        let raw = if input.get("stack_configs").is_some() {
++            input["stack_configs"]
++                .get(stack)
++                .context("missing stack configuration")?
++        } else {
++            &input["config"]
++        };
++        let c: crate::figure_config::Config = serde_json::from_value(raw.clone())?;
++        c.validate()?;
++        if c.width_m != base.width_m
++            || c.height_m != base.height_m
++            || c.scale != base.scale
++            || c.altitude_m != base.altitude_m
++            || c.center_enu_m != base.center_enu_m
++            || c.yaw_rad != base.yaw_rad
++            || c.laps != base.laps
++            || c.vehicle_radius_m != base.vehicle_radius_m
++            || c.tracking_margin_m != base.tracking_margin_m
++        {
++            bail!("stack configurations must use the same course and margins");
++        }
++        if c.total_time() + c.end_hold_s > 300.
++            || c.profiles.len() != 2
++            || c.profiles
++                .iter()
++                .any(|p| p.estimator_warmup_s + p.arm_takeoff_s + p.landing_s > 180.)
++            || STACKS
++                .iter()
++                .any(|name| c.profiles.iter().filter(|p| p.stack == *name).count() != 1)
++        {
++            bail!("invalid bounded stack profiles");
++        }
++        result[stack] = serde_json::to_value(c)?;
++    }
++    Ok(result)
++}
 +fn execute(root: &Path, dir: &Path) -> Result<()> {
 +    let config = dir.join("config.json");
 +    let env = dir.join("environment.json");
@@ -3415,11 +3692,14 @@ index 0000000..8e9b6c4
 +        write_json(&dir.join("status.json"), &status)?;
 +        return Ok(());
 +    }
++    let configs: Value = serde_json::from_slice(&fs::read(dir.join("stack-configs.json"))?)?;
 +    for stack in STACKS {
 +        status["stacks"][stack] = json!({"state":"running"});
 +        write_json(&dir.join("status.json"), &status)?;
 +        let dest = dir.join(stack);
 +        fs::create_dir_all(&dest)?;
++        let config = dest.join("config.json");
++        write_json(&config, &configs[stack])?;
 +        let log = fs::File::create(dest.join("runner.log"))?;
 +        let mut cmd = Command::new(&exe);
 +        cmd.current_dir(&project)
@@ -3470,10 +3750,33 @@ index 0000000..8e9b6c4
 +            .rev()
 +            .collect::<Vec<_>>()
 +            .join("\n");
++        let score_path = dest.join("score.json");
++        let score = if let (Some(report_path), Some(trajectory_path)) = (
++            find(&dest, "report.json"),
++            find(&dest, "mission-trajectory.csv"),
++        ) {
++            match crate::speed_score::run(
++                [
++                    config.clone(),
++                    report_path,
++                    trajectory_path,
++                    score_path.clone(),
++                ]
++                .into_iter()
++                .map(|p| p.into_os_string()),
++            ) {
++                Ok(()) => fs::read(&score_path)
++                    .ok()
++                    .and_then(|b| serde_json::from_slice::<Value>(&b).ok()),
++                Err(error) => Some(json!({"qualified":false,"error":format!("{error:#}")})),
++            }
++        } else {
++            None
++        };
 +        let ready = trajectory.is_some();
 +        write_json(
 +            &dest.join("result.json"),
-+            &json!({"config":serde_json::from_slice::<Value>(&fs::read(&config)?)?,"stack":stack,"passed":ok,"report":report,"rows":trajectory}),
++            &json!({"config":serde_json::from_slice::<Value>(&fs::read(&config)?)?,"stack":stack,"passed":ok,"report":report,"score":score,"rows":trajectory}),
 +        )?;
 +        status["stacks"][stack] = json!({"state":if ok{"passed"}else{"failed"},"recording":ready,"detail":if ok{String::new()}else{tail}});
 +        write_json(&dir.join("status.json"), &status)?;
@@ -3579,6 +3882,7 @@ index 0000000..8e9b6c4
 +                bail!("one profile per stack required")
 +            }
 +        }
++        let configs = stack_configs(&input)?;
 +        let id = SystemTime::now()
 +            .duration_since(UNIX_EPOCH)?
 +            .as_nanos()
@@ -3586,6 +3890,7 @@ index 0000000..8e9b6c4
 +        let dir = jobs.join(&id);
 +        fs::create_dir(&dir)?;
 +        write_json(&dir.join("config.json"), &input["config"])?;
++        write_json(&dir.join("stack-configs.json"), &configs)?;
 +        write_json(&dir.join("environment.json"), &input["environment"])?;
 +        let status = json!({"id":id,"state":"queued","stacks":{"betaflight":{"state":"queued"},"cognipilot":{"state":"queued"}}});
 +        write_json(&dir.join("status.json"), &status)?;
@@ -3732,6 +4037,20 @@ index 0000000..8e9b6c4
 +        let _ = fs::remove_file(p);
 +    }
 +}
++
++#[cfg(test)]
++mod optimized_config_tests {
++    use super::*;
++    #[test]
++    fn separate_times_are_allowed_but_different_courses_are_rejected() {
++        let c: Value = serde_json::from_str(include_str!("../missions/figure-eight.json")).unwrap();
++        let mut input = json!({"config":c,"stack_configs":{"betaflight":c,"cognipilot":c}});
++        input["stack_configs"]["betaflight"]["lap_time_s"] = 22.into();
++        assert!(stack_configs(&input).is_ok());
++        input["stack_configs"]["betaflight"]["scale"] = 99.into();
++        assert!(stack_configs(&input).is_err());
++    }
++}
 diff --git a/xtask/src/reference.rs b/xtask/src/reference.rs
 new file mode 100644
 index 0000000..d88a859
@@ -3838,4 +4157,200 @@ index 0000000..d88a859
 +            }
 +        }
 +    }
++}
+diff --git a/xtask/src/speed_score.rs b/xtask/src/speed_score.rs
+new file mode 100644
+index 0000000..4c78abd
+--- /dev/null
++++ b/xtask/src/speed_score.rs
+@@ -0,0 +1,190 @@
++//! Common geometric accuracy qualification; not a same-time tracking or hardware proof.
++use crate::figure_config::Config;
++use anyhow::{Context, Result, bail};
++use serde_json::{Value, json};
++use std::{fs, path::PathBuf};
++fn score(
++    c: &Config,
++    rows: &[[f64; 4]],
++    start: f64,
++    end: f64,
++    rms_limit: f64,
++    max_limit: f64,
++) -> Value {
++    let a = c.width_m * c.scale / 2.;
++    let b = c.height_m * c.scale / 2.;
++    let n = 2048;
++    let path: Vec<_> = (0..=n)
++        .map(|i| {
++            let q = std::f64::consts::TAU * i as f64 / n as f64;
++            [
++                a * q.sin() + c.center_enu_m[0],
++                b * (2. * q).sin() + c.center_enu_m[1],
++                c.altitude_m,
++            ]
++        })
++        .collect();
++    let mut sum = 0.;
++    let mut peak: f64 = 0.;
++    let mut count = 0u64;
++    let mut gate = 0;
++    let mut complete = false;
++    let mut extra = false;
++    let mut low = [f64::INFINITY; 2];
++    let mut high = [f64::NEG_INFINITY; 2];
++    let mut completion = None;
++    for r in rows.iter().filter(|r| r[0] >= start && r[0] <= end) {
++        let p = [r[1], r[2], r[3]];
++        let d2 = path
++            .windows(2)
++            .map(|s| {
++                let delta: [f64; 3] = std::array::from_fn(|i| s[1][i] - s[0][i]);
++                let length = delta.iter().map(|x| x * x).sum::<f64>();
++                let u = ((0..3).map(|i| (p[i] - s[0][i]) * delta[i]).sum::<f64>() / length)
++                    .clamp(0., 1.);
++                (0..3)
++                    .map(|i| (p[i] - s[0][i] - u * delta[i]).powi(2))
++                    .sum::<f64>()
++            })
++            .fold(f64::INFINITY, f64::min);
++        sum += d2;
++        peak = peak.max(d2.sqrt());
++        count += 1;
++        let x = p[0] - c.center_enu_m[0];
++        let y = p[1] - c.center_enu_m[1];
++        for i in 0..2 {
++            low[i] = low[i].min(p[i] - c.center_enu_m[i]);
++            high[i] = high[i].max(p[i] - c.center_enu_m[i]);
++        }
++        let gates = [
++            x > 0.4 * a && y > 0.4 * b,
++            x > 0.4 * a && y < -0.4 * b,
++            x < -0.4 * a && y > 0.4 * b,
++            x < -0.4 * a && y < -0.4 * b,
++        ];
++        if gate < 4 && gates[gate] {
++            gate += 1;
++        }
++        if gate == 4
++            && !complete
++            && x.hypot(y) <= max_limit
++            && (p[2] - c.altitude_m).abs() <= max_limit
++        {
++            complete = true;
++            completion = Some(r[0]);
++        }
++        if complete && gates[0] {
++            extra = true;
++        }
++    }
++    let rms = if count > 0 {
++        (sum / count as f64).sqrt()
++    } else {
++        f64::INFINITY
++    };
++    let extent = low[0] <= -a + max_limit
++        && high[0] >= a - max_limit
++        && low[1] <= -b + max_limit
++        && high[1] >= b - max_limit;
++    json!({"method":"3D distance to 2048-segment course polyline, ordered quadrants, centre return and extremum coverage","window_start_s":start,"window_end_s":end,"samples":count,"course_rms_m":rms,"course_max_error_m":peak,"rms_limit_m":rms_limit,"max_limit_m":max_limit,"ordered_quadrants":gate,"centre_return":complete,"extra_lap_started":extra,"extents_covered":extent,"completion_timestamp_s":completion,"geometric_accuracy_passed":count>100&&rms<=rms_limit&&peak<=max_limit&&complete&&!extra&&extent})
++}
++pub fn run(args: impl Iterator<Item = std::ffi::OsString>) -> Result<()> {
++    let args: Vec<_> = args.map(PathBuf::from).collect();
++    if args.len() != 4 {
++        bail!("speed-score CONFIG REPORT TRAJECTORY OUTPUT");
++    }
++    let c = Config::load(&args[0])?;
++    let report: Value = serde_json::from_slice(&fs::read(&args[1])?)?;
++    let text = fs::read_to_string(&args[2])?;
++    let mut rows = Vec::new();
++    for line in text.lines().skip(1) {
++        let vals = line
++            .split(',')
++            .take(4)
++            .map(str::parse::<f64>)
++            .collect::<std::result::Result<Vec<_>, _>>()?;
++        if vals.len() != 4 || vals.iter().any(|x| !x.is_finite()) {
++            bail!("invalid trajectory");
++        }
++        rows.push([vals[0], vals[1], vals[2], vals[3]]);
++    }
++    let start = report["reference_start_s"]
++        .as_f64()
++        .or(report["course_start_s"].as_f64())
++        .context("no observed course-start timestamp")?;
++    let end = if report["reference_start_s"].is_number() {
++        start + c.lap_time_s
++    } else {
++        report["course_end_s"].as_f64().context("no course end")?
++    };
++    let mut value = score(&c, &rows, start, end, 0.25, 0.50);
++    value["native_passed"] = report["passed"].clone();
++    value["qualified"] =
++        json!(value["geometric_accuracy_passed"] == true && report["passed"] == true);
++    value["timed_reference_rms_m"] = report["position_rmse_m"].clone();
++    value["timed_reference_max_error_m"] = report["position_max_error_m"].clone();
++    value["qualification"] = json!(
++        "geometric course accuracy; temporal lag reported separately; no matched-sensor stack ranking"
++    );
++    fs::write(&args[3], serde_json::to_vec_pretty(&value)?)?;
++    println!("{}", serde_json::to_string(&value)?);
++    Ok(())
++}
++#[cfg(test)]
++mod tests {
++    use super::*;
++    #[test]
++    fn correct_lap_passes_but_hover_and_missing_lobe_fail() {
++        let mut c: Config =
++            serde_json::from_str(include_str!("../missions/figure-eight.json")).unwrap();
++        c.laps = 1;
++        c.scale = 4.;
++        let rows: Vec<_> = (0..=1000)
++            .map(|i| {
++                let t = c.lap_time_s * i as f64 / 1000.;
++                let r = c.sample(t);
++                [
++                    t,
++                    r.position_enu_m[0],
++                    r.position_enu_m[1],
++                    r.position_enu_m[2],
++                ]
++            })
++            .collect();
++        assert_eq!(
++            score(&c, &rows, 0., c.lap_time_s, 0.25, 0.5)["geometric_accuracy_passed"],
++            true
++        );
++        let hover = vec![[0., 0., 0., 1.5]; 1001];
++        assert_ne!(
++            score(&c, &hover, 0., c.lap_time_s, 0.25, 0.5)["geometric_accuracy_passed"],
++            true
++        );
++        assert_ne!(
++            score(&c, &rows[..501], 0., c.lap_time_s, 0.25, 0.5)["geometric_accuracy_passed"],
++            true
++        );
++    }
++}
++
++/// Export a replay from native telemetry without synthesizing or retiming motion.
++pub fn export(args: impl Iterator<Item = std::ffi::OsString>) -> Result<()> {
++    let args: Vec<_> = args.map(PathBuf::from).collect();
++    if args.len() != 3 {
++        bail!("speed-export STACK TRIAL_DIRECTORY OUTPUT");
++    }
++    let stack = args[0].to_str().context("invalid stack")?;
++    if !["betaflight", "cognipilot"].contains(&stack) {
++        bail!("invalid stack");
++    }
++    let dir = &args[1];
++    let read =
++        |name: &str| -> Result<Value> { Ok(serde_json::from_slice(&fs::read(dir.join(name))?)?) };
++    let report = read("report.json")?;
++    let rows = crate::mission_server::rows(&dir.join("mission-trajectory.csv"))?;
++    let score = read("score.json")
++        .unwrap_or(json!({"qualified":false,"error":"scoring unavailable; see native failure"}));
++    let value = json!({"stack":stack,"config":read("config.json")?,"passed":report["passed"],"report":report,"score":score,"rows":rows,"provenance":{"run_id":dir.file_name().and_then(|s|s.to_str()),"report_modified_unix_s":fs::metadata(dir.join("report.json"))?.modified()?.duration_since(std::time::UNIX_EPOCH)?.as_secs(),"role":"speed_search_trial","qualification":"native firmware recording; geometric accuracy; not matched-sensor ranking"}});
++    fs::write(&args[2], serde_json::to_vec(&value)?)?;
++    Ok(())
 +}

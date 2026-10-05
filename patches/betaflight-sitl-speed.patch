@@ -1,0 +1,213 @@
+diff --git a/src/main/drivers/serial_tcp.c b/src/main/drivers/serial_tcp.c
+index a922cc7..44df32f 100644
+--- a/src/main/drivers/serial_tcp.c
++++ b/src/main/drivers/serial_tcp.c
+@@ -40,6 +40,8 @@
+ 
+ #define BASE_PORT 5760
+ 
++pthread_mutex_t tcpDyadLock = PTHREAD_MUTEX_INITIALIZER;
++
+ static const struct serialPortVTable tcpVTable; // Forward
+ static tcpPort_t tcpSerialPorts[SERIAL_PORT_COUNT];
+ static bool tcpPortInitialized[SERIAL_PORT_COUNT];
+@@ -127,6 +129,7 @@ static tcpPort_t* tcpReconfigure(tcpPort_t *s, int id)
+ serialPort_t *serTcpOpen(serialPortIdentifier_e identifier, serialReceiveCallbackPtr rxCallback, void *rxCallbackData, uint32_t baudRate, portMode_e mode, portOptions_e options)
+ {
+     tcpPort_t *s = NULL;
++    pthread_mutex_lock(&tcpDyadLock);
+ 
+     int id = findSerialPortIndexByIdentifier(identifier);
+ 
+@@ -135,6 +138,7 @@ serialPort_t *serTcpOpen(serialPortIdentifier_e identifier, serialReceiveCallbac
+     }
+ 
+     if (!s) {
++        pthread_mutex_unlock(&tcpDyadLock);
+         return NULL;
+     }
+ 
+@@ -155,6 +159,7 @@ serialPort_t *serTcpOpen(serialPortIdentifier_e identifier, serialReceiveCallbac
+     s->port.baudRate = baudRate;
+     s->port.options = options;
+ 
++    pthread_mutex_unlock(&tcpDyadLock);
+     return (serialPort_t *)s;
+ }
+ 
+@@ -235,7 +240,8 @@ static void tcpWrite(serialPort_t *instance, uint8_t ch)
+ void tcpDataOut(tcpPort_t *instance)
+ {
+     tcpPort_t *s = (tcpPort_t *)instance;
+-    if (s->conn == NULL) return;
++    pthread_mutex_lock(&tcpDyadLock);
++    if (s->conn == NULL) { pthread_mutex_unlock(&tcpDyadLock); return; }
+     pthread_mutex_lock(&s->txLock);
+ 
+     if (s->port.txBufferHead < s->port.txBufferTail) {
+@@ -250,6 +256,7 @@ void tcpDataOut(tcpPort_t *instance)
+     s->port.txBufferTail = s->port.txBufferHead;
+ 
+     pthread_mutex_unlock(&s->txLock);
++    pthread_mutex_unlock(&tcpDyadLock);
+ }
+ 
+ void tcpDataIn(tcpPort_t *instance, uint8_t* ch, int size)
+diff --git a/src/main/drivers/serial_tcp.h b/src/main/drivers/serial_tcp.h
+index a391e10..8b65d74 100644
+--- a/src/main/drivers/serial_tcp.h
++++ b/src/main/drivers/serial_tcp.h
+@@ -44,6 +44,9 @@ typedef struct {
+ 
+ serialPort_t *serTcpOpen(serialPortIdentifier_e id, serialReceiveCallbackPtr rxCallback, void *rxCallbackData, uint32_t baudRate, portMode_e mode, portOptions_e options);
+ 
++// Dyad is not thread-safe; serialize stream lifetime and worker callbacks.
++extern pthread_mutex_t tcpDyadLock;
++
+ // tcpPort API
+ void tcpDataIn(tcpPort_t *instance, uint8_t* ch, int size);
+ void tcpDataOut(tcpPort_t *instance);
+diff --git a/src/main/flight/flight_plan_nav.c b/src/main/flight/flight_plan_nav.c
+index 702e1dd..ca8a05c 100644
+--- a/src/main/flight/flight_plan_nav.c
++++ b/src/main/flight/flight_plan_nav.c
+@@ -164,8 +164,14 @@
+ // lag, and a carrot the vehicle cannot angularly follow balloons the pursuit
+ // orbit far outside the ring. The position-to-velocity gain means the vehicle
+ // self-paces roughly patternSpeed metres behind the carrot.
++// ADR SITL research profile: retain the production cap outside simulator builds.
++#ifdef SITL
++#define FP_PATTERN_MAX_RATE_RADS  0.35f
++#define FP_PATTERN_UPDATE_US      10000u
++#else
+ #define FP_PATTERN_MAX_RATE_RADS  0.25f
+ #define FP_PATTERN_UPDATE_US      200000u
++#endif
+ // Legs complete on radius entry at any speed, so the hold is entered carrying
+ // cruise momentum. The pattern waits for the reached command's own braking to
+ // park the vehicle first — a carrot started at cruise entry speed balloons
+@@ -1587,6 +1593,22 @@ static void patternCarrot(float phaseRad, float radiusM, vector3_t *out)
+ // completionSpeed 0 keeps it permanently unreachable. Accel limits are lifted
+ // because the approach-decel braking term would cap chase speed to a crawl at
+ // carrot-lead distances; the next leg's dispatch restores them.
++static float benchmarkPatternRateRadS;
++
++static void patternVelocityFeedforward(float radiusM)
++{
++#ifdef SITL
++    if (fp.patternType == WAYPOINT_PATTERN_FIGURE8) {
++        const float rate = benchmarkPatternRateRadS;
++        const vector2_t velocity = {.x = radiusM * cos_approx(fp.patternPhaseRad) * rate,
++            .y = radiusM * cos_approx(2.0f * fp.patternPhaseRad) * rate};
++        positionNavSetVelocityFeedforward(&velocity);
++    }
++#else
++    UNUSED(radiusM);
++#endif
++}
++
+ static void issuePatternCommand(float radiusM)
+ {
+     vector3_t carrot;
+@@ -1594,6 +1616,7 @@ static void issuePatternCommand(float radiusM)
+     const float startAltM = commandedAltitudeM(positionEstimatorGetEstimate());
+     positionNavSetTargetEf(&carrot, fp.patternCruiseMps, radiusM, 0.0f, true, NULL, NULL);
+     positionNavMoveTargetEf(&carrot);   // flown as a moving target from its first cycle
++    patternVelocityFeedforward(radiusM);
+     positionNavSetAccelLimits(0.0f, 0.0f);
+     positionNavSetVerticalProfile(fp.legVertRateMps, startAltM);
+ }
+@@ -1611,6 +1634,11 @@ static void startHoldPattern(const waypoint_t *wp)
+     if (wp->pattern == WAYPOINT_PATTERN_FIGURE8) {
+         // The curve passes through the centre, which is where the vehicle is
+         fp.patternPhaseRad = 0.0f;
++#ifdef SITL
++        benchmarkPatternRateRadS = 0.0f;
++        fp.holdElapsedUs = 0;
++        fp.holdLastUpdateUs = micros();
++#endif
+     } else {
+         // Start the carrot at the vehicle's azimuth from the centre so the
+         // first move is outward onto the ring, not a dash across it
+@@ -1632,7 +1660,27 @@ static void updateHoldPattern(timeUs_t currentTimeUs)
+     fp.patternLastUpdateUs = currentTimeUs;
+ 
+     const float radiusM = autopilotConfig()->waypointHoldRadius * 0.01f;
+-    fp.patternPhaseRad += (fp.patternSpeedMps / radiusM) * MIN(sinceUs * 1e-6f, 1.0f);
++    #ifdef SITL
++    if (fp.patternType == WAYPOINT_PATTERN_FIGURE8) {
++        // ADR research reference: same quintic phase-speed ramp as the runner.
++        // Hold duration specifies exactly one lap; first/last 10% are ramps.
++        const float duration = fp.holdDurationDs * 0.1f;
++        const float t = MIN(fp.holdElapsedUs * 1e-6f, duration);
++        const float ramp = 0.1f * duration;
++        const float cruise = 2.0f * M_PIf / (duration - ramp);
++        const float w = t < ramp ? t / ramp : (duration - t) / ramp;
++        if (t < ramp || t > duration - ramp) {
++            const float integral = w*w*w*w * (2.5f + w*(-3.0f+w));
++            const float blend = w*w*w * (10.0f+w*(-15.0f+6.0f*w));
++            fp.patternPhaseRad = t < ramp ? cruise*ramp*integral : 2.0f*M_PIf-cruise*ramp*integral;
++            benchmarkPatternRateRadS = cruise*blend;
++        } else {
++            fp.patternPhaseRad = cruise*(t-0.5f*ramp);
++            benchmarkPatternRateRadS = cruise;
++        }
++    } else
++#endif
++    { fp.patternPhaseRad += (fp.patternSpeedMps / radiusM) * MIN(sinceUs * 1e-6f, 1.0f); }
+     if (fp.patternPhaseRad > M_PIf) {
+         fp.patternPhaseRad -= 2.0f * M_PIf;
+     }
+@@ -1641,6 +1689,7 @@ static void updateHoldPattern(timeUs_t currentTimeUs)
+         vector3_t carrot;
+         patternCarrot(fp.patternPhaseRad, radiusM, &carrot);
+         positionNavMoveTargetEf(&carrot);
++        patternVelocityFeedforward(radiusM);
+     } else {
+         // A position-control re-init wiped the carrot command; re-issue it
+         issuePatternCommand(radiusM);
+diff --git a/src/platform/SIMULATOR/sitl.c b/src/platform/SIMULATOR/sitl.c
+index ee216ef..efe306c 100644
+--- a/src/platform/SIMULATOR/sitl.c
++++ b/src/platform/SIMULATOR/sitl.c
+@@ -21,6 +21,7 @@
+ #include <stdbool.h>
+ #include <stdint.h>
+ #include <stdio.h>
++#include <unistd.h>
+ #include <stdlib.h>
+ #include <math.h>
+ #include <string.h>
+@@ -565,15 +566,17 @@ static void* tcpThread(void* data)
+ {
+     UNUSED(data);
+ 
+-    dyad_init();
+-    dyad_setTickInterval(0.2f);
+-    dyad_setUpdateTimeout(0.01f);
+-
+     while (workerRunning) {
++        pthread_mutex_lock(&tcpDyadLock);
+         dyad_update();
++        pthread_mutex_unlock(&tcpDyadLock);
++        // Let serial setup/transmit acquire the lock between network polls.
++        usleep(1000);
+     }
+ 
++    pthread_mutex_lock(&tcpDyadLock);
+     dyad_shutdown();
++    pthread_mutex_unlock(&tcpDyadLock);
+     printf("tcpThread end!!\n");
+     return NULL;
+ }
+@@ -601,6 +604,10 @@ void systemInit(void)
+         exit(1);
+     }
+ 
++    // Initialize Dyad before either thread can create or update a stream.
++    dyad_init();
++    dyad_setTickInterval(0.2f);
++    dyad_setUpdateTimeout(0.01f);
+     ret = pthread_create(&tcpWorker, NULL, tcpThread, NULL);
+     if (ret != 0) {
+         printf("Create tcpWorker error!\n");
