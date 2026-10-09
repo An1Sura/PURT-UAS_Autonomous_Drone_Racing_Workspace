@@ -50,7 +50,7 @@ Keep the **same course size** for both stacks, then progressively shorten the re
 
 The lap clock measures **flight around the course**, separately from estimator warmup, arming, takeoff, end hold and landing. Total mission time is still reported. Simulation time is not the computer's execution time or the replay playback speed.
 
-The current search uses ≤0.25 m course RMS, ≤0.50 m maximum, complete-course gates and verified landing, with three repeats. Same-time tracking is reported separately. The page reruns the selected settings; it does not perform an unattended global optimization. See [the speed-search evidence](docs/speed-search.md).
+The historical search used ≤0.25 m course RMS, ≤0.50 m maximum, complete-course gates and verified landing, with three repeats. Same-time tracking was reported separately. Those results remain available, but the new shared-controller campaign must establish its own agreed criteria before running. See [the speed-search evidence](docs/speed-search.md).
 
 ## Current implementation
 
@@ -118,7 +118,7 @@ This generates and checks C; it does not claim a completed flight. Apply the add
 # Check the shared boundary, protocol and reference behavior.
 devenv -P rdd2 tasks run rdd2:benchmark:test
 
-# Run the current stack-specific figure-eight diagnostics.
+# Reproduce the historical stack-specific figure-eight diagnostics.
 devenv -P rdd2 tasks run rdd2:benchmark:betaflight:figure-eight
 devenv -P rdd2 tasks run rdd2:benchmark:cognipilot:figure-eight
 
@@ -126,7 +126,7 @@ devenv -P rdd2 tasks run rdd2:benchmark:cognipilot:figure-eight
 devenv -P rdd2 up mission-planner
 ```
 
-The service's internal process name is `mission-planner`; the user-facing page is **Flight Simulation & Stats**. It currently uses a fixed configuration with no editable stats controls. The local page reruns native firmware while the VM is on; GitHub Pages serves saved recordings. The [startup guide](docs/mission-planner.md) explains both.
+The service's internal process name is `mission-planner`; the user-facing page is **Flight Simulation & Stats**. It currently uses a fixed configuration with no editable stats controls. The new page shows the requested course and saved historical recordings. New-course reruns are not enabled until the shared-loop flight gates pass; the legacy server API remains a historical diagnostic. The [startup guide](docs/mission-planner.md) explains both.
 
 The original qualification workflow remains available:
 
@@ -144,7 +144,7 @@ These are qualification commands, not a claim that every qualification currently
 | --- | --- |
 | `src/cerebri_rdd2/artifacts/mission-planner/<run-id>/` | Exact config, per-stack logs, reports and full recorded trajectories from the local service |
 | `src/cerebri_rdd2/artifacts/sil/` | CogniPilot baseline SIL report and trajectory |
-| `docs/results/single-lap/` | Current published replay data with native reports and final samples retained |
+| `docs/results/single-lap/` | Historical 8 × 4 m replay data with native reports and final samples retained |
 | `docs/results/betaflight-timing-fix/` | Compact records of successful and failed timing-fix attempts |
 | `proofs/` | Lean source, pinned dependencies, axiom audit and verification record |
 
@@ -163,7 +163,7 @@ A controller that cuts the course or fails tracking does not win because it fini
 
 - [Speed-benchmark objective and experiment plan](docs/speed-benchmark.md)
 - [Flight Simulation & Stats and startup](docs/mission-planner.md)
-- [Current recordings and timing rundown](docs/timing-rundown.md)
+- [Historical recordings and timing rundown](docs/timing-rundown.md)
 - [Betaflight timing fix](docs/betaflight-timing.md) and [tuning experiments](docs/betaflight-tuning.md)
 - [Shared reference](docs/shared-reference.md) and [common architecture](docs/common-benchmark.md)
 - [PURT evidence and measurement checklist](docs/purt-environment.md)

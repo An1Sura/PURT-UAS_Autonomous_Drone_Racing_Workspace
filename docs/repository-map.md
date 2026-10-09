@@ -45,7 +45,7 @@ The diagram describes the **PDF target architecture**. The offboard components a
 | [mrdoob/three.js](https://github.com/mrdoob/three.js/tree/r180) | Browser imports `three@0.180.0` from esm.sh | Scene rendering, camera controls, lines and illustrative drone geometry. It displays telemetry; it does not calculate flight physics or validate a controller. CDN/network access is required by the current page. |
 | [NXP-Robotics/MR-VMU-TROPIC](https://github.com/NXP-Robotics/MR-VMU-TROPIC) | Reference only; no runtime revision consumed | Hardware integration reference. It is not the mass/inertia source, not a Betaflight adapter, and not a claim that our physical RT1060 boards, wiring or motor calibration match that repository. |
 
-The first nine dependency checkout revisions above were read from the existing Linux VM on the audit date. Other rows explicitly identify lock-file, manifest or reference evidence. For firmware-provider resolution, inspect `src/cerebri_rdd2/build-native_sim/rdd2-resolved-providers.txt`; do not infer actual providers solely from a West manifest when local overrides are possible.
+Dependency checkout revisions above were read from the existing Linux VM on the audit date unless explicitly labeled as workspace ancestry, lock-file, manifest or reference evidence. For firmware-provider resolution, inspect `src/cerebri_rdd2/build-native_sim/rdd2-resolved-providers.txt`; do not infer actual providers solely from a West manifest when local overrides are possible.
 
 ## Files and artifacts to inspect
 
