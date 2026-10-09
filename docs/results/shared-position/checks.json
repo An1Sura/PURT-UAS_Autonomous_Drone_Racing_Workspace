@@ -1,0 +1,42 @@
+{
+  "hashes": {
+    "PositionLoop_efmu": "366b30cc06c65cdc9f03c165a5f3da83c10d1e3f52548eba45a6494f2c30f770",
+    "PositionLoop_source": "ea9bce8b03aca63ee3ff5acfa09b90c3d79a418e3a1b52c1090b9a86821e801d",
+    "PositionOracle_efmu": "62573935eb9f37e2c1ec88b6e238e42f83bca062d0ca6d10e2e914324f684977",
+    "PositionOracle_source": "dffcfa49112fc07993a658070b8dbc727ede3e493edb8d9e680c381e5263eddb",
+    "Trajectory_efmu": "1649b4729ed621f850e34b379c26d837ceb245d4f0224334a90320f947737c01",
+    "Trajectory_source": "8af51d4889b06af66795659c8472e96045ca4829e857b1aadb74ea6810c58bd9",
+    "config": "7ed46f0f8e5f9d5a85635f9babfffc4b2f4e74276f1112e91921d9bca2b1c785",
+    "library": "ea207cb1ad7b200c67f60534b210dd298b4fe2950a5cd212053eeea7f6b21170",
+    "rumoca": "a8665e8d22124183d7e1fc16b244d3dd5221f8f280bb7de746eab1ff0dbf7b02",
+    "shim": "132f7853bf35bb4313099d5f1deb4ab764922e51d648fe49b3fb27e6371e489f"
+  },
+  "metrics": {
+    "bounds_max_enu_m": [
+      4.999999046325684,
+      5.0,
+      2.0
+    ],
+    "bounds_min_enu_m": [
+      -4.999999046325684,
+      -5.0,
+      2.0
+    ],
+    "clock_max_error_s": 5.493164067615908e-6,
+    "exact_reference_repeats": 2,
+    "guidance_oracle_max_absolute_error": 0.0,
+    "pending_gates": [
+      "Betaflight packet lockstep",
+      "ideal-attitude common-plant flight",
+      "stock ANGLE/ATTITUDE hover and step tests",
+      "closed-loop takeoff, square, figure eight and landing",
+      "noise and speed campaign"
+    ],
+    "position_velocity_acceleration_max_absolute_error": 0.00004363549354050554,
+    "precision": "generated IEEE float32 versus f64 analytic oracle; not formal floating-point proof",
+    "sample_rate_hz": 100,
+    "samples": 8001
+  },
+  "passed": true,
+  "scope": "generated-code numerical checks only; not a flight or full PDF qualification"
+}

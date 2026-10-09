@@ -1,0 +1,80 @@
+   Compiling cerebri-rdd2-xtask v0.1.0 (/home/suraa.guest/autonomous-drone-bench/src/cerebri_rdd2/xtask)
+warning: fields `position_enu_m`, `velocity_enu_m_s`, and `euler_flu_enu_rad` are never read
+  --> xtask/src/benchmark.rs:56:9
+   |
+55 | pub struct SimulatorState {
+   |            -------------- fields in this struct
+56 |     pub position_enu_m: [f64; 3],
+   |         ^^^^^^^^^^^^^^
+57 |     pub velocity_enu_m_s: [f64; 3],
+   |         ^^^^^^^^^^^^^^^^
+58 |     pub euler_flu_enu_rad: [f64; 3],
+   |         ^^^^^^^^^^^^^^^^^
+   |
+   = note: `SimulatorState` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: field `simulator_state` is never read
+  --> xtask/src/benchmark.rs:70:9
+   |
+62 | pub struct SensorFrame {
+   |            ----------- field in this struct
+...
+70 |     pub simulator_state: Option<SimulatorState>,
+   |         ^^^^^^^^^^^^^^^
+   |
+   = note: `SensorFrame` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+
+warning: `cerebri-rdd2-xtask` (bin "xtask" test) generated 2 warnings
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.59s
+     Running unittests src/main.rs (src/cerebri_rdd2/target/debug/deps/xtask-1c783482c7808a29)
+
+running 45 tests
+test benchmark::tests::metrics_exclude_disarmed_motor_limits ... ok
+test benchmark::tests::gnss_is_held_between_sensor_ticks ... ok
+test benchmark::tests::failed_or_stale_exchange_never_advances_physics ... ok
+test betaflight_probe::tests::altitude_error_and_motor_limits_have_explicit_units ... ok
+test cognipilot::firmware_tests::native_reference_echo_and_invalid_ingress_rejection ... ignored, requires rebuilt native firmware: RDD2_NATIVE_SIM_EXECUTABLE
+test betaflight_probe::tests::landing_requires_ground_contact_rest_and_stopped_motors ... ok
+test cognipilot::origin_tests::origin_translation_preserves_physical_height_and_velocity ... ok
+test betaflight_probe::tests::timing_accounts_for_firmware_floor_and_cap ... ok
+test cognipilot::tests::reference_preserves_enu_and_rejects_bad_inputs ... ok
+test figure_config::feedforward_tests::acceleration_matches_velocity_derivative_and_endpoint_holds ... ok
+test betaflight_probe::tests::geometry_rejects_extra_and_incomplete_laps ... ok
+test figure_config::tests::derivatives_and_laps ... ok
+test figure_config::tests::unknown_is_not_a_pass_and_obstacles_reject ... ok
+test mission::tests::fixture_preserves_baseline_schedule ... ok
+test mission_server::optimized_config_tests::separate_times_are_allowed_but_different_courses_are_rejected ... ok
+test mission_server::tests::downsampling_retains_final_sample_and_computes_speed ... ok
+test mission_server::tests::rejects_nonfinite_trajectory ... ok
+test physics::tests::configured_fmi_plant_steps_through_landing_contact ... ok
+test physics::tests::tensor_boundary_preserves_one_value_reference_per_array ... ok
+test physics::tests::tensor_boundary_rejects_scalarized_or_wrong_size_variables ... ok
+test protocol::tests::bounded_square_plan_is_fixed_capacity_and_fail_closed ... ok
+test protocol::tests::inputs_use_gnss_and_bounded_plan_boundary ... ok
+test protocol::tests::native_wire_layouts_match_the_firmware_contract ... ok
+test protocol::tests::outputs_use_generated_v09_accessors ... ok
+test protocol::tests::synthetic_geodesy_round_trips_the_mission_square ... ok
+test protocol::tests::synthetic_gnss_marks_nonfinite_input_unusable ... ok
+test protocol::tests::synthetic_gnss_updates_at_exactly_ten_hertz ... ok
+test reference::figure_eight_tests::closed_smooth_and_correct_derivative ... ok
+test reference::tests::corners_hold_and_derivative ... ok
+test shared_memory::tests::exchange_round_trips_through_the_shared_layout ... ok
+test shared_memory::tests::layout_matches_firmware_abi ... ok
+test figure_config::speed_phase_tests::smooth_phase_derivatives_and_limits_scale_consistently ... ok
+test tests::conservative_square_oracle_requires_real_motion ... ok
+test tests::evaluate_flags_each_violated_requirement ... ok
+test tests::evaluate_passes_a_nominal_mission ... ok
+test tests::evaluate_rejects_frozen_gnss_and_pending_only_reference ... ok
+test tests::evaluate_rejects_position_capability_dropout ... ok
+test tests::evaluate_rejects_replayed_or_republished_plan ... ok
+test tests::evaluate_rejects_running_without_square_motion ... ok
+test tests::evaluate_rejects_stale_status_and_navigation_divergence ... ok
+test tests::native_firmware_exposes_odometry_before_the_one_shot_plan ... ignored, requires a built direct-lockstep native firmware executable
+test tests::takeoff_schedule_preserves_a_low_throttle_arming_window ... ok
+test figure_config::tests::scaling_and_time_laws ... ok
+test figure_config::arc_schedule_tests::arc_reference_is_smooth_closed_and_numerically_consistent ... ok
+test speed_score::tests::correct_lap_passes_but_hover_and_missing_lobe_fail ... ok
+
+test result: ok. 43 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 1.01s
+

@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "id": "purt-10x10-z2-shared-position-v1",
+  "status": "qualification_in_progress",
+  "course": {
+    "width_m": 10, "height_m": 10, "altitude_m": 2, "scale": 1,
+    "center_enu_m": [0, 0], "yaw_rad": 0, "laps": 1, "lap_time_s": 80,
+    "phase_law": "minimum_jerk_each_lap",
+    "timing_status": "slow commissioning target; not an achieved flight time or fastest setting"
+  },
+  "environment": "purt-environment.json",
+  "vehicle_radius_m": 0.4, "tracking_margin_m": 0.15,
+  "controller": {
+    "trajectory_model": "Benchmarks.Trajectory", "position_model": "Benchmarks.PositionLoop",
+    "sample_rate_hz": 100, "stick_rate_hz": 250,
+    "tilt_limit_deg": 35, "yaw_rate_limit_deg_s": 200,
+    "translational_correction_fraction": 0.7,
+    "feedback": "common plant truth in SIL; calibrated motion capture in physical trials",
+    "frame": "world ENU, body FLU, scalar-first Hamilton quaternion body-to-world"
+  },
+  "stacks": {
+    "cognipilot": {"mode": "ATTITUDE", "maximum_collective_thrust_n": 41.3749272, "native_yaw_full_scale_rad_s": 3.5},
+    "betaflight": {"mode": "ANGLE", "angle_limit_deg": 35, "hover_throttle": null, "hover_throttle_status": "must measure in shared plant", "rc_smoothing": null, "rc_smoothing_status": "must select and record before qualification"}
+  },
+  "qualification": {
+    "native_control_algorithm_changes_allowed": false,
+    "gains_tuning": "equal step-response criterion and documented tuning budget",
+    "noise_profiles": ["none", "realistic", "harsh"], "seeds_per_profile_min": 5,
+    "performance_margins_status": "must agree before campaign; PDF numbers are examples",
+    "requires": ["packet lockstep gate", "generated-code oracle check", "ideal-attitude common-plant check", "hover", "0.5 m step", "square", "one figure eight", "native disarm and grounded stopped motors", "noise repeats"]
+  }
+}

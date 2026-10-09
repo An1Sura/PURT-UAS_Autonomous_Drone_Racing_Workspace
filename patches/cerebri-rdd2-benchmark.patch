@@ -288,10 +288,11 @@ index 753d72f..0fa90f4 100644
      fs::write(&report_path, serde_json::to_vec_pretty(&report)?)?;
  
 diff --git a/xtask/src/main.rs b/xtask/src/main.rs
-index e11a7c8..46a70c2 100644
+index e11a7c8..46fdf7f 100644
 --- a/xtask/src/main.rs
 +++ b/xtask/src/main.rs
-@@ -1,7 +1,16 @@
+@@ -1,7 +1,17 @@
++mod shared_loop;
 +mod speed_score;
 +mod benchmark;
 +mod betaflight_probe;
@@ -308,7 +309,7 @@ index e11a7c8..46a70c2 100644
  mod shared_memory;
  
  use std::env;
-@@ -13,29 +22,21 @@ use std::thread;
+@@ -13,29 +23,21 @@ use std::thread;
  use std::time::{Duration, Instant};
  
  use anyhow::{Context, Result, anyhow, bail};
@@ -344,7 +345,7 @@ index e11a7c8..46a70c2 100644
      report: PathBuf,
      trajectory: PathBuf,
      duration: f64,
-@@ -52,6 +53,9 @@ struct Options {
+@@ -52,6 +54,9 @@ struct Options {
  
  #[derive(Debug, Default, Serialize)]
  struct Report {
@@ -354,7 +355,7 @@ index e11a7c8..46a70c2 100644
      passed: bool,
      /// Which providers produced the firmware under test. A pass built from
      /// caller-selected sources is not a qualifying result, and the report
-@@ -108,7 +112,7 @@ fn options(args: impl IntoIterator<Item = String>) -> Result<Options> {
+@@ -108,7 +113,7 @@ fn options(args: impl IntoIterator<Item = String>) -> Result<Options> {
      let mut trajectory = env::var_os("RDD2_MISSION_TRAJECTORY")
          .map(PathBuf::from)
          .unwrap_or_else(|| PathBuf::from("out/mission-trajectory.csv"));
@@ -363,7 +364,7 @@ index e11a7c8..46a70c2 100644
      let mut timeout_ms = 2_000_u64;
      let mut controller_benchmark = env::var("RDD2_FASTDYN_CONTROLLER_BENCHMARK_S")
          .ok()
-@@ -124,10 +128,39 @@ fn options(args: impl IntoIterator<Item = String>) -> Result<Options> {
+@@ -124,10 +129,39 @@ fn options(args: impl IntoIterator<Item = String>) -> Result<Options> {
          .map(|value| value.parse())
          .transpose()?
          .unwrap_or(0.0);
@@ -403,7 +404,7 @@ index e11a7c8..46a70c2 100644
              "--report" => report = args.next().ok_or_else(value)?.into(),
              "--trajectory" => trajectory = args.next().ok_or_else(value)?.into(),
              "--duration" => duration = args.next().ok_or_else(value)?.parse()?,
-@@ -145,20 +178,48 @@ fn options(args: impl IntoIterator<Item = String>) -> Result<Options> {
+@@ -145,20 +179,48 @@ fn options(args: impl IntoIterator<Item = String>) -> Result<Options> {
              "--minimum-speedup" => minimum_speedup = args.next().ok_or_else(value)?.parse()?,
              "-h" | "--help" => {
                  println!(
@@ -455,7 +456,7 @@ index e11a7c8..46a70c2 100644
          report,
          trajectory,
          duration,
-@@ -171,29 +232,29 @@ fn options(args: impl IntoIterator<Item = String>) -> Result<Options> {
+@@ -171,29 +233,29 @@ fn options(args: impl IntoIterator<Item = String>) -> Result<Options> {
              .context("--plant-library or RDD2_RUMOCA_PLANT_LIBRARY is required")?,
          plant_description: plant_description
              .context("--plant-description or RDD2_RUMOCA_PLANT_DESCRIPTION is required")?,
@@ -495,7 +496,7 @@ index e11a7c8..46a70c2 100644
  }
  
  fn rc_channels(mission_time: Option<f64>, plant: &Plant) -> [i32; 16] {
-@@ -204,15 +265,16 @@ fn rc_channels(mission_time: Option<f64>, plant: &Plant) -> [i32; 16] {
+@@ -204,15 +266,16 @@ fn rc_channels(mission_time: Option<f64>, plant: &Plant) -> [i32; 16] {
          channels[5] = 1000;
          return channels;
      };
@@ -520,7 +521,7 @@ index e11a7c8..46a70c2 100644
      if throttle_must_be_low(time) {
          channels[2] = 1000;
      } else {
-@@ -381,8 +443,7 @@ fn evaluate(report: &mut Report) {
+@@ -381,8 +444,7 @@ fn evaluate(report: &mut Report) {
              .push("vehicle had excessive vertical speed at completion".into());
      }
      report.passed = report.failures.is_empty();
@@ -530,7 +531,7 @@ index e11a7c8..46a70c2 100644
  }
  
  fn advance_square_corner(
-@@ -448,7 +509,11 @@ where
+@@ -448,7 +510,11 @@ where
      let warmup_target_ns = 5_000_000_u64;
      let ready_deadline = Instant::now() + Duration::from_secs(60);
      loop {
@@ -543,7 +544,7 @@ index e11a7c8..46a70c2 100644
          let inputs = protocol::lockstep_inputs(
              gyro,
              accel,
-@@ -466,7 +531,8 @@ where
+@@ -466,7 +532,8 @@ where
      }
  
      let target_ns = warmup_target_ns + (benchmark_seconds * 1.0e9).round() as u64;
@@ -553,7 +554,7 @@ index e11a7c8..46a70c2 100644
      let inputs = protocol::lockstep_inputs(
          gyro,
          accel,
-@@ -489,8 +555,12 @@ fn run_mission<F>(options: &Options, exchange: &mut F) -> Result<()>
+@@ -489,8 +556,12 @@ fn run_mission<F>(options: &Options, exchange: &mut F) -> Result<()>
  where
      F: FnMut(&protocol::LockstepInputs, Duration) -> Result<LockstepOutputs>,
  {
@@ -566,7 +567,7 @@ index e11a7c8..46a70c2 100644
          position_mission_continuous: true,
          mission_status_current: true,
          navigation_estimate_finite: true,
-@@ -500,7 +570,15 @@ where
+@@ -500,7 +571,15 @@ where
      let wall_start = Instant::now();
      let mut firmware_ready = false;
      let mut synthetic_gnss = SyntheticGnss::default();
@@ -583,7 +584,7 @@ index e11a7c8..46a70c2 100644
      let mut plan_sent = false;
      let mut mission_epoch = None;
      let mut last_outputs: Option<LockstepOutputs> = None;
-@@ -529,26 +607,38 @@ where
+@@ -529,26 +608,38 @@ where
          let channels = rc_channels(mission_time, &plant);
          let (gyro, accel) = plant.imu_flu();
          let target_time = ((simulated_time + options.plant_dt) * 1.0e9).round() as u64;
@@ -636,7 +637,7 @@ index e11a7c8..46a70c2 100644
          simulated_time += options.plant_dt;
          report.plant_steps += 1;
          let state = outputs.flight_state;
-@@ -619,7 +709,8 @@ where
+@@ -619,7 +710,8 @@ where
              .all(f32::is_finite);
          report.fresh_planner_reference_observed |= reference_current;
          if mission_time.is_some_and(|time| {
@@ -646,7 +647,7 @@ index e11a7c8..46a70c2 100644
          }) {
              let required = MissionStatusWire::SOURCE_READY
                  | MissionStatusWire::ORIGIN_VALID
-@@ -641,14 +732,14 @@ where
+@@ -641,14 +733,14 @@ where
                  &mut report.planner_corners_reached,
                  planner_origin_value,
                  planner_position,
@@ -663,7 +664,7 @@ index e11a7c8..46a70c2 100644
                  VEHICLE_CORNER_TOLERANCE_M,
              );
          }
-@@ -671,7 +762,8 @@ where
+@@ -671,7 +763,8 @@ where
          if mission_epoch.is_none() && status.mission_state == 1 {
              mission_epoch = Some(simulated_time);
          }
@@ -673,7 +674,7 @@ index e11a7c8..46a70c2 100644
              report.firmware_disarmed_after_flight = true;
          }
  
-@@ -708,6 +800,7 @@ where
+@@ -708,6 +801,7 @@ where
          last_outputs = Some(outputs);
      }
  
@@ -681,10 +682,11 @@ index e11a7c8..46a70c2 100644
      report.simulated_seconds = report.plant_steps as f64 * options.plant_dt;
      report.wall_seconds = wall_start.elapsed().as_secs_f64();
      report.speedup_over_realtime = report.simulated_seconds / report.wall_seconds;
-@@ -824,6 +917,11 @@ fn main() -> Result<()> {
+@@ -824,6 +918,12 @@ fn main() -> Result<()> {
      };
  
      match command.to_string_lossy().as_ref() {
++        "shared-loop-check" => shared_loop::run(args),
 +        "mission-server" => mission_server::run(args),
 +        "figure-plan" => figure_config::run(args),
 +        "speed-score" => speed_score::run(args),
@@ -693,7 +695,7 @@ index e11a7c8..46a70c2 100644
          "fastdyn-ci" => fastdyn_ci::run(),
          "fastdyn-mission" => {
              let args = args
-@@ -870,7 +968,7 @@ mod tests {
+@@ -870,7 +970,7 @@ mod tests {
              vehicle_corners_reached: 5,
              navigation_estimate_finite: true,
              max_navigation_horizontal_error_m: 0.1,
@@ -702,7 +704,7 @@ index e11a7c8..46a70c2 100644
              maximum_gnss_generation: 441,
              maximum_reference_generation: 100,
              maximum_plan_generation: 1,
-@@ -904,16 +1002,19 @@ mod tests {
+@@ -904,16 +1004,19 @@ mod tests {
  
      #[test]
      fn takeoff_schedule_preserves_a_low_throttle_arming_window() {
@@ -729,7 +731,7 @@ index e11a7c8..46a70c2 100644
          );
      }
  
-@@ -926,7 +1027,7 @@ mod tests {
+@@ -926,7 +1029,7 @@ mod tests {
              &mut progress,
              origin,
              origin,
@@ -738,7 +740,7 @@ index e11a7c8..46a70c2 100644
              VEHICLE_CORNER_TOLERANCE_M,
          );
          assert_eq!(progress, 1);
-@@ -934,15 +1035,15 @@ mod tests {
+@@ -934,15 +1037,15 @@ mod tests {
              &mut progress,
              origin,
              origin,
@@ -757,7 +759,7 @@ index e11a7c8..46a70c2 100644
              VEHICLE_CORNER_TOLERANCE_M,
          );
          assert_eq!(progress, 2);
-@@ -1063,7 +1164,7 @@ mod tests {
+@@ -1063,7 +1166,7 @@ mod tests {
          let result = (|| -> Result<()> {
              for _ in 0..4_000 {
                  target_ns += 625_000;
@@ -766,7 +768,7 @@ index e11a7c8..46a70c2 100644
                  let inputs = protocol::lockstep_inputs(
                      [0.0; 3],
                      [0.0, 0.0, 9.806_65],
-@@ -1096,7 +1197,7 @@ mod tests {
+@@ -1096,7 +1199,7 @@ mod tests {
              let mut last_quality = 0_i8;
              for _ in 0..320 {
                  target_ns += 625_000;
@@ -775,7 +777,7 @@ index e11a7c8..46a70c2 100644
                  let inputs = protocol::lockstep_inputs(
                      [0.0; 3],
                      [0.0, 0.0, 9.806_65],
-@@ -1125,7 +1226,7 @@ mod tests {
+@@ -1125,7 +1228,7 @@ mod tests {
              let mut last_flight_armed = false;
              for _ in 0..1_600 {
                  target_ns += 625_000;
@@ -4157,6 +4159,325 @@ index 0000000..d88a859
 +            }
 +        }
 +    }
++}
+diff --git a/xtask/src/shared_loop.rs b/xtask/src/shared_loop.rs
+new file mode 100644
+index 0000000..13faf28
+--- /dev/null
++++ b/xtask/src/shared_loop.rs
+@@ -0,0 +1,253 @@
++//! PDF stage-two generated-code checks. This command does not fly firmware.
++use anyhow::{Context, Result, ensure};
++use libloading::Library;
++use serde_json::{Value, json};
++use std::{ffi::OsString, fs, io::Write, path::PathBuf, process::Command};
++
++pub fn run(args: impl Iterator<Item = OsString>) -> Result<()> {
++    let a: Vec<PathBuf> = args.map(PathBuf::from).collect();
++    ensure!(
++        a.len() == 4,
++        "shared-loop-check CONFIG MODELICA_ROOT RUMOCA OUTPUT_DIRECTORY"
++    );
++    let cfg: Value = serde_json::from_slice(&fs::read(&a[0])?)?;
++    let course = &cfg["course"];
++    let scalar = |name: &str| -> Result<f32> {
++        let v = course[name]
++            .as_f64()
++            .with_context(|| format!("course.{name} missing"))?;
++        ensure!(v.is_finite() && v > 0. && v <= 3600., "invalid {name}");
++        Ok(v as f32)
++    };
++    let dimensions = [
++        scalar("width_m")?,
++        scalar("height_m")?,
++        scalar("altitude_m")?,
++        scalar("lap_time_s")?,
++    ];
++    ensure!(
++        course["laps"] == 1 && course["phase_law"] == "minimum_jerk_each_lap",
++        "requires one minimum-jerk lap"
++    );
++    ensure!(
++        course["scale"] == 1 && course["center_enu_m"] == json!([0, 0]) && course["yaw_rad"] == 0,
++        "this qualification uses scale=1, centre=[0,0], yaw=0; do not silently ignore placement"
++    );
++    ensure!(
++        cfg["controller"]["sample_rate_hz"] == 100
++            && cfg["controller"]["tilt_limit_deg"] == 35
++            && cfg["controller"]["yaw_rate_limit_deg_s"] == 200
++            && cfg["controller"]["translational_correction_fraction"] == 0.7,
++        "controller settings must match the generated Modelica defaults for this qualification"
++    );
++    fs::create_dir_all(&a[3])?;
++    let root = fs::canonicalize(&a[1])?;
++    let out = fs::canonicalize(&a[3])?;
++    let mut hashes = serde_json::Map::new();
++    hashes.insert("config".into(), json!(crate::physics::file_sha256(&a[0])?));
++    hashes.insert("rumoca".into(), json!(crate::physics::file_sha256(&a[2])?));
++    for model in ["Trajectory", "PositionLoop", "PositionOracle"] {
++        let source = root.join(format!("Benchmarks/{model}.mo"));
++        let output = Command::new(&a[2])
++            .arg("compile")
++            .arg(&source)
++            .args(["--model", &format!("Benchmarks.{model}"), "--source-root"])
++            .arg(&root)
++            .args(["--target", "galec-production", "--output"])
++            .arg(&out)
++            .output()?;
++        fs::write(
++            out.join(format!("{model}-build.log")),
++            [output.stdout, output.stderr].concat(),
++        )?;
++        ensure!(
++            output.status.success(),
++            "{model} generation failed; see build log"
++        );
++        hashes.insert(
++            format!("{model}_source"),
++            json!(crate::physics::file_sha256(&source)?),
++        );
++        hashes.insert(
++            format!("{model}_efmu"),
++            json!(crate::physics::file_sha256(
++                &out.join(format!("Benchmarks_{model}.efmu"))
++            )?),
++        );
++    }
++    let shim = out.join("shared_loop_shim.c");
++    fs::write(&shim, include_str!("shared_loop_shim.c"))?;
++    let library = out.join("libshared_loop.so");
++    let mut cc = Command::new("cc");
++    cc.args(["-std=c11", "-O2", "-fPIC", "-shared"]).arg(&shim);
++    for model in ["Trajectory", "PositionLoop", "PositionOracle"] {
++        let dir = out.join(format!("Benchmarks_{model}/ProductionCode"));
++        cc.arg("-I")
++            .arg(&dir)
++            .arg(dir.join(format!("Benchmarks_{model}.c")));
++    }
++    let build = cc
++        .arg(out.join("Benchmarks_Trajectory/ProductionCode/rumoca_galec_kernels.c"))
++        .arg("-lm")
++        .arg("-o")
++        .arg(&library)
++        .output()?;
++    fs::write(
++        out.join("cc-build.log"),
++        [build.stdout, build.stderr].concat(),
++    )?;
++    ensure!(build.status.success(), "C build failed; see cc-build.log");
++    hashes.insert(
++        "library".into(),
++        json!(crate::physics::file_sha256(&library)?),
++    );
++    hashes.insert("shim".into(), json!(crate::physics::file_sha256(&shim)?));
++    let result = unsafe { check(&library, dimensions, &out) };
++    let report = match &result {
++        Ok(metrics) => {
++            json!({"passed":true,"scope":"generated-code numerical checks only; not a flight or full PDF qualification","hashes":hashes,"metrics":metrics})
++        }
++        Err(e) => {
++            json!({"passed":false,"scope":"generated-code numerical checks","hashes":hashes,"error":format!("{e:#}")})
++        }
++    };
++    fs::write(out.join("checks.json"), serde_json::to_vec_pretty(&report)?)?;
++    result.map(|_| ())
++}
++
++// This is an independently evaluated f64 numerical oracle, not the flight generator.
++fn analytic(t: f64, d: [f32; 4]) -> [f64; 9] {
++    let [w, h, z, tmax] = d.map(f64::from);
++    let u = (t / tmax).clamp(0., 1.);
++    let q = std::f64::consts::TAU * u.powi(3) * (10. + u * (-15. + 6. * u));
++    let v = std::f64::consts::TAU * 30. * u * u * (1. - u).powi(2) / tmax;
++    let a = std::f64::consts::TAU * 60. * u * (1. - u) * (1. - 2. * u) / (tmax * tmax);
++    [
++        w / 2. * q.sin(),
++        h / 2. * (2. * q).sin(),
++        z,
++        w / 2. * q.cos() * v,
++        h * (2. * q).cos() * v,
++        0.,
++        w / 2. * (-q.sin() * v * v + q.cos() * a),
++        h * (-2. * (2. * q).sin() * v * v + (2. * q).cos() * a),
++        0.,
++    ]
++}
++
++unsafe fn check(path: &std::path::Path, d: [f32; 4], out: &std::path::Path) -> Result<Value> {
++    // The compiler specifies single-instance, non-reentrant workspaces. Calls are serial.
++    let lib = unsafe { Library::new(path)? };
++    let start = unsafe { lib.get::<unsafe extern "C" fn(f32, f32, f32, f32)>(b"shared_start\0")? };
++    let reference =
++        unsafe { lib.get::<unsafe extern "C" fn(i32, *mut f32) -> u32>(b"shared_reference\0")? };
++    let control = unsafe {
++        lib.get::<unsafe extern "C" fn(*const f32, i32, *mut f32) -> u32>(b"shared_control\0")?
++    };
++    let steps = (f64::from(d[3]) * 100.).ceil() as usize;
++    let mut csv = fs::File::create(out.join("reference.csv"))?;
++    writeln!(
++        csv,
++        "time_s,x_m,y_m,z_m,vx_m_s,vy_m_s,vz_m_s,ax_m_s2,ay_m_s2,az_m_s2,yaw_rad"
++    )?;
++    let mut first = Vec::new();
++    let (mut math_error, mut time_error, mut controller_error) = (0f64, 0f64, 0f64);
++    let mut low = [f32::INFINITY; 3];
++    let mut high = [f32::NEG_INFINITY; 3];
++    for repeat in 0..2 {
++        unsafe {
++            start(d[0], d[1], d[2], d[3]);
++        }
++        for i in 0..=steps {
++            let mut r = [0f32; 11];
++            ensure!(
++                unsafe { reference(i32::from(i != 0), r.as_mut_ptr()) } == 0,
++                "trajectory error at {i}"
++            );
++            ensure!(r.iter().all(|v| v.is_finite()), "nonfinite reference");
++            if repeat == 0 {
++                first.push(r);
++                writeln!(
++                    csv,
++                    "{}",
++                    r.iter()
++                        .map(ToString::to_string)
++                        .collect::<Vec<_>>()
++                        .join(",")
++                )?;
++                let time = (i as f64 / 100.).min(f64::from(d[3]));
++                time_error = time_error.max((f64::from(r[0]) - time).abs());
++                for (actual, want) in r[1..10].iter().zip(analytic(time, d)) {
++                    math_error = math_error.max((f64::from(*actual) - want).abs());
++                }
++                for j in 0..3 {
++                    low[j] = low[j].min(r[j + 1]);
++                    high[j] = high[j].max(r[j + 1]);
++                }
++            } else {
++                ensure!(r == first[i], "generated reference not repeatable at {i}");
++            }
++            let yaw = i as f32 * 0.007;
++            let mut input = [0f32; 20];
++            input[0] = r[1] + 0.2 * yaw.sin();
++            input[1] = r[2] - 0.1 * yaw.cos();
++            input[2] = r[3];
++            input[3..6].copy_from_slice(&r[4..7]);
++            input[6] = (yaw / 2.).cos();
++            input[9] = (yaw / 2.).sin();
++            input[10..13].copy_from_slice(&r[1..4]);
++            input[13..16].copy_from_slice(&r[4..7]);
++            input[16..19].copy_from_slice(&r[7..10]);
++            input[19] = r[10];
++            let engaged = i % 101 != 0;
++            let mut c = [0f32; 20];
++            ensure!(
++                unsafe { control(input.as_ptr(), i32::from(engaged), c.as_mut_ptr()) } == 0,
++                "controller error at {i}"
++            );
++            ensure!(c.iter().all(|v| v.is_finite()), "nonfinite control at {i}");
++            for (left, right) in [
++                (3, 12),
++                (5, 13),
++                (6, 14),
++                (7, 15),
++                (8, 16),
++                (9, 17),
++                (10, 18),
++                (11, 19),
++            ] {
++                controller_error = controller_error.max(f64::from((c[left] - c[right]).abs()));
++            }
++            ensure!(
++                c[0].abs() <= 0.610866 && c[1].abs() <= 0.610866 && c[2].abs() <= 3.490659,
++                "command clamp failure"
++            );
++            if !engaged {
++                ensure!(
++                    c[4] == 0. && c[9..12].iter().all(|v| v.abs() < 1e-6),
++                    "disengage must clear integral and validity"
++                );
++            }
++        }
++    }
++    ensure!(time_error < 1e-5, "sample clock drift {time_error}");
++    ensure!(
++        math_error < 0.0002,
++        "reference numerical error {math_error}"
++    );
++    ensure!(
++        controller_error < 0.00001,
++        "GuidanceController mismatch {controller_error}"
++    );
++    ensure!(
++        (high[0] - low[0] - d[0]).abs() < 0.001 && (high[1] - low[1] - d[1]).abs() < 0.001,
++        "wrong figure-eight footprint"
++    );
++    Ok(
++        json!({"samples":steps+1,"exact_reference_repeats":2,"sample_rate_hz":100,
++        "position_velocity_acceleration_max_absolute_error":math_error,"clock_max_error_s":time_error,
++        "guidance_oracle_max_absolute_error":controller_error,"bounds_min_enu_m":low,"bounds_max_enu_m":high,
++        "precision":"generated IEEE float32 versus f64 analytic oracle; not formal floating-point proof",
++        "pending_gates":["Betaflight packet lockstep","ideal-attitude common-plant flight","stock ANGLE/ATTITUDE hover and step tests","closed-loop takeoff, square, figure eight and landing","noise and speed campaign"]}),
++    )
++}
+diff --git a/xtask/src/shared_loop_shim.c b/xtask/src/shared_loop_shim.c
+new file mode 100644
+index 0000000..638a0b2
+--- /dev/null
++++ b/xtask/src/shared_loop_shim.c
+@@ -0,0 +1,54 @@
++/* Thin ABI only. All trajectory/controller mathematics come from generated C. */
++#include <string.h>
++#include "Benchmarks_Trajectory.h"
++#include "Benchmarks_PositionLoop.h"
++#include "Benchmarks_PositionOracle.h"
++static TrajectoryState trajectory;
++static PositionLoopState control;
++static PositionOracleState oracle;
++void shared_start(float width, float height, float altitude, float duration) {
++    memset(&trajectory, 0, sizeof trajectory);
++    memset(&control, 0, sizeof control);
++    memset(&oracle, 0, sizeof oracle);
++    Trajectory_startup(&trajectory);
++    trajectory.width=width; trajectory.height=height;
++    trajectory.altitude=altitude; trajectory.lapTime=duration;
++    Trajectory_recalibrate(&trajectory);
++    PositionLoop_startup(&control);
++    PositionOracle_startup(&oracle);
++}
++unsigned shared_reference(int engage, float *out) {
++    trajectory.engage=engage != 0;
++    Trajectory_dostep(&trajectory);
++    out[0]=trajectory.elapsed;
++    memcpy(out+1,trajectory.position,3*sizeof(float));
++    memcpy(out+4,trajectory.velocity,3*sizeof(float));
++    memcpy(out+7,trajectory.acceleration,3*sizeof(float));
++    out[10]=trajectory.yaw;
++    return trajectory.rumoca_galec_error_signal_status;
++}
++unsigned shared_control(const float *in, int engage, float *out) {
++    memcpy(control.position,in,3*sizeof(float));
++    memcpy(control.velocity,in+3,3*sizeof(float));
++    memcpy(control.quaternion,in+6,4*sizeof(float));
++    memcpy(control.referencePosition,in+10,3*sizeof(float));
++    memcpy(control.referenceVelocity,in+13,3*sizeof(float));
++    memcpy(control.referenceAcceleration,in+16,3*sizeof(float));
++    control.referenceYaw=in[19]; control.engage=engage != 0;
++    memcpy(oracle.positionWorldEnu_m,in,3*sizeof(float));
++    memcpy(oracle.velocityWorldEnu_m_s,in+3,3*sizeof(float));
++    memcpy(oracle.quaternionWorldBody,in+6,4*sizeof(float));
++    memcpy(oracle.positionWorld_m,in+10,3*sizeof(float));
++    memcpy(oracle.velocityWorld_m_s,in+13,3*sizeof(float));
++    memcpy(oracle.accelerationWorld_m_s2,in+16,3*sizeof(float));
++    oracle.yaw_rad=in[19]; oracle.mode=2; oracle.armed=engage != 0;
++    PositionLoop_dostep(&control); PositionOracle_dostep(&oracle);
++    out[0]=control.roll; out[1]=control.pitch; out[2]=control.yawRate;
++    out[3]=control.thrust; out[4]=control.valid ? 1.0f : 0.0f;
++    memcpy(out+5,control.rawAttitude,4*sizeof(float));
++    memcpy(out+9,control.integral,3*sizeof(float));
++    out[12]=oracle.thrust_N;
++    memcpy(out+13,oracle.rawAttitude,4*sizeof(float));
++    memcpy(out+17,oracle.integral,3*sizeof(float));
++    return control.rumoca_galec_error_signal_status | oracle.rumoca_galec_error_signal_status;
 +}
 diff --git a/xtask/src/speed_score.rs b/xtask/src/speed_score.rs
 new file mode 100644

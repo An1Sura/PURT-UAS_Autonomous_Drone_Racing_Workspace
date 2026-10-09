@@ -1,0 +1,145 @@
+diff --git a/Benchmarks/PositionLoop.mo b/Benchmarks/PositionLoop.mo
+new file mode 100644
+index 0000000..2ca1f2f
+--- /dev/null
++++ b/Benchmarks/PositionLoop.mo
+@@ -0,0 +1,51 @@
++within Benchmarks;
++block PositionLoop "Shared off-board log-linear position loop; no stack control changes"
++  parameter Real samplePeriod = 0.01;
++  parameter Real tiltLimit = 0.6108652381980153;
++  parameter Real yawRateLimit = 3.490658503988659;
++  parameter Real yawGain = 1.0;
++  parameter Real forceFraction = 0.7;
++  input Real position[3](each start = 0.0);
++  input Real velocity[3](each start = 0.0);
++  input Real quaternion[4](start = {1.0,0.0,0.0,0.0});
++  input Real referencePosition[3](each start = 0.0);
++  input Real referenceVelocity[3](each start = 0.0);
++  input Real referenceAcceleration[3](each start = 0.0);
++  input Real referenceYaw(start = 0.0);
++  input Boolean engage(start = false);
++  output Real roll;
++  output Real pitch;
++  output Real yawRate;
++  output Real thrust;
++  output Boolean valid;
++  output Real rawAttitude[4];
++  output Real integral[3];
++protected
++  Vehicles.Rdd2.LogLinearController controller(
++    samplePeriod = samplePeriod, translationalCorrectionFraction = forceFraction);
++  Real euler[3];
++  Real direction[3];
++  Real headingDirection[3];
++  Real yawError;
++equation
++  controller.positionWorld = position;
++  controller.velocityWorld = velocity;
++  controller.quaternionWorldBody = quaternion;
++  controller.positionReferenceWorld = referencePosition;
++  controller.velocityReferenceWorld = referenceVelocity;
++  controller.accelerationReferenceWorld = referenceAcceleration;
++  controller.headingQuaternionReference = LieGroups.SO3.EulerB321.to_Quat({referenceYaw,0.0,0.0});
++  controller.resetIntegral = not engage;
++  rawAttitude = controller.attitudeSetpoint;
++  integral = controller.positionIntegral;
++  euler = LieGroups.SO3.EulerB321.from_Quat(quaternion);
++  direction = LieGroups.SO3.Quat.rotate(rawAttitude,{0.0,0.0,1.0});
++  headingDirection = {cos(euler[1])*direction[1]+sin(euler[1])*direction[2],
++    -sin(euler[1])*direction[1]+cos(euler[1])*direction[2],direction[3]};
++  roll = MathUtilities.clip(atan2(-headingDirection[2],sqrt(headingDirection[1]^2+headingDirection[3]^2)),-tiltLimit,tiltLimit);
++  pitch = MathUtilities.clip(atan2(headingDirection[1],headingDirection[3]),-tiltLimit,tiltLimit);
++  yawError = atan2(sin(referenceYaw-euler[1]),cos(referenceYaw-euler[1]));
++  yawRate = MathUtilities.clip(yawGain*yawError,-yawRateLimit,yawRateLimit);
++  thrust = controller.thrust;
++  valid = engage and thrust >= 0.0 and thrust <= 41.3749272;
++end PositionLoop;
+diff --git a/Benchmarks/PositionOracle.mo b/Benchmarks/PositionOracle.mo
+new file mode 100644
+index 0000000..239e616
+--- /dev/null
++++ b/Benchmarks/PositionOracle.mo
+@@ -0,0 +1,10 @@
++within Benchmarks;
++block PositionOracle "Test-only observation of the unmodified GuidanceController POSITION branch"
++  extends Vehicles.Rdd2.GuidanceController(samplePeriod=0.01,
++    positionGuidance(translationalCorrectionFraction=0.7));
++  output Real rawAttitude[4];
++  output Real integral[3];
++equation
++  rawAttitude = positionGuidance.attitudeSetpoint;
++  integral = positionGuidance.positionIntegral;
++end PositionOracle;
+diff --git a/Benchmarks/Trajectory.mo b/Benchmarks/Trajectory.mo
+new file mode 100644
+index 0000000..6a7e7b0
+--- /dev/null
++++ b/Benchmarks/Trajectory.mo
+@@ -0,0 +1,57 @@
++within Benchmarks;
++block Trajectory "One shared, engage-triggered timed reference for square or figure eight"
++  parameter Real samplePeriod = 0.01;
++  parameter Real width = 10.0;
++  parameter Real height = 10.0;
++  parameter Real altitude = 2.0;
++  parameter Real lapTime = 80.0;
++  parameter Integer shape = 3 "0 hover; 1 half-metre step; 2 square; 3 figure eight";
++  input Boolean engage(start = false);
++  output Real position[3];
++  output Real velocity[3];
++  output Real acceleration[3];
++  output Real yaw;
++  output Real elapsed;
++protected
++  discrete Integer tick(start = 0, fixed = true);
++  Real u;
++  Real q;
++  Real dq;
++  Real ddq;
++  Real blend;
++  Real blendRate;
++  Real blendAccel;
++  Real localTime;
++  Real legTime;
++  Real leg;
++  Real startPoint[2];
++  Real endPoint[2];
++  Real delta[2];
++equation
++  elapsed = min(tick*samplePeriod,lapTime);
++  u = MathUtilities.clip(elapsed/lapTime,0.0,1.0);
++  q = 2.0*3.141592653589793*u^3*(10.0+u*(-15.0+6.0*u));
++  dq = 2.0*3.141592653589793*30.0*u^2*(1.0-u)^2/lapTime;
++  ddq = 2.0*3.141592653589793*60.0*u*(1.0-u)*(1.0-2.0*u)/lapTime^2;
++  legTime = lapTime/4.0;
++  leg = min(3.0,floor(elapsed/legTime));
++  localTime = MathUtilities.clip((elapsed-leg*legTime)/legTime,0.0,1.0);
++  blend = localTime^3*(10.0+localTime*(-15.0+6.0*localTime));
++  blendRate = 30.0*localTime^2*(1.0-localTime)^2/legTime;
++  blendAccel = 60.0*localTime*(1.0-localTime)*(1.0-2.0*localTime)/legTime^2;
++  startPoint = if leg < 0.5 then {0.0,0.0} elseif leg < 1.5 then {width,0.0} elseif leg < 2.5 then {width,height} else {0.0,height};
++  endPoint = if leg < 0.5 then {width,0.0} elseif leg < 1.5 then {width,height} elseif leg < 2.5 then {0.0,height} else {0.0,0.0};
++  delta = endPoint-startPoint;
++  position = if shape == 3 then {width/2.0*sin(q),height/2.0*sin(2.0*q),altitude}
++    elseif shape == 2 then {startPoint[1]+delta[1]*blend-width/2.0,startPoint[2]+delta[2]*blend-height/2.0,altitude}
++    elseif shape == 1 then {if elapsed >= 1.0 then 0.5 else 0.0,0.0,altitude} else {0.0,0.0,altitude};
++  velocity = if shape == 3 then {width/2.0*cos(q)*dq,height*cos(2.0*q)*dq,0.0}
++    elseif shape == 2 then {delta[1]*blendRate,delta[2]*blendRate,0.0} else zeros(3);
++  acceleration = if shape == 3 then {width/2.0*(-sin(q)*dq^2+cos(q)*ddq),height*(-2.0*sin(2.0*q)*dq^2+cos(2.0*q)*ddq),0.0}
++    elseif shape == 2 then {delta[1]*blendAccel,delta[2]*blendAccel,0.0} else zeros(3);
++  yaw = 0.0;
++algorithm
++  when sample(0.0,samplePeriod) then
++    tick := if not engage then 0 elseif pre(tick)*samplePeriod < lapTime then pre(tick)+1 else pre(tick);
++  end when;
++end Trajectory;
+diff --git a/Benchmarks/package.mo b/Benchmarks/package.mo
+new file mode 100644
+index 0000000..d626750
+--- /dev/null
++++ b/Benchmarks/package.mo
+@@ -0,0 +1,3 @@
++within;
++package Benchmarks "Shared off-board flight-control benchmark blocks"
++end Benchmarks;

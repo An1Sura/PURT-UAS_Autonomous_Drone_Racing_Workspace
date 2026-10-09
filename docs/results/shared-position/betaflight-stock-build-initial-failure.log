@@ -1,0 +1,14 @@
+make: Entering directory '/home/suraa.guest/autonomous-drone-bench/artifacts/shared-loop/betaflight-stock'
+Hydrating submodule: src/config
+Hydrating submodule: lib/modules/dronecan/libcanard
+error: could not lock config file .git/config: File exists
+error: could not lock config file .git/config: File exists
+fatal: Failed to register url for submodule path 'lib/modules/dronecan/libcanard'
+Submodule 'config' (https://github.com/betaflight/config.git) registered for path 'src/config'
+submodule update failed: lib/modules/dronecan/libcanard
+make[1]: *** [Makefile:764: lib/modules/dronecan/libcanard/.git] Error 1
+make[1]: *** Waiting for unfinished jobs....
+Cloning into '/home/suraa.guest/autonomous-drone-bench/artifacts/shared-loop/betaflight-stock/src/config'...
+Submodule path 'src/config': checked out '96910e90881573589b2a6c41f7392b7afad63973'
+make: *** [Makefile:815: fwo] Error 2
+make: Leaving directory '/home/suraa.guest/autonomous-drone-bench/artifacts/shared-loop/betaflight-stock'

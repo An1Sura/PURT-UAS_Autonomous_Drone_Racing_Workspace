@@ -1,0 +1,152 @@
+{
+  "scope": "mathematical reference; not measured flight performance",
+  "course": {
+    "width_m": 10,
+    "height_m": 10,
+    "altitude_m": 2,
+    "scale": 1,
+    "center_enu_m": [
+      0,
+      0
+    ],
+    "yaw_rad": 0,
+    "laps": 1,
+    "lap_time_s": 80,
+    "phase_law": "minimum_jerk_each_lap",
+    "timing_status": "slow commissioning target; not an achieved flight time or fastest setting"
+  },
+  "stats": {
+    "path_length_per_lap_m": 47.14715648471952,
+    "path_length_total_m": 47.14715648471952,
+    "mean_speed_m_s": 0.589339456058994,
+    "peak_speed_m_s": 1.6464409525876702,
+    "peak_lateral_accel_m_s2": 0.4067958294456867,
+    "peak_lateral_accel_g": 0.04148163026575709,
+    "peak_horizontal_accel_m_s2": 0.41345481414323765,
+    "tightest_turn_radius_m": 0.5967658277463798,
+    "timed_path_s": 80
+  },
+  "size_sweep": [
+    {
+      "width_m": 5,
+      "height_m": 5,
+      "lap_time_s": 80,
+      "path_length_per_lap_m": 23.57357824235976,
+      "path_length_total_m": 23.57357824235976,
+      "mean_speed_m_s": 0.294669728029497,
+      "peak_speed_m_s": 0.8232204762938351,
+      "peak_lateral_accel_m_s2": 0.20339791472284335,
+      "peak_lateral_accel_g": 0.020740815132878544,
+      "peak_horizontal_accel_m_s2": 0.20672740707161882,
+      "tightest_turn_radius_m": 0.2983829138731899,
+      "timed_path_s": 80
+    },
+    {
+      "width_m": 10,
+      "height_m": 10,
+      "lap_time_s": 80,
+      "path_length_per_lap_m": 47.14715648471952,
+      "path_length_total_m": 47.14715648471952,
+      "mean_speed_m_s": 0.589339456058994,
+      "peak_speed_m_s": 1.6464409525876702,
+      "peak_lateral_accel_m_s2": 0.4067958294456867,
+      "peak_lateral_accel_g": 0.04148163026575709,
+      "peak_horizontal_accel_m_s2": 0.41345481414323765,
+      "tightest_turn_radius_m": 0.5967658277463798,
+      "timed_path_s": 80
+    },
+    {
+      "width_m": 15,
+      "height_m": 15,
+      "lap_time_s": 80,
+      "path_length_per_lap_m": 70.72073472707929,
+      "path_length_total_m": 70.72073472707929,
+      "mean_speed_m_s": 0.8840091840884912,
+      "peak_speed_m_s": 2.4696614288815057,
+      "peak_lateral_accel_m_s2": 0.61019374416853,
+      "peak_lateral_accel_g": 0.062222445398635626,
+      "peak_horizontal_accel_m_s2": 0.6201822212148566,
+      "tightest_turn_radius_m": 0.8951487416195699,
+      "timed_path_s": 80
+    },
+    {
+      "width_m": 20,
+      "height_m": 20,
+      "lap_time_s": 80,
+      "path_length_per_lap_m": 94.29431296943903,
+      "path_length_total_m": 94.29431296943903,
+      "mean_speed_m_s": 1.178678912117988,
+      "peak_speed_m_s": 3.2928819051753404,
+      "peak_lateral_accel_m_s2": 0.8135916588913734,
+      "peak_lateral_accel_g": 0.08296326053151418,
+      "peak_horizontal_accel_m_s2": 0.8269096282864753,
+      "tightest_turn_radius_m": 1.1935316554927595,
+      "timed_path_s": 80
+    }
+  ],
+  "timing_sweep": [
+    {
+      "width_m": 10,
+      "height_m": 10,
+      "lap_time_s": 80,
+      "path_length_per_lap_m": 47.14715648471952,
+      "path_length_total_m": 47.14715648471952,
+      "mean_speed_m_s": 0.589339456058994,
+      "peak_speed_m_s": 1.6464409525876702,
+      "peak_lateral_accel_m_s2": 0.4067958294456867,
+      "peak_lateral_accel_g": 0.04148163026575709,
+      "peak_horizontal_accel_m_s2": 0.41345481414323765,
+      "tightest_turn_radius_m": 0.5967658277463798,
+      "timed_path_s": 80
+    },
+    {
+      "width_m": 10,
+      "height_m": 10,
+      "lap_time_s": 60,
+      "path_length_per_lap_m": 47.14715648471952,
+      "path_length_total_m": 47.14715648471952,
+      "mean_speed_m_s": 0.785785941411992,
+      "peak_speed_m_s": 2.1952546034502265,
+      "peak_lateral_accel_m_s2": 0.7231925856812207,
+      "peak_lateral_accel_g": 0.07374512047245703,
+      "peak_horizontal_accel_m_s2": 0.7350307806990892,
+      "tightest_turn_radius_m": 0.5967658277463798,
+      "timed_path_s": 60
+    },
+    {
+      "width_m": 10,
+      "height_m": 10,
+      "lap_time_s": 40,
+      "path_length_per_lap_m": 47.14715648471952,
+      "path_length_total_m": 47.14715648471952,
+      "mean_speed_m_s": 1.178678912117988,
+      "peak_speed_m_s": 3.2928819051753404,
+      "peak_lateral_accel_m_s2": 1.6271833177827468,
+      "peak_lateral_accel_g": 0.16592652106302835,
+      "peak_horizontal_accel_m_s2": 1.6538192565729506,
+      "tightest_turn_radius_m": 0.5967658277463798,
+      "timed_path_s": 40
+    },
+    {
+      "width_m": 10,
+      "height_m": 10,
+      "lap_time_s": 20,
+      "path_length_per_lap_m": 47.14715648471952,
+      "path_length_total_m": 47.14715648471952,
+      "mean_speed_m_s": 2.357357824235976,
+      "peak_speed_m_s": 6.585763810350681,
+      "peak_lateral_accel_m_s2": 6.508733271130987,
+      "peak_lateral_accel_g": 0.6637060842521134,
+      "peak_horizontal_accel_m_s2": 6.615277026291802,
+      "tightest_turn_radius_m": 0.5967658277463798,
+      "timed_path_s": 20
+    }
+  ],
+  "purt": {
+    "approximate_box_fit": true,
+    "combined_margin_m": 1.05,
+    "approximate_box_only_largest_scale": 2.6856,
+    "overall_fit": "unverified",
+    "reason": "calibrated MoCap coverage and obstacle inventory missing"
+  }
+}

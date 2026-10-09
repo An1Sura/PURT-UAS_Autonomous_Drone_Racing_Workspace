@@ -6,9 +6,9 @@ Betaflight is the performance baseline; CogniPilot is the stack we aim to improv
 
 **This repository is the SIL stage before our separate latency tests.** It establishes working autonomous flights, shared physics, command interfaces and recorded baseline behavior. Subsequent latency tests will investigate control, communication and driver timing to guide CogniPilot improvements. The current flight recordings do not isolate those latencies or prove that CogniPilot is already faster. Hardware-in-the-loop (HIL) and physical flights at PURT build on this foundation.
 
-[**Watch the Flight Simulation & Stats page**](https://an1sura.github.io/autonomous-drone-bench/sim/) · [Open the VM-connected simulation](http://127.0.0.1:8766/sim/) · [Read the speed-benchmark plan](docs/speed-benchmark.md)
+[**Watch the Flight Simulation & Stats page**](https://an1sura.github.io/autonomous-drone-bench/sim/) · [Open the VM-connected simulation](http://127.0.0.1:8766/sim/) · [PDF-aligned benchmark](docs/shared-position-benchmark.md) · [Repository source map](docs/repository-map.md)
 
-**Current milestone:** a bounded speed search now scores full-rate course accuracy, lap completion and landing. Both selected settings passed three consecutive campaign repeats. **A later page rerun aborted Betaflight during pre-lap estimator validation; startup reliability remains unresolved.** The [October 5 results](docs/speed-search.md) preserve failed candidates and exact configs. These are fastest repeatedly passing tested settings within the explored range, not global maxima or a matched-sensor winner.
+**Current milestone (October 8):** the requested course is **10 × 10 m at a constant 2 m altitude, one lap**. Following the supplied benchmark PDF, both stacks must use one shared offboard position controller: Betaflight **ANGLE** and CogniPilot **ATTITUDE**. Generated trajectory/controller numerical checks pass; full firmware qualification on this new course is still pending. The website shows its geometry and keeps earlier 8 × 4 m recordings explicitly historical. See [requirements, checks and blockers](docs/shared-position-benchmark.md).
 
 ## What this project does
 
@@ -16,18 +16,18 @@ The simulator acts as the drone: it produces sensor readings, receives motor com
 
 ```mermaid
 flowchart LR
-    R[Trajectory and experiment settings] --> B[Benchmark runner]
-    B --> A[Flight-stack adapter]
-    A --> F[Selected flight stack]
-    F --> M[Motor commands]
-    M --> P[Shared quadrotor physics]
-    P --> S[Sensor observations]
-    S --> A
-    P --> L[Recorded motion and metrics]
-    B --> L
+    T[Shared 10 x 10 m trajectory eFMU] --> C[Shared position-loop eFMU]
+    P[Shared Rumoca quadrotor plant] --> C
+    C --> A[Attitude and thrust to calibrated sticks]
+    A --> BF[Betaflight ANGLE]
+    A --> CG[CogniPilot ATTITUDE]
+    BF --> P
+    CG --> P
+    P --> L[Recorded truth and metrics]
+    L --> V[Three.js replay]
 ```
 
-One stack runs at a time. Selecting Betaflight or CogniPilot changes the flight software and its adapter; it does not select an unrelated physics simulator. The adapter translates observations, reference commands and motor outputs between the runner and each stack's own interfaces.
+This diagram is the PDF target architecture; the complete shared-loop flight harness is not qualified yet. One stack runs at a time. Selecting Betaflight or CogniPilot changes the flight software and its adapter; it does not select an unrelated physics simulator. The adapter translates observations, reference commands and motor outputs between the runner and each stack's own interfaces.
 
 The comparison must hold these conditions constant:
 
@@ -54,17 +54,19 @@ The current search uses ≤0.25 m course RMS, ≤0.50 m maximum, complete-course
 
 ## Current implementation
 
-| Component | Implemented and exercised | Remaining work |
-| --- | --- | --- |
-| **CogniPilot** | Real Zephyr `native_sim` firmware, shared-memory lockstep, common plant, external timed figure-eight reference and recorded landing | Establish SIL baseline; use later latency tests to guide performance improvements; validate hardware feedback and timing/drivers |
-| **Betaflight** | Pinned development SITL, sensor/motor exchange, native figure-eight pattern, independent recorded-lap check and landing/disarm checks | Support the common speed experiment; match sensors and timing; confirm the hardware firmware/interface |
-| **Shared plant** | Modelica quadrotor dynamics compiled by Rumoca into a generated-C/FMI artifact | Calibrate mass, inertia, motor response and limits against the identical physical drones |
-| **Simulation page** | Fixed one-lap PURT course, actual recordings, stats, black grid and green facility outline | Show selected speed-search recordings, geometric accuracy, failures and reruns |
-| **Formal mathematics** | 40 named Lean-checked benchmark theorems using `gnc_lean`; build and axiom audit pass | Numerical error bounds, implementation refinement and controller/hardware proofs remain outside current coverage |
+| Component | Verified now | Still required by the PDF |
+|---|---|---|
+| Shared course | 10 × 10 m, z = 2 m; 100 Hz generated-C trajectory; 8,001 samples and two exact reference repeats | Actual firmware flights on this geometry |
+| Shared position loop | Existing RDD2 log-linear controller wrapped as a separate eFMU; numerical comparison with GuidanceController POSITION passes | Ideal-attitude shared-plant check, calibrated stick mapping and full flight harness |
+| Firmware | Historical native SIL integrations and telemetry retained | Stock ANGLE/ATTITUDE comparison, packet lockstep, matched sensor/noise conditions, shared takeoff/landing |
+| PURT | Approximate envelope and unchanged black-grid / green-boundary display | Surveyed origin, clear volume, obstacle boxes and calibrated MoCap coverage |
+| Source provenance | [Repository map](docs/repository-map.md), base revisions, dependency patches and generated-code hashes | Hardware measurements and qualification campaign hashes |
 
-## What the current recordings show
+## Historical recordings — not the new benchmark
 
-The course is **8 × 4 m**, at **1.5 m altitude**, with **one figure eight**, then landing. Betaflight is orange; CogniPilot is blue. The green PURT outline uses an approximate **53.34 × 28.956 × 9.144 m** envelope. Actual calibrated coverage and obstacle locations still need measurement.
+
+
+The historical recorded course was **8 × 4 m**, at **1.5 m altitude**, with **one figure eight**, then landing. Betaflight is orange; CogniPilot is blue. The green PURT outline uses an approximate **53.34 × 28.956 × 9.144 m** envelope. Actual calibrated coverage and obstacle locations still need measurement.
 
 | Stack | Selected timing | Course RMS / maximum | Full recording |
 | --- | --- | --- | --- |
@@ -104,7 +106,13 @@ cd autonomous-drone-bench
 
 On a fresh checkout, follow the [tested revision and patch instructions](patches/README.md). Editable dependencies live under `src/`; this repository preserves native runner changes as patches against documented commits. The existing development VM already has the patches applied.
 
-Inside the RDD2 environment:
+Inside the RDD2 environment, verify the new PDF offboard components:
+
+```sh
+devenv -P rdd2 tasks run rdd2:benchmark:shared-loop:check
+```
+
+This generates and checks C; it does not claim a completed flight. Apply the additional Modelica patch described in [patches/README.md](patches/README.md). The following older commands reproduce the historical integration workflows:
 
 ```sh
 # Check the shared boundary, protocol and reference behavior.

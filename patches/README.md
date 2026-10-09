@@ -82,3 +82,52 @@ src/cerebri_rdd2/target/release/xtask speed-export cognipilot TRIAL_DIRECTORY RE
 ```
 
 See [all results and qualification limits](../docs/speed-search.md). Both dependency patches passed clean-base application checks. The original Lean specification does not prove the new schedules or the changed Betaflight cap.
+
+## October 8: PDF shared-position benchmark
+
+The active **target architecture** now uses stock Betaflight ANGLE and CogniPilot
+ATTITUDE with a common offboard position loop. The October 5 native-position
+research patch is historical; **do not apply it to a qualifying PDF build**.
+The existing recordings and their patches remain available for reproducibility.
+
+Additional model sources, against the same Modelica base listed above:
+
+```sh
+git -C src/modelica_models apply --check ../../patches/modelica-shared-position.patch
+git -C src/modelica_models apply ../../patches/modelica-shared-position.patch
+devenv -P rdd2 tasks run rdd2:benchmark:shared-loop:check
+```
+
+The updated `cerebri-rdd2-benchmark.patch` includes `shared-loop-check` and its C
+binding. It replaces the earlier patch as a whole; do not apply it on top of the
+older applied version. Preserve local work and use a clean base or review the
+incremental difference first. `modelica-shared-position.patch` adds only the
+`Benchmarks` package and can follow `modelica-report-fixes.patch`. It does not
+change the firmware's four-eFMU requirement or existing controller algorithms.
+
+For the PDF Betaflight build, use the pinned clean checkout and apply **only**
+`betaflight-sitl-transport.patch` (Dyad concurrency/startup fixes). Initialize
+submodules sequentially before parallel Make to avoid the observed Git config
+lock race:
+
+```sh
+git -C src/betaflight submodule update --init --recursive --jobs 1
+git -C src/betaflight apply --check ../../patches/betaflight-sitl-transport.patch
+git -C src/betaflight apply ../../patches/betaflight-sitl-transport.patch
+devenv -P rdd2 tasks run rdd2:benchmark:betaflight:shared-build
+```
+
+The task rejects changes in flight/control/sensor source directories, including
+the historical navigation patch. In the existing VM, the new build was made in
+an isolated checkout at `artifacts/shared-loop/betaflight-stock` to preserve the
+historical binary and source tree. The native build command exercised there was:
+
+```sh
+make -C artifacts/shared-loop/betaflight-stock TARGET=SITL \
+  EXTRA_FLAGS=-DENABLE_SIMULATOR_GYROPID_SYNC=1 -j4
+```
+
+That build succeeded. The flag gates PID releases but does not replace the
+host-derived simulator clock; it is **not proof of full deterministic lockstep**.
+See [qualification status](../docs/shared-position-benchmark.md). No new firmware
+flight recording is claimed by the component checks.

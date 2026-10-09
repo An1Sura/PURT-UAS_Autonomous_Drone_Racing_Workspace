@@ -956,6 +956,16 @@ let
           after = [ "sources:ensure:cerebri_rdd2" ];
         };
 
+      "rdd2:benchmark:shared-loop:check" =
+        (task "cerebri_rdd2" "Generate and numerically verify the PDF shared offboard trajectory and position loop." ''
+          cargo run --release --locked --package cerebri-rdd2-xtask -- shared-loop-check \
+            ${root}/docs/config/shared-position-benchmark.json \
+            ${source "modelica_models"} ${resultRoot}/rumoca/bin/rumoca \
+            ${root}/artifacts/shared-loop
+        '') // {
+          after = [ "rumoca:compiler" "sources:ensure:modelica_models" ];
+        };
+
 
 
       "rdd2:benchmark:plan" =
@@ -967,10 +977,18 @@ let
 
 
       "rdd2:benchmark:betaflight:build" =
-        (task "betaflight" "Build the pinned Betaflight SITL with native flight planning." ''
+        (task "betaflight" "Reproduce historical research SITL; not the PDF shared-position benchmark." ''
           test "$(git rev-parse HEAD)" = 744f95fa31542c4c906f18072348a366ab11b6b7
           git apply --reverse --check ../../patches/betaflight-sitl-speed.patch
           make TARGET=SITL -j4
+        '') // { after = [ "sources:ensure:betaflight" ]; };
+
+      "rdd2:benchmark:betaflight:shared-build" =
+        (task "betaflight" "Build unchanged Betaflight control algorithms with simulator transport fixes and PID synchronization." ''
+          test "$(git rev-parse HEAD)" = 744f95fa31542c4c906f18072348a366ab11b6b7
+          git apply --reverse --check ../../patches/betaflight-sitl-transport.patch
+          git diff --exit-code HEAD -- src/main/flight src/main/fc src/main/sensors
+          make TARGET=SITL EXTRA_FLAGS=-DENABLE_SIMULATOR_GYROPID_SYNC=1 -j4
         '') // { after = [ "sources:ensure:betaflight" ]; };
 
       "rdd2:benchmark:betaflight:hover" =

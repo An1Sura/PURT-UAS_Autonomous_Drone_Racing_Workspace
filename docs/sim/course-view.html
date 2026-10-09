@@ -1,0 +1,20 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>PURT course geometry</title><style>body{margin:0;background:#000;color:#ecf0f4;font:15px system-ui}canvas{display:block;width:100%;height:490px}button{background:#151b24;color:inherit;border:1px solid #455269;padding:9px;margin:8px}p{margin:10px;line-height:1.5}a{color:#72b7ff}</style></head><body><button id="close">Course view</button><button id="top">Top view</button><button id="facility">PURT overview</button><canvas aria-label="Requested ten by ten metre figure eight at two metre altitude inside approximate PURT envelope"></canvas><p id="status">Loading course geometry…</p><p>Static reference geometry — no flight is being simulated or replayed here. Black grid: 0.5 m. Green: approximate facility envelope. White: shared reference for both stacks. Drag to orbit; scroll to zoom.</p><script type="module">
+import * as T from 'https://esm.sh/three@0.180.0';
+import {OrbitControls} from 'https://esm.sh/three@0.180.0/examples/jsm/controls/OrbitControls.js';
+const [config,e]=await Promise.all(['shared-position-benchmark.json','purt-environment.json'].map(n=>fetch('../config/'+n).then(r=>r.json()))),c=config.course;
+const canvas=document.querySelector('canvas'),r=new T.WebGLRenderer({canvas,antialias:true});r.setPixelRatio(Math.min(devicePixelRatio,1.5));
+const scene=new T.Scene();scene.background=new T.Color(0x000000);
+const camera=new T.PerspectiveCamera(45,1,.05,300);camera.up.set(0,0,1);
+const controls=new OrbitControls(camera,canvas);controls.enableDamping=true;controls.target.set(0,0,c.altitude_m);controls.maxDistance=120;
+const grid=new T.GridHelper(60,120,0x30383f,0x30383f);grid.rotation.x=Math.PI/2;scene.add(grid);
+const lo=e.flyable_volume.min_enu_m,hi=e.flyable_volume.max_enu_m;
+const box=new T.LineSegments(new T.EdgesGeometry(new T.BoxGeometry(...hi.map((v,i)=>v-lo[i]))),new T.LineBasicMaterial({color:0x28df76}));box.position.set(...hi.map((v,i)=>(v+lo[i])/2));scene.add(box);
+const points=Array.from({length:1201},(_,i)=>{const q=i/1200*2*Math.PI;return new T.Vector3(c.center_enu_m[0]+c.width_m*c.scale/2*Math.sin(q),c.center_enu_m[1]+c.height_m*c.scale/2*Math.sin(2*q),c.altitude_m)});
+scene.add(new T.Line(new T.BufferGeometry().setFromPoints(points),new T.LineBasicMaterial({color:0xe1e8f0})));
+const footprint=new T.LineLoop(new T.BufferGeometry().setFromPoints([[-5,-5],[-5,5],[5,5],[5,-5]].map(([x,y])=>new T.Vector3(x*c.width_m/10*c.scale+c.center_enu_m[0],y*c.height_m/10*c.scale+c.center_enu_m[1],.02))),new T.LineDashedMaterial({color:0x687483,dashSize:.2,gapSize:.15}));footprint.computeLineDistances();scene.add(footprint);
+function view(kind){controls.target.set(...c.center_enu_m,c.altitude_m);camera.position.set(...(kind==='top'?[0,.001,35]:kind==='facility'?[42,-42,37]:[15,-18,15]));controls.update()}
+document.getElementById('close').onclick=()=>view('close');document.getElementById('top').onclick=()=>view('top');document.getElementById('facility').onclick=()=>view('facility');view('close');
+document.getElementById('status').textContent=`${c.width_m*c.scale} × ${c.height_m*c.scale} m footprint · constant z = ${c.altitude_m} m · one lap · MoCap coverage and obstacles unverified`;
+const resize=()=>{const w=canvas.clientWidth,h=490;r.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix()};new ResizeObserver(resize).observe(canvas);resize();
+r.setAnimationLoop(()=>{controls.update();r.render(scene,camera)});
+</script></body></html>

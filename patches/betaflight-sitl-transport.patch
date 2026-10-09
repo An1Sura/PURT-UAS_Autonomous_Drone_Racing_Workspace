@@ -1,0 +1,114 @@
+diff --git a/src/main/drivers/serial_tcp.c b/src/main/drivers/serial_tcp.c
+index a922cc7..44df32f 100644
+--- a/src/main/drivers/serial_tcp.c
++++ b/src/main/drivers/serial_tcp.c
+@@ -40,6 +40,8 @@
+ 
+ #define BASE_PORT 5760
+ 
++pthread_mutex_t tcpDyadLock = PTHREAD_MUTEX_INITIALIZER;
++
+ static const struct serialPortVTable tcpVTable; // Forward
+ static tcpPort_t tcpSerialPorts[SERIAL_PORT_COUNT];
+ static bool tcpPortInitialized[SERIAL_PORT_COUNT];
+@@ -127,6 +129,7 @@ static tcpPort_t* tcpReconfigure(tcpPort_t *s, int id)
+ serialPort_t *serTcpOpen(serialPortIdentifier_e identifier, serialReceiveCallbackPtr rxCallback, void *rxCallbackData, uint32_t baudRate, portMode_e mode, portOptions_e options)
+ {
+     tcpPort_t *s = NULL;
++    pthread_mutex_lock(&tcpDyadLock);
+ 
+     int id = findSerialPortIndexByIdentifier(identifier);
+ 
+@@ -135,6 +138,7 @@ serialPort_t *serTcpOpen(serialPortIdentifier_e identifier, serialReceiveCallbac
+     }
+ 
+     if (!s) {
++        pthread_mutex_unlock(&tcpDyadLock);
+         return NULL;
+     }
+ 
+@@ -155,6 +159,7 @@ serialPort_t *serTcpOpen(serialPortIdentifier_e identifier, serialReceiveCallbac
+     s->port.baudRate = baudRate;
+     s->port.options = options;
+ 
++    pthread_mutex_unlock(&tcpDyadLock);
+     return (serialPort_t *)s;
+ }
+ 
+@@ -235,7 +240,8 @@ static void tcpWrite(serialPort_t *instance, uint8_t ch)
+ void tcpDataOut(tcpPort_t *instance)
+ {
+     tcpPort_t *s = (tcpPort_t *)instance;
+-    if (s->conn == NULL) return;
++    pthread_mutex_lock(&tcpDyadLock);
++    if (s->conn == NULL) { pthread_mutex_unlock(&tcpDyadLock); return; }
+     pthread_mutex_lock(&s->txLock);
+ 
+     if (s->port.txBufferHead < s->port.txBufferTail) {
+@@ -250,6 +256,7 @@ void tcpDataOut(tcpPort_t *instance)
+     s->port.txBufferTail = s->port.txBufferHead;
+ 
+     pthread_mutex_unlock(&s->txLock);
++    pthread_mutex_unlock(&tcpDyadLock);
+ }
+ 
+ void tcpDataIn(tcpPort_t *instance, uint8_t* ch, int size)
+diff --git a/src/main/drivers/serial_tcp.h b/src/main/drivers/serial_tcp.h
+index a391e10..8b65d74 100644
+--- a/src/main/drivers/serial_tcp.h
++++ b/src/main/drivers/serial_tcp.h
+@@ -44,6 +44,9 @@ typedef struct {
+ 
+ serialPort_t *serTcpOpen(serialPortIdentifier_e id, serialReceiveCallbackPtr rxCallback, void *rxCallbackData, uint32_t baudRate, portMode_e mode, portOptions_e options);
+ 
++// Dyad is not thread-safe; serialize stream lifetime and worker callbacks.
++extern pthread_mutex_t tcpDyadLock;
++
+ // tcpPort API
+ void tcpDataIn(tcpPort_t *instance, uint8_t* ch, int size);
+ void tcpDataOut(tcpPort_t *instance);
+diff --git a/src/platform/SIMULATOR/sitl.c b/src/platform/SIMULATOR/sitl.c
+index ee216ef..efe306c 100644
+--- a/src/platform/SIMULATOR/sitl.c
++++ b/src/platform/SIMULATOR/sitl.c
+@@ -21,6 +21,7 @@
+ #include <stdbool.h>
+ #include <stdint.h>
+ #include <stdio.h>
++#include <unistd.h>
+ #include <stdlib.h>
+ #include <math.h>
+ #include <string.h>
+@@ -565,15 +566,17 @@ static void* tcpThread(void* data)
+ {
+     UNUSED(data);
+ 
+-    dyad_init();
+-    dyad_setTickInterval(0.2f);
+-    dyad_setUpdateTimeout(0.01f);
+-
+     while (workerRunning) {
++        pthread_mutex_lock(&tcpDyadLock);
+         dyad_update();
++        pthread_mutex_unlock(&tcpDyadLock);
++        // Let serial setup/transmit acquire the lock between network polls.
++        usleep(1000);
+     }
+ 
++    pthread_mutex_lock(&tcpDyadLock);
+     dyad_shutdown();
++    pthread_mutex_unlock(&tcpDyadLock);
+     printf("tcpThread end!!\n");
+     return NULL;
+ }
+@@ -601,6 +604,10 @@ void systemInit(void)
+         exit(1);
+     }
+ 
++    // Initialize Dyad before either thread can create or update a stream.
++    dyad_init();
++    dyad_setTickInterval(0.2f);
++    dyad_setUpdateTimeout(0.01f);
+     ret = pthread_create(&tcpWorker, NULL, tcpThread, NULL);
+     if (ret != 0) {
+         printf("Create tcpWorker error!\n");
