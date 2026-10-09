@@ -56,6 +56,8 @@ QEMU executes the flight-control firmware, while the vehicle model simulates phy
 | Overall execution speedup | 3.87× |
 | Overall execution time | 5.171 s |
 
+**Raw simulation report:** [View mission-baseline.json](mission-baseline.json)
+
 ### Validation
 
 | Check | Result |
