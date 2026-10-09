@@ -8,7 +8,7 @@ Betaflight is the performance baseline; CogniPilot is the stack we aim to improv
 
 [**Watch the Flight Simulation & Stats page**](https://an1sura.github.io/autonomous-drone-bench/sim/) · [Open the VM-connected simulation](http://127.0.0.1:8766/sim/) · [PDF-aligned benchmark](docs/shared-position-benchmark.md) · [Repository source map](docs/repository-map.md)
 
-**Current milestone (October 8):** the requested course is **10 × 10 m at a constant 2 m altitude, one lap**. Following the supplied benchmark PDF, both stacks must use one shared offboard position controller: Betaflight **ANGLE** and CogniPilot **ATTITUDE**. Generated trajectory/controller numerical checks pass; full firmware qualification on this new course is still pending. The website shows its geometry and keeps earlier 8 × 4 m recordings explicitly historical. See [requirements, checks and blockers](docs/shared-position-benchmark.md).
+**Current milestone (October 9):** both real firmware stacks completed the new **10 × 10 m figure eight at 2 m altitude**, using the same generated offboard position loop and shared plant. The 80-second commissioning reference produced **0.0667 m Betaflight RMS** and **0.1342 m CogniPilot RMS**, with verified landing/disarm/motor stop. These are initial noise-free baselines, not a fastest-flight or hardware-latency result. Old replay payloads were removed; [new recordings and qualification limits](docs/shared-position-benchmark.md) replace them.
 
 ## What this project does
 
@@ -18,7 +18,7 @@ The simulator acts as the drone: it produces sensor readings, receives motor com
 flowchart LR
     T[Shared 10 x 10 m trajectory eFMU] --> C[Shared position-loop eFMU]
     P[Shared Rumoca quadrotor plant] --> C
-    C --> A[Attitude and thrust to calibrated sticks]
+    C --> A[Attitude and thrust to stack sticks]
     A --> BF[Betaflight ANGLE]
     A --> CG[CogniPilot ATTITUDE]
     BF --> P
@@ -27,7 +27,7 @@ flowchart LR
     L --> V[Three.js replay]
 ```
 
-This diagram is the PDF target architecture; the complete shared-loop flight harness is not qualified yet. One stack runs at a time. Selecting Betaflight or CogniPilot changes the flight software and its adapter; it does not select an unrelated physics simulator. The adapter translates observations, reference commands and motor outputs between the runner and each stack's own interfaces.
+This diagram is the implemented shared-controller SIL architecture. Each flight runs one firmware stack against its own instance of the same plant. Full PDF campaign qualification is still pending. Selecting Betaflight or CogniPilot changes the flight software and its adapter; it does not select an unrelated physics simulator. The adapter translates observations, reference commands and motor outputs between the runner and each stack's own interfaces.
 
 The comparison must hold these conditions constant:
 
@@ -36,7 +36,7 @@ The comparison must hold these conditions constant:
 - Sensor models, update rates, noise, delays and disturbances.
 - Lap start/finish rules, tracking tolerances, failure criteria and scoring windows.
 
-Shared physics is working. Matching sensor conditions, reference timing and takeoff/landing remains active work. The physical drones are intended to be identical; the current RDD2 plant is a shared test vehicle, **not yet a measured calibration of those drones**.
+Shared physics is working. The new harness shares reference timing and takeoff/landing. Sensor delivery quantization, noise qualification and hardware calibration remain active work. The physical drones are intended to be identical; the current RDD2 plant is a shared test vehicle, **not yet a measured calibration of those drones**.
 
 ## How SIL supports making CogniPilot faster
 
@@ -56,26 +56,20 @@ The historical search used ≤0.25 m course RMS, ≤0.50 m maximum, complete-cou
 
 | Component | Verified now | Still required by the PDF |
 |---|---|---|
-| Shared course | 10 × 10 m, z = 2 m; 100 Hz generated-C trajectory; 8,001 samples and two exact reference repeats | Actual firmware flights on this geometry |
-| Shared position loop | Existing RDD2 log-linear controller wrapped as a separate eFMU; numerical comparison with GuidanceController POSITION passes | Ideal-attitude shared-plant check, calibrated stick mapping and full flight harness |
-| Firmware | Historical native SIL integrations and telemetry retained | Stock ANGLE/ATTITUDE comparison, packet lockstep, matched sensor/noise conditions, shared takeoff/landing |
+| Shared course | 10 × 10 m, z = 2 m; 100 Hz generated-C trajectory; 8,001 samples and two exact reference repeats | Repeated noisy campaign and speed search |
+| Shared position loop | Existing RDD2 log-linear controller wrapped as a separate eFMU; numerical comparison with GuidanceController POSITION passes | Empirical hover-throttle calibration and expanded diagnostics |
+| Firmware | Real ANGLE/ATTITUDE flights, timestamped packet exchange and verified landing | Repeated noisy qualification and hardware sensor/timing parity |
 | PURT | Approximate envelope and unchanged black-grid / green-boundary display | Surveyed origin, clear volume, obstacle boxes and calibrated MoCap coverage |
 | Source provenance | [Repository map](docs/repository-map.md), base revisions, dependency patches and generated-code hashes | Hardware measurements and qualification campaign hashes |
 
-## Historical recordings — not the new benchmark
+## New commissioning recordings
 
+| Stack | Shared lap reference | Same-time tracking RMS / maximum | Complete run |
+|---|---|---|---|
+| Betaflight ANGLE | 80 s | 0.0667 / 0.1751 m | 123 s, landed/disarmed |
+| CogniPilot ATTITUDE | 80 s | 0.1342 / 0.2712 m | 123 s, landed/disarmed |
 
-
-The historical recorded course was **8 × 4 m**, at **1.5 m altitude**, with **one figure eight**, then landing. Betaflight is orange; CogniPilot is blue. The green PURT outline uses an approximate **53.34 × 28.956 × 9.144 m** envelope. Actual calibrated coverage and obstacle locations still need measurement.
-
-| Stack | Selected timing | Course RMS / maximum | Full recording |
-| --- | --- | --- | --- |
-| Betaflight research SITL | 23.7 s request; 23.700 s native period | 0.194 / 0.346 m | 50.023 s |
-| CogniPilot | 23.7 s smooth-phase reference | 0.128 / 0.224 m | 52.700 s |
-
-These are October 5 native firmware recordings. CogniPilot's same-time reference RMS is 0.166 m, measured against the original reference despite command lead. Betaflight uses a separately versioned SITL patch for startup stability, 100 Hz navigation targets, velocity feedforward and smooth start/stop; the adapter enforces a 0.35 rad/s peak phase-rate cap. Its selected P/I/D/A/F gains are 60/10/30/0/30. Physical tilt/motor/plant limits are unchanged. All rejected speed/tuning trials are [preserved](docs/speed-search.md).
-
-The native period and requested reference duration are different timing measures. Betaflight has a ten-second pre-course hover; CogniPilot retains simulator-assisted takeoff/landing. Noise-free sensor paths and timing remain unmatched. **This is not proof that one stack beats the other.** The original [timing diagnosis](docs/betaflight-timing.md) and [October 4 experiment](docs/cognipilot-speed-experiment.md) remain historical evidence.
+Both use ground-truth offboard position feedback and a noise-free 1600 Hz IMU source. Betaflight receives held samples at 8000 Hz; CogniPilot exchanges at 1600 Hz. This difference remains explicit. The 80 s value is a timed-reference duration, not an independently detected fastest lap. Historical experiment reports remain in Git history and documentation; their old replay payloads are removed.
 
 ## What the repositories and tools do
 
@@ -106,7 +100,7 @@ cd autonomous-drone-bench
 
 On a fresh checkout, follow the [tested revision and patch instructions](patches/README.md). Editable dependencies live under `src/`; this repository preserves native runner changes as patches against documented commits. The existing development VM already has the patches applied.
 
-Inside the RDD2 environment, verify the new PDF offboard components:
+Inside the RDD2 environment, verify the new PDF offboard components. For full flights, follow the [tested shared-SIL commands](docs/shared-position-benchmark.md#reproduce-in-the-existing-vm):
 
 ```sh
 devenv -P rdd2 tasks run rdd2:benchmark:shared-loop:check
@@ -122,11 +116,11 @@ devenv -P rdd2 tasks run rdd2:benchmark:test
 devenv -P rdd2 tasks run rdd2:benchmark:betaflight:figure-eight
 devenv -P rdd2 tasks run rdd2:benchmark:cognipilot:figure-eight
 
-# Open the local simulation service; use Rerun both on its page.
+# Serve the recorded simulation page; this legacy service is not the shared-SIL launcher.
 devenv -P rdd2 up mission-planner
 ```
 
-The service's internal process name is `mission-planner`; the user-facing page is **Flight Simulation & Stats**. It currently uses a fixed configuration with no editable stats controls. The new page shows the requested course and saved historical recordings. New-course reruns are not enabled until the shared-loop flight gates pass; the legacy server API remains a historical diagnostic. The [startup guide](docs/mission-planner.md) explains both.
+The service's internal process name is `mission-planner`; the user-facing page is **Flight Simulation & Stats**. It currently uses a fixed configuration with no editable stats controls. The new page shows the requested course and new shared-controller recordings. Launch new shared-SIL runs with the native command or tasks documented above; the legacy server API remains a historical diagnostic. The [startup guide](docs/mission-planner.md) explains both.
 
 The original qualification workflow remains available:
 
@@ -144,7 +138,7 @@ These are qualification commands, not a claim that every qualification currently
 | --- | --- |
 | `src/cerebri_rdd2/artifacts/mission-planner/<run-id>/` | Exact config, per-stack logs, reports and full recorded trajectories from the local service |
 | `src/cerebri_rdd2/artifacts/sil/` | CogniPilot baseline SIL report and trajectory |
-| `docs/results/single-lap/` | Historical 8 × 4 m replay data with native reports and final samples retained |
+| `docs/results/shared-sil/` | New 10 × 10 m shared-controller recordings, reports, failed attempts and repeatability hashes |
 | `docs/results/betaflight-timing-fix/` | Compact records of successful and failed timing-fix attempts |
 | `proofs/` | Lean source, pinned dependencies, axiom audit and verification record |
 

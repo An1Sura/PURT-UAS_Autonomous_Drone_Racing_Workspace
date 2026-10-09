@@ -1,0 +1,8 @@
+3184696b98a2c5641707b3e1434481fe9a6a466c83559d939de2e534280c47af  artifacts/shared-sil/bf-figure-eight-01/trajectory.csv
+fbf2db68ea76d6b4271317d741a068417144715c6c1fcb6425fbecfd355401c3  artifacts/shared-sil/bf-figure-eight-01/actuator-trace.bin
+3184696b98a2c5641707b3e1434481fe9a6a466c83559d939de2e534280c47af  artifacts/shared-sil/bf-figure-eight-02/trajectory.csv
+fbf2db68ea76d6b4271317d741a068417144715c6c1fcb6425fbecfd355401c3  artifacts/shared-sil/bf-figure-eight-02/actuator-trace.bin
+44aa64bec6238448914fe02116dc2008d7e1d14cd76c6ac60b86815978bdaa38  artifacts/shared-sil/cg-figure-eight-02/trajectory.csv
+7fdd42c4a55e7876d1d8d6084568126fbdcdb644d7385198d803eab7a94db122  artifacts/shared-sil/cg-figure-eight-02/actuator-trace.bin
+44aa64bec6238448914fe02116dc2008d7e1d14cd76c6ac60b86815978bdaa38  artifacts/shared-sil/cg-figure-eight-03/trajectory.csv
+7fdd42c4a55e7876d1d8d6084568126fbdcdb644d7385198d803eab7a94db122  artifacts/shared-sil/cg-figure-eight-03/actuator-trace.bin

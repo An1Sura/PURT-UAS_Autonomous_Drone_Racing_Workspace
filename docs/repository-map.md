@@ -1,6 +1,6 @@
 # Where the benchmark comes from
 
-Audit date: **2026-10-08**. This map separates upstream source code, our modifications, generated artifacts, and display code. A Git commit identifies the upstream base; **base commit plus the workspace patch** identifies the source we actually run. A commit alone does not describe a dirty development checkout.
+Audit date: **2026-10-09**. This map separates upstream source code, our modifications, generated artifacts, and display code. A Git commit identifies the upstream base; **base commit plus the workspace patch** identifies the source we actually run. A commit alone does not describe a dirty development checkout.
 
 ## From source to a flight
 
@@ -22,7 +22,7 @@ flowchart TD
     L --> V[Three.js replay on GitHub Pages]
 ```
 
-The diagram describes the **PDF target architecture**. The offboard components are being qualified; historical recordings used different native position controllers. Read [implementation status](shared-position-benchmark.md) before interpreting a replay as evidence for the new design.
+The diagram describes the **implemented shared-controller SIL architecture**. Both stacks have completed the commissioning figure eight; the full noisy/hardware qualification remains pending. Read [implementation status](shared-position-benchmark.md) before interpreting a replay as evidence for the new design.
 
 ## Repositories and exact versions
 
@@ -58,7 +58,7 @@ Dependency checkout revisions above were read from the existing Linux VM on the 
 | Where is the new offboard math? | `src/modelica_models/Benchmarks/{Trajectory,PositionLoop}.mo`, preserved by [`../patches/modelica-shared-position.patch`](../patches/modelica-shared-position.patch). `PositionOracle.mo` is a test wrapper, not a flight controller. |
 | Where is the numerical check? | `src/cerebri_rdd2/xtask/src/shared_loop.rs` and thin `shared_loop_shim.c`, preserved in the Cerebri patch. |
 | What was generated? | `artifacts/shared-loop/Benchmarks_*.efmu`, their unpacked `ProductionCode/`, `libshared_loop.so`, compiler logs, `reference.csv`, `checks.json`. These are generated build artifacts, not new upstream sources. |
-| Where are old actual flights? | [`results/single-lap/`](results/single-lap/) and [`results/speed-search/`](results/speed-search/). Their embedded configs are the authority for their geometry. They were not rescaled to manufacture a new flight. |
+| Where are current actual flights? | [`results/shared-sil/`](results/shared-sil/). New native flight telemetry, hashes and failed-attempt reports; old replay payloads have been removed. |
 | What code paints the page? | [`sim/`](sim/), with reference geometry/statistics in [`planner/math.js`](planner/math.js). |
 
 ## Linux, Nix, Rust and the hardware boundary
@@ -68,3 +68,13 @@ The exercised VM is **Ubuntu 24.04.4 LTS on Linux**, managed by Lima on the Mac.
 `devenv.lock` pins environment inputs; RDD2's West manifest pins its embedded dependencies; Cargo.lock pins Rust packages; `proofs/lake-manifest.json` pins Lean packages. `patches/README.md` identifies local source changes. These layers have different jobs. To reproduce an experiment, preserve all applicable locks **and** patches **and** report hashes.
 
 The NXP RT1060 board, IMU choice, bus rates, driver timing, radio/trainer transport, QTM calibration and end-to-end hardware latency still need separate measurements. Neither a fast SIL run nor the published MoCap frame rate measures those latencies. The model currently represents a shared RDD2 test vehicle, not a fully measured model of the identical physical drones.
+
+## October 9 source refresh and native harness
+
+Fetched upstream updates for `cerebri_rdd2`, `modelica_models`, `rumoca`, `cerebri_modules`, `zros`, `csyn` and `synapse_fbs`; preserved the tested revisions above and local changes. See [fetch log](results/shared-sil/source-fetch.log). Fetching is not silently upgrading an experiment.
+
+`xtask/src/shared_sil.rs` is our new native shared-controller flight harness. `betaflight-sitl-lockstep.patch` changes simulator transport, clock/scheduler coordination and Dyad startup only; no flight-control or estimator algorithms are replaced. Both receivers require reversing the shared ENU yaw command when encoding RC channel 4.
+
+The ideal-attitude isolation plant adds an optional rigid-body attitude override, default disabled. Real firmware runs load the unchanged full-dynamics plant artifact identified by their report hash. Ideal tests are not firmware flights.
+
+The ideal FMI source build uses official [modelica/fmi-standard](https://github.com/modelica/fmi-standard/tree/b8778deaf5b746ba4a2f6c155d53f8a33eebbd33) v3.0.2 C headers, commit `b8778deaf5b746ba4a2f6c155d53f8a33eebbd33`; these are compile-time interface headers, not a second physics model.

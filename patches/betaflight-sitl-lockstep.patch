@@ -1,0 +1,343 @@
+diff --git a/src/main/drivers/serial_tcp.c b/src/main/drivers/serial_tcp.c
+index a922cc7..44df32f 100644
+--- a/src/main/drivers/serial_tcp.c
++++ b/src/main/drivers/serial_tcp.c
+@@ -40,6 +40,8 @@
+ 
+ #define BASE_PORT 5760
+ 
++pthread_mutex_t tcpDyadLock = PTHREAD_MUTEX_INITIALIZER;
++
+ static const struct serialPortVTable tcpVTable; // Forward
+ static tcpPort_t tcpSerialPorts[SERIAL_PORT_COUNT];
+ static bool tcpPortInitialized[SERIAL_PORT_COUNT];
+@@ -127,6 +129,7 @@ static tcpPort_t* tcpReconfigure(tcpPort_t *s, int id)
+ serialPort_t *serTcpOpen(serialPortIdentifier_e identifier, serialReceiveCallbackPtr rxCallback, void *rxCallbackData, uint32_t baudRate, portMode_e mode, portOptions_e options)
+ {
+     tcpPort_t *s = NULL;
++    pthread_mutex_lock(&tcpDyadLock);
+ 
+     int id = findSerialPortIndexByIdentifier(identifier);
+ 
+@@ -135,6 +138,7 @@ serialPort_t *serTcpOpen(serialPortIdentifier_e identifier, serialReceiveCallbac
+     }
+ 
+     if (!s) {
++        pthread_mutex_unlock(&tcpDyadLock);
+         return NULL;
+     }
+ 
+@@ -155,6 +159,7 @@ serialPort_t *serTcpOpen(serialPortIdentifier_e identifier, serialReceiveCallbac
+     s->port.baudRate = baudRate;
+     s->port.options = options;
+ 
++    pthread_mutex_unlock(&tcpDyadLock);
+     return (serialPort_t *)s;
+ }
+ 
+@@ -235,7 +240,8 @@ static void tcpWrite(serialPort_t *instance, uint8_t ch)
+ void tcpDataOut(tcpPort_t *instance)
+ {
+     tcpPort_t *s = (tcpPort_t *)instance;
+-    if (s->conn == NULL) return;
++    pthread_mutex_lock(&tcpDyadLock);
++    if (s->conn == NULL) { pthread_mutex_unlock(&tcpDyadLock); return; }
+     pthread_mutex_lock(&s->txLock);
+ 
+     if (s->port.txBufferHead < s->port.txBufferTail) {
+@@ -250,6 +256,7 @@ void tcpDataOut(tcpPort_t *instance)
+     s->port.txBufferTail = s->port.txBufferHead;
+ 
+     pthread_mutex_unlock(&s->txLock);
++    pthread_mutex_unlock(&tcpDyadLock);
+ }
+ 
+ void tcpDataIn(tcpPort_t *instance, uint8_t* ch, int size)
+diff --git a/src/main/drivers/serial_tcp.h b/src/main/drivers/serial_tcp.h
+index a391e10..8b65d74 100644
+--- a/src/main/drivers/serial_tcp.h
++++ b/src/main/drivers/serial_tcp.h
+@@ -44,6 +44,9 @@ typedef struct {
+ 
+ serialPort_t *serTcpOpen(serialPortIdentifier_e id, serialReceiveCallbackPtr rxCallback, void *rxCallbackData, uint32_t baudRate, portMode_e mode, portOptions_e options);
+ 
++// Dyad is not thread-safe; serialize stream lifetime and worker callbacks.
++extern pthread_mutex_t tcpDyadLock;
++
+ // tcpPort API
+ void tcpDataIn(tcpPort_t *instance, uint8_t* ch, int size);
+ void tcpDataOut(tcpPort_t *instance);
+diff --git a/src/main/main.c b/src/main/main.c
+index 9e026d2..4dc637f 100644
+--- a/src/main/main.c
++++ b/src/main/main.c
+@@ -144,8 +144,15 @@ int main(int argc, char * argv[])
+     return 0;
+ }
+ 
++#ifdef ADR_LOCKSTEP
++extern void simulatorLockstepRun(void);
++#endif
+ void FAST_CODE run(void)
+ {
++#ifdef ADR_LOCKSTEP
++    simulatorLockstepRun();
++    return;
++#endif
+     while (true) {
+         scheduler();
+ 
+diff --git a/src/main/scheduler/scheduler.c b/src/main/scheduler/scheduler.c
+index b8974f8..f833395 100644
+--- a/src/main/scheduler/scheduler.c
++++ b/src/main/scheduler/scheduler.c
+@@ -562,6 +562,9 @@ FAST_CODE void scheduler(void)
+                 schedLoopStartCycles -= schedLoopStartDeltaDownCycles;
+             }
+ #if !defined(UNIT_TEST)
++#ifdef ADR_LOCKSTEP
++            if (schedLoopRemainingCycles > 0) return;
++#endif
+             while (schedLoopRemainingCycles > 0) {
+                 nowCycles = getCycleCounter();
+                 schedLoopRemainingCycles = cmpTimeCycles(nextTargetCycles, nowCycles);
+diff --git a/src/platform/SIMULATOR/sitl.c b/src/platform/SIMULATOR/sitl.c
+index ee216ef..d6f703f 100644
+--- a/src/platform/SIMULATOR/sitl.c
++++ b/src/platform/SIMULATOR/sitl.c
+@@ -21,6 +21,7 @@
+ #include <stdbool.h>
+ #include <stdint.h>
+ #include <stdio.h>
++#include <unistd.h>
+ #include <stdlib.h>
+ #include <math.h>
+ #include <string.h>
+@@ -90,6 +91,12 @@ STATIC_ASSERT((ENABLE_GAZEBO_BRIDGE) == 0 || (ENABLE_GAZEBO_BRIDGE) == 1,
+               ENABLE_GAZEBO_BRIDGE_must_be_0_or_1);
+ 
+ uint32_t SystemCoreClock;
++#ifdef ADR_LOCKSTEP
++// Simulator transport only: the firmware controller/estimator algorithms are unchanged.
++static uint64_t adrClockUs;
++static bool adrRunning;
++static uint32_t adrMotorUpdates;
++#endif
+ 
+ static fdm_packet fdmPkt;
+ static rc_packet rcPkt;
+@@ -260,7 +267,11 @@ int timeval_sub(struct timespec *result, struct timespec *x, struct timespec *y)
+ 
+ int lockMainPID(void)
+ {
++    #ifdef ADR_LOCKSTEP
++    return 0; // The sole simulation thread owns each complete input/output tick.
++#else
+     return pthread_mutex_trylock(&mainLoopLock);
++#endif
+ }
+ 
+ #define RAD2DEG (180.0 / M_PI)
+@@ -282,7 +293,11 @@ static void updateState(const fdm_packet* pkt)
+     clock_gettime(CLOCK_MONOTONIC, &now_ts);
+ 
+     const uint64_t realtime_now = micros64_real();
+-    if (realtime_now > last_realtime + 500*1e3) { // 500ms timeout
++    if (
++#ifdef ADR_LOCKSTEP
++        !adrRunning &&
++#endif
++        realtime_now > last_realtime + 500*1e3) { // 500ms timeout
+         last_timestamp = pkt->timestamp;
+         last_realtime = realtime_now;
+         sendMotorUpdate();
+@@ -511,11 +526,13 @@ static void updateState(const fdm_packet* pkt)
+ #endif
+     }
+ 
++    #ifndef ADR_LOCKSTEP
+     pthread_mutex_unlock(&updateLock); // can send PWM output now
+ 
+ #if ENABLE_SIMULATOR_GYROPID_SYNC
+     pthread_mutex_unlock(&mainLoopLock); // can run main loop
+ #endif
++#endif
+ }
+ 
+ static void* udpThread(void* data)
+@@ -565,15 +582,17 @@ static void* tcpThread(void* data)
+ {
+     UNUSED(data);
+ 
+-    dyad_init();
+-    dyad_setTickInterval(0.2f);
+-    dyad_setUpdateTimeout(0.01f);
+-
+     while (workerRunning) {
++        pthread_mutex_lock(&tcpDyadLock);
+         dyad_update();
++        pthread_mutex_unlock(&tcpDyadLock);
++        // Let serial setup/transmit acquire the lock between network polls.
++        usleep(1000);
+     }
+ 
++    pthread_mutex_lock(&tcpDyadLock);
+     dyad_shutdown();
++    pthread_mutex_unlock(&tcpDyadLock);
+     printf("tcpThread end!!\n");
+     return NULL;
+ }
+@@ -581,6 +600,9 @@ static void* tcpThread(void* data)
+ // system
+ void systemInit(void)
+ {
++#ifdef ADR_LOCKSTEP
++    UNUSED(udpThread); UNUSED(udpRCThread); UNUSED(udpWorkerRC);
++#endif
+     int ret;
+ 
+     clock_gettime(CLOCK_MONOTONIC, &start_time);
+@@ -601,6 +623,10 @@ void systemInit(void)
+         exit(1);
+     }
+ 
++    // Initialize Dyad before either thread can create or update a stream.
++    dyad_init();
++    dyad_setTickInterval(0.2f);
++    dyad_setUpdateTimeout(0.01f);
+     ret = pthread_create(&tcpWorker, NULL, tcpThread, NULL);
+     if (ret != 0) {
+         printf("Create tcpWorker error!\n");
+@@ -619,6 +645,7 @@ void systemInit(void)
+     ret = udpInit(&rcLink, NULL, PORT_RC, true);
+     printf("[SITL] start UDP server for RC input @%d...%d\n", PORT_RC, ret);
+ 
++    #ifndef ADR_LOCKSTEP
+     ret = pthread_create(&udpWorker, NULL, udpThread, NULL);
+     if (ret != 0) {
+         printf("Create udpWorker error!\n");
+@@ -630,6 +657,7 @@ void systemInit(void)
+         printf("Create udpRCThread error!\n");
+         exit(1);
+     }
++#endif
+ }
+ 
+ void systemReset(void)
+@@ -637,7 +665,9 @@ void systemReset(void)
+     printf("[system]Reset!\n");
+     workerRunning = false;
+     pthread_join(tcpWorker, NULL);
++#ifndef ADR_LOCKSTEP
+     pthread_join(udpWorker, NULL);
++#endif
+     exit(0);
+ }
+ void systemResetToBootloader(bootloaderRequestType_e requestType)
+@@ -693,6 +723,10 @@ uint64_t millis64_real(void)
+ 
+ uint64_t micros64(void)
+ {
++#ifdef ADR_LOCKSTEP
++    if (!adrRunning) ++adrClockUs;
++    return adrClockUs;
++#else
+     static uint64_t last = 0;
+     static uint64_t out = 0;
+     uint64_t now = nanos64_real();
+@@ -701,10 +735,14 @@ uint64_t micros64(void)
+     last = now;
+ 
+     return out / 1000;
++#endif
+ }
+ 
+ uint64_t millis64(void)
+ {
++#ifdef ADR_LOCKSTEP
++    return micros64() / 1000;
++#else
+     static uint64_t last = 0;
+     static uint64_t out = 0;
+     uint64_t now = nanos64_real();
+@@ -713,6 +751,7 @@ uint64_t millis64(void)
+     last = now;
+ 
+     return out / (1000 * 1000);
++#endif
+ }
+ 
+ uint32_t micros(void)
+@@ -760,7 +799,11 @@ static void microsleep(uint32_t usec)
+ 
+ void delayMicroseconds(uint32_t us)
+ {
++#ifdef ADR_LOCKSTEP
++    if (!adrRunning) adrClockUs += us;
++#else
+     microsleep(us / simRate);
++#endif
+ }
+ 
+ void delayMicroseconds_real(uint32_t us)
+@@ -770,6 +813,10 @@ void delayMicroseconds_real(uint32_t us)
+ 
+ void delay(uint32_t ms)
+ {
++#ifdef ADR_LOCKSTEP
++    if (!adrRunning) adrClockUs += (uint64_t)ms * 1000;
++    return;
++#endif
+     uint64_t start = millis64();
+ 
+     while ((millis64() - start) < ms) {
+@@ -872,6 +919,10 @@ static void pwmCompleteMotorUpdate(void)
+         pwmPkt.motor_speed[i] = motorsPwm[i] / outScale;
+     }
+ 
++#ifdef ADR_LOCKSTEP
++    ++adrMotorUpdates;
++    return; // Reply is emitted after scheduler processing, not midway through PID.
++#endif
+     // get one "fdm_packet" can only send one "servo_packet"!!
+     if (pthread_mutex_trylock(&updateLock) != 0) return;
+     udpSend(&pwmLink, &pwmPkt, sizeof(servo_packet));
+@@ -1066,3 +1117,38 @@ void uartPinConfigure(const serialPinConfig_t *pSerialPinConfig)
+ {
+     UNUSED(pSerialPinConfig);
+ }
++
++#ifdef ADR_LOCKSTEP
++// Version 1, little-endian native ABI; checked sizes are part of the Rust adapter contract.
++typedef struct { fdm_packet sensors; uint32_t sequence; uint32_t freshRc; uint16_t channels[16]; } adr_input;
++typedef struct { uint32_t version,sequence; float motors[4]; uint32_t armed,armingFlags,angle; float rpy[3]; uint64_t timeUs; uint32_t motorUpdates,reserved; } adr_output;
++_Static_assert(sizeof(adr_input)==184,"ADR input layout");
++_Static_assert(sizeof(adr_output)==64,"ADR output layout");
++void simulatorLockstepRun(void) {
++    adr_input input;
++    uint32_t lastSequence=0;
++    uint64_t lastUs=0,bootUs=adrClockUs;
++    adrRunning=true;
++    printf("ADR_LOCKSTEP_READY\n"); fflush(stdout);
++    while (workerRunning) {
++        int n=udpRecv(&stateLink,&input,sizeof(input),100);
++        if(n<0) continue;
++        if(n!=sizeof(input) || input.sequence!=lastSequence+1 || !isfinite(input.sensors.timestamp)) {
++            fprintf(stderr,"ADR invalid packet or sequence\n"); exit(2);
++        }
++        uint64_t us=(uint64_t)llround(input.sensors.timestamp*1e6);
++        if(us!=lastUs+125) { fprintf(stderr,"ADR requires 8000 Hz sensor ticks\n"); exit(2); }
++        adrClockUs=bootUs+us;
++        if(input.freshRc) rxUpdateUdpChannels(input.channels,16);
++        updateState(&input.sensors);
++        // Freeze time while draining ready tasks; the host's execution speed cannot advance the plant.
++        for(unsigned i=0;i<128;++i) scheduler();
++        adr_output output={.version=1,.sequence=input.sequence,.armed=ARMING_FLAG(ARMED),
++            .armingFlags=getArmingDisableFlags(),.angle=FLIGHT_MODE(ANGLE_MODE),.timeUs=us,.motorUpdates=adrMotorUpdates};
++        memcpy(output.motors,pwmPkt.motor_speed,sizeof output.motors);
++        for(unsigned i=0;i<3;++i) output.rpy[i]=attitude.raw[i]*0.1f;
++        udpSend(&pwmLink,&output,sizeof output);
++        lastSequence=input.sequence;lastUs=us;
++    }
++}
++#endif

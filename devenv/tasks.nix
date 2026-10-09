@@ -968,6 +968,26 @@ let
 
 
 
+      "rdd2:benchmark:shared-sil:betaflight" =
+        (task "cerebri_rdd2" "Run the fixed shared-controller betaflight commissioning figure eight." ''
+          cargo run --release --locked --package cerebri-rdd2-xtask -- shared-sil \
+            ${root}/docs/config/shared-position-benchmark.json \
+            ${source "modelica_models"}/artifacts/vehicles/rdd2/plant/Vehicles_Rdd2_Plant \
+            ${root}/artifacts/shared-loop/libshared_loop.so \
+            ${source "betaflight"}/obj/main/betaflight_SITL.elf \
+            betaflight "${root}/artifacts/shared-sil/betaflight-$(date +%s%N)" figure-eight
+        '') // { after = [ "rdd2:benchmark:shared-loop:check" "rdd2:simulation:sil:test" "rdd2:benchmark:betaflight:shared-build" ]; };
+
+      "rdd2:benchmark:shared-sil:cognipilot" =
+        (task "cerebri_rdd2" "Run the fixed shared-controller cognipilot commissioning figure eight." ''
+          cargo run --release --locked --package cerebri-rdd2-xtask -- shared-sil \
+            ${root}/docs/config/shared-position-benchmark.json \
+            ${source "modelica_models"}/artifacts/vehicles/rdd2/plant/Vehicles_Rdd2_Plant \
+            ${root}/artifacts/shared-loop/libshared_loop.so \
+            "$PWD/build-native_sim/zephyr/zephyr.exe" \
+            cognipilot "${root}/artifacts/shared-sil/cognipilot-$(date +%s%N)" figure-eight
+        '') // { after = [ "rdd2:benchmark:shared-loop:check" "rdd2:simulation:sil:test" ]; };
+
       "rdd2:benchmark:plan" =
         (task "cerebri_rdd2" "Calculate figure-eight size, timing, profiles and PURT fit from JSON." ''
           cargo run --release --locked --package cerebri-rdd2-xtask -- figure-plan \
@@ -986,9 +1006,9 @@ let
       "rdd2:benchmark:betaflight:shared-build" =
         (task "betaflight" "Build unchanged Betaflight control algorithms with simulator transport fixes and PID synchronization." ''
           test "$(git rev-parse HEAD)" = 744f95fa31542c4c906f18072348a366ab11b6b7
-          git apply --reverse --check ../../patches/betaflight-sitl-transport.patch
+          git apply --reverse --check ../../patches/betaflight-sitl-lockstep.patch
           git diff --exit-code HEAD -- src/main/flight src/main/fc src/main/sensors
-          make TARGET=SITL EXTRA_FLAGS=-DENABLE_SIMULATOR_GYROPID_SYNC=1 -j4
+          make TARGET=SITL EXTRA_FLAGS="-DENABLE_SIMULATOR_GYROPID_SYNC=1 -DADR_LOCKSTEP=1" -j4
         '') // { after = [ "sources:ensure:betaflight" ]; };
 
       "rdd2:benchmark:betaflight:hover" =

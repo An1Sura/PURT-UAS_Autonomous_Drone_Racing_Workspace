@@ -1,101 +1,63 @@
-# PDF-aligned PURT benchmark
+# Shared-controller SIL: current evidence
 
-Updated **2026-10-08**, following the user-supplied *CogniPilot vs Betaflight Flight Control Benchmark.pdf*. This document is an implementation/status record, not a claim that all PDF stages have passed.
+Updated October 9, 2026. The supplied benchmark PDF defines the architecture: one generated trajectory and position loop commands Betaflight ANGLE or CogniPilot ATTITUDE against the same Rumoca/FMI plant. That flight path is now implemented and exercised. This is commissioning evidence, not completion of every PDF qualification gate.
 
-## Course and goal
+## New full-course recordings
 
-The active configuration is [`shared-position-benchmark.json`](config/shared-position-benchmark.json). Fly **one figure eight occupying 10 × 10 m horizontally, at constant altitude z = 2 m** above the assumed floor origin. Here `height_m` means the north–south footprint; `altitude_m` means vertical flight height. Scale is 1 and the centre is [0, 0].
+One **10 × 10 m** figure eight, **2 m altitude**, minimum-jerk phase, **80 s timed reference**. Both runs use the same generated offboard library and full-dynamics plant; their hashes are embedded in the reports.
 
-Our research goal remains improving CogniPilot relative to the Betaflight baseline. The PDF first requires a fair shared-position-loop comparison; a fastest-lap claim comes only after accurate, repeatable flights under matched conditions. The initial **80 s lap target** is a deliberately slow commissioning setting, not a measured or optimized result. Warmup, arming, takeoff, hold and landing are separate from that lap clock.
+| Stack | Same-time position RMS | Maximum error | Reference duration | Full run | End state |
+|---|---:|---:|---:|---:|---|
+| Betaflight ANGLE | 0.066723 m | 0.175127 m | 80 s | 123 s | Grounded, disarmed, all motors zero |
+| CogniPilot ATTITUDE | 0.134227 m | 0.271192 m | 80 s | 123 s | Grounded, disarmed, all motors zero |
 
-| Quantity | Mathematical reference, not flight telemetry |
-|---|---:|
-| One-lap / total path length | 47.147 / 47.147 m |
-| Lap target | 80 s |
-| Mean / peak required speed | 0.589 / 1.646 m/s |
-| Peak lateral acceleration | 0.407 m/s² = 0.0415 g |
-| Peak total horizontal acceleration | 0.413 m/s² |
-| Tightest turn radius | 0.597 m |
+[Watch actual telemetry](sim/) · [All attempt reports](results/shared-sil/attempts/) · [Source map](repository-map.md).
 
-With u = t/T clamped to [0,1], q = 2π(10u³ − 15u⁴ + 6u⁵), the reference is x = 5 sin(q), y = 5 sin(2q), z = 2. Velocity and acceleration are analytic derivatives. The phase starts and stops smoothly; velocity is not constant. Path length integrates the tangent norm over q ∈ [0,2π]. Curvature is |x′y″−y′x″|/(x′²+y′²)^(3/2); lateral acceleration is curvature × speed². Published statistics use 20,000-interval numerical sampling in `docs/planner/math.js`, not a formal numerical error bound. Full numbers and sweeps are in [`course-stats.json`](results/shared-position/course-stats.json).
+The acceptance thresholds were set before these runs: course RMS <0.35 m, maximum <0.75 m, correct armed self-level mode, and at least 0.5 s grounded/disarmed/stopped at the end. These are commissioning thresholds. Faster-flight qualification must predeclare its own repeatability and accuracy rules. No fastest-lap claim is made here.
 
-## What changes from the old experiment
+Timing: 0–8 s estimator warmup; arm at 8 s; takeoff 9–15 s; hover 15–25 s; course 25–105 s; end hold 105–110 s; descent 110–118 s; settle through 123 s. Touchdown detection triggers disarm. Height near 0.0984 m is the plant's resting body height, not a missing landing. The lap duration is the commanded reference window, not an independent geometric crossing measurement. RMS is sqrt(mean(||p_actual(t) − p_reference(t)||²)) over the course window at the plant tick rate. Total runtime includes warmup/takeoff/landing. Host wall time is separately recorded and is not flight or hardware latency.
 
-```mermaid
-flowchart LR
-    T[Trajectory eFMU, 100 Hz] --> C[Shared PositionLoop eFMU, 100 Hz]
-    P[One Rumoca-generated plant] --> C
-    C --> S[Heading-relative roll / pitch, yaw rate, thrust]
-    S --> B[Calibrated sticks: Betaflight ANGLE]
-    S --> G[Calibrated sticks: CogniPilot ATTITUDE]
-    B --> P
-    G --> P
-    P --> L[Truth, sensors, motor commands, scores]
-```
+## What changed
 
-This is the target wiring. The generated components now exist and pass the numerical checks below. The complete stack flight harness is **not yet connected and qualified**.
+- New native Rust `shared-sil` command loads the same generated trajectory and position controller for both stacks, updates position control at 100 Hz and sticks at 250 Hz, and records actual full-plant motion.
+- Betaflight's simulator-only patch provides sequential packet IDs, timestamp validation and one main-thread sensor/scheduler/motor exchange at 8000 Hz. It retains stock flight-control and estimator algorithms. Normal arming remains enabled.
+- The common IMU source samples at 1600 Hz. Betaflight holds those samples across its 8000 Hz packets; CogniPilot exchanges at 1600 Hz. CogniPilot stick delivery can be quantized by up to 0.5 ms. This remaining difference is explicit.
+- Both RC receivers require negative yaw-stick encoding for the common positive ENU yaw rate. Initial square/figure-eight trials exposed the incorrect sign; those failures are preserved rather than relabeled as completed flights.
+- Shared takeoff/landing comes from the generated position loop, without the old simulator-assisted throttle laws.
+- Optional ideal-attitude physics isolates the outer position loop using the same motor/force model. Full firmware runs load the unchanged full-dynamics plant artifact; ideal tests do not execute firmware.
+- Old website replay payloads were removed. New replays retain genuine final samples; Three.js only displays telemetry.
 
-- Both stacks must receive the same trajectory and the same offboard position-controller output. Neither gets its own native position planner in the qualifying comparison.
-- `Benchmarks.PositionLoop` wraps the existing RDD2 log-linear controller. It converts the desired thrust direction into tilt relative to the **current heading**, clamps roll/pitch to 35°, and emits yaw rate and collective thrust. No extra tilt compensation is applied to thrust, because the controller has already computed the force magnitude.
-- The common yaw limit is 200°/s. CogniPilot's native full-stick mapping is 3.5 rad/s; its stick conversion must use that denominator so the physical requested rate agrees with Betaflight's 200°/s configuration.
-- CogniPilot uses stock ATTITUDE mode; Betaflight uses stock ANGLE mode. Gains may be tuned under the same step-response criterion and budget. Do not carry the October 5 Betaflight navigation algorithm changes into this comparison.
-- Both eFMUs are offboard. Firmware still uses its existing four generated controller blocks; `src/efmi.cmake` is unchanged.
-- Generated C uses float32 and has single-instance, non-reentrant scratch storage. Call it serially. The trajectory uses an integer sample count to avoid accumulated floating-point clock drift. First disengaged output is t = 0; each engaged step advances the reference by 0.01 s, so the harness must pair each sample with that timestamp.
-- Stick transmission at 250 Hz, sensor sampling, noise, delay and actuation need explicit simulation-time scheduling. A 100 Hz controller does not imply a 100 Hz IMU or motor loop. CogniPilot's historical 1600 Hz exchange does not divide evenly into 250 Hz; this must be handled explicitly rather than rounded silently.
+## Checks and limits
 
-## Verified on the existing Linux VM
+Native Rust tests: **45 passed, 2 ignored**. Generated reference/oracle checks passed. Ideal-attitude hover, step, square and figure-eight checks passed. Both real stacks passed hover, step, square and full-course commissioning runs (the initial square tests predate the final yaw mapping; corrected full-course flights are the current evidence). Betaflight's two full-course repeats had byte-identical 100 Hz trajectory CSV and complete 8000 Hz response traces. CogniPilot’s two corrected full-course repeats also had byte-identical CSV and motor traces. See [repeatability hashes](results/shared-sil/repeatability-sha256.txt).
 
-| Check | Result and scope |
-|---|---|
-| Generate Trajectory, PositionLoop and test-only PositionOracle eFMUs | Passed with pinned Rumoca 0.10.0; generated C compiled into a host library. |
-| Shared 10 × 10 m reference | 8,001 samples at 100 Hz over 80 s including both endpoints; bounds approximately [−5, −5, 2] to [5, 5, 2]. |
-| Two reference repeats | Exactly equal output arrays. This is **not** a claim of deterministic firmware flights. |
-| Analytic f64 versus generated float32 p/v/a | Maximum absolute component error 0.00004364 (units depend on the component); sample-time error ≤5.50 µs. |
-| PositionLoop versus GuidanceController POSITION oracle | Maximum tested difference 0 for thrust, desired quaternion and integral across the sampled yaw/state trajectory. Both use the same 0.01 s period and 0.7 correction fraction for this comparison. |
-| Clamp / disengage checks | Finite outputs, command limits, integral reset and disengaged-invalid output checks passed. |
-| Rust regression suite | **43 passed, 0 failed, 2 ignored**; the ignored tests require separate native-firmware integration setup. |
-| Betaflight unchanged-control SITL build | Passed with `ENABLE_SIMULATOR_GYROPID_SYNC=1` and transport-only fixes. Binary SHA-256: `47b3356e983aa85c45af864d65e6b1a316a339ddbc74f7f5bc752ebe266333f0`. |
+Still required before full PDF qualification or a fair speed ranking:
 
-Machine evidence: [`checks.json`](results/shared-position/checks.json) contains compiler, source, eFMU, C-shim and library hashes; [`rust-tests.log`](results/shared-position/rust-tests.log) preserves the native test results. The fresh Betaflight build initially hit a parallel submodule `.git/config` lock race; sequential submodule initialization fixed it. The [initial failure log](results/shared-position/betaflight-stock-build-initial-failure.log) is retained.
+- Empirical Betaflight hover-throttle calibration; current conversion uses nominal sqrt(mg/Tmax). RC smoothing is OFF, angle limit 35 degrees, yaw limit 200 degrees/s; CogniPilot native yaw normalization is 3.5 rad/s.
+- Expanded commanded-versus-estimated attitude and saturation diagnostics, and independent geometric course-completion gates.
+- Motor-vibration noise model and the prescribed three noise levels with at least five seeds per level, alternating stacks. Current published flights are noise-free; noise magnitudes in the harness are diagnostic assumptions, not measured IMU data.
+- Matched sensor delivery/timing, measured physical vehicle properties and hardware latency tests. SIL uses plant-truth position feedback; it does not reproduce a measured QTM pipeline.
+- PURT origin, obstacle inventory and calibrated MoCap coverage survey. The course fits the approximate room box, but actual clearance/coverage remains unverified.
+- Equal-budget gain tuning and shorter-lap speed search. These 80 s runs do not demonstrate CogniPilot surpassing Betaflight.
 
-These are numerical/build checks, **not mathematical proofs of the controller or of full flight behavior**. Existing Lean proofs do not automatically establish refinement of this float32 implementation. See [formal-verification scope](formal-verification.md).
+## Reproduce in the existing VM
 
-## Remaining gates and why there is no new flight replay yet
-
-1. **Packet lockstep:** source inspection confirms that Betaflight's synchronization flag gates `taskMainPidLoop`, but `micros64()` and `millis64()` still integrate `nanos64_real()` multiplied by `simRate`. `updateState()` derives `simRate` from wall-clock packet spacing. Therefore the flag alone does not establish the PDF's simulation-time contract. A sequence-aware sensor/motor adapter and deterministic clock qualification are still required. We have not claimed a failed repeatability experiment that was never run.
-2. **Ideal-attitude shared-plant check:** the generated position loop still needs a hover and slow-square test against the shared plant with ideal attitude, before stack integration. The oracle test does not replace this gate.
-3. **Common full-flight runner:** implement calibrated stick mappings, normal arming/estimator readiness, shared takeoff altitude ramp, 10 s hover, 0.5 m step, square, one figure eight, shared landing and native disarm/ground/motor-stop verification. Measure Betaflight hover throttle and select/log RC smoothing. Existing native-position adapters reject the new 1:1 geometry or use a different controller; bypassing those checks would create an invalid comparison.
-4. **Noise / performance campaign:** define common seeded gyro/accelerometer noise and vibration; run none/realistic/harsh with at least five seeds per condition, alternate stack order, and shorten lap targets until the agreed accuracy limit fails. Preserve all attempts and distinguish host execution time from flight time.
-5. **Hardware phases:** PC MoCap-to-trainer/SBUS Rust bridge, matched physical aircraft calibration, onboard timing/logging and latency tests remain separate. Existing simulation does not measure NXP RT1060 driver latency or certify the radio/mocap safety behavior.
-
-The PDF's example noninferiority margins are examples, not a pass criterion adopted after seeing data. Agree margins before the campaign. No new stock-mode 10 × 10 m lap, landing or speed advantage is claimed here.
-
-## PURT fit and preview
-
-![Top-down requested course](results/shared-position/purt-top-down.svg)
-
-The assumed envelope is 53.34 × 28.956 × 9.144 m, centred on an assumed floor origin. With 0.4 m vehicle radius + 0.15 m tracking allowance + 0.5 m wall margin, the 10 × 10 m reference plus margins spans **12.1 × 12.1 m**, z = **0.95 to 3.05 m**. It fits that box. The envelope-only maximum scale is approximately **2.6856** (26.856 × 26.856 m footprint at the same altitude); this is **not** an approved flyable scale.
-
-Overall fit remains **unverified** because current calibrated MoCap coverage and obstacle boxes are unknown. Measure the origin/axis orientation, clear wall/net limits, lowest overhead obstruction, columns/stairs/mezzanine/equipment/camera stands, and the usable calibrated coverage at 2 m altitude. Published total floor area is not the clear flight area. Camera sample rate and calibration residuals are not end-to-end latency or a measured noise distribution.
-
-The existing black grid and green boundaries are retained. The site displays the new course as a **static reference preview**; its historical tabs show actual unmodified 8 × 4 m, z = 1.5 m recordings. Old recordings are never stretched or retimed to stand in for a new simulation.
-
-## Reproduce component checks
-
-Apply the documented source patches first; see [`patches/README.md`](../patches/README.md).
+Use the tested revisions and [dependency patches](../patches/README.md). The exercised environment is Ubuntu Linux with Nix/Devenv, not NixOS. From the workspace root inside the RDD2 shell:
 
 ```sh
-devenv -P rdd2 tasks run rdd2:benchmark:shared-loop:check
-```
-
-Native equivalent, with Rumoca and a C compiler available:
-
-```sh
-cargo run --release --locked --manifest-path src/cerebri_rdd2/xtask/Cargo.toml -- \
-  shared-loop-check docs/config/shared-position-benchmark.json src/modelica_models \
+cargo test --locked --manifest-path src/cerebri_rdd2/xtask/Cargo.toml
+cargo build --release --locked --manifest-path src/cerebri_rdd2/xtask/Cargo.toml
+src/cerebri_rdd2/target/release/xtask shared-loop-check \
+  docs/config/shared-position-benchmark.json src/modelica_models \
   .devenv/state/results/rumoca/bin/rumoca artifacts/shared-loop
+src/cerebri_rdd2/target/release/xtask shared-sil \
+  docs/config/shared-position-benchmark.json \
+  src/modelica_models/artifacts/vehicles/rdd2/plant/Vehicles_Rdd2_Plant \
+  artifacts/shared-loop/libshared_loop.so \
+  artifacts/shared-loop/betaflight-stock/obj/main/betaflight_SITL.elf \
+  betaflight artifacts/shared-sil/bf-fresh-run figure-eight
 ```
 
-Outputs include `Benchmarks_*.efmu`, unpacked generated C, compiler logs, `libshared_loop.so`, `reference.csv` and `checks.json`. The CSV is **commanded reference data**, not drone telemetry. The command currently rejects unsupported placement/controller settings rather than silently ignoring them. It is a commissioning check for the fixed course, not an editable mission-planning UI.
+For CogniPilot, substitute `src/cerebri_rdd2/build-native_sim/zephyr/zephyr.exe`, stack `cognipilot`, and a fresh output directory. Never overwrite an attempt. Each run produces `config.json`, `trajectory.csv`, `actuator-trace.bin`, `firmware.log`, `report.json` and `replay.json`; Betaflight also saves provisioning commands/logs. The website is a replay, not a browser physics simulation. These native runs were launched on the VM; the old native-position web-run API is not the new benchmark launcher.
 
-For the complete source provenance, versions, and hardware-reference distinction, use [the repository map](repository-map.md).
+Large binary traces and original 100 Hz CSV remain in the VM under `artifacts/shared-sil`. Website replay exports are sampled at 20 Hz, retain the final sample, and do not recompute report metrics. Earlier failures remain in the attempt reports and VM, with no fabricated landing. Old recordings remain recoverable from Git history.

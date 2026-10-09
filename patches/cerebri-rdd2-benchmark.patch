@@ -288,10 +288,11 @@ index 753d72f..0fa90f4 100644
      fs::write(&report_path, serde_json::to_vec_pretty(&report)?)?;
  
 diff --git a/xtask/src/main.rs b/xtask/src/main.rs
-index e11a7c8..46fdf7f 100644
+index e11a7c8..77ec746 100644
 --- a/xtask/src/main.rs
 +++ b/xtask/src/main.rs
-@@ -1,7 +1,17 @@
+@@ -1,7 +1,18 @@
++mod shared_sil;
 +mod shared_loop;
 +mod speed_score;
 +mod benchmark;
@@ -309,7 +310,7 @@ index e11a7c8..46fdf7f 100644
  mod shared_memory;
  
  use std::env;
-@@ -13,29 +23,21 @@ use std::thread;
+@@ -13,29 +24,21 @@ use std::thread;
  use std::time::{Duration, Instant};
  
  use anyhow::{Context, Result, anyhow, bail};
@@ -345,7 +346,7 @@ index e11a7c8..46fdf7f 100644
      report: PathBuf,
      trajectory: PathBuf,
      duration: f64,
-@@ -52,6 +54,9 @@ struct Options {
+@@ -52,6 +55,9 @@ struct Options {
  
  #[derive(Debug, Default, Serialize)]
  struct Report {
@@ -355,7 +356,7 @@ index e11a7c8..46fdf7f 100644
      passed: bool,
      /// Which providers produced the firmware under test. A pass built from
      /// caller-selected sources is not a qualifying result, and the report
-@@ -108,7 +113,7 @@ fn options(args: impl IntoIterator<Item = String>) -> Result<Options> {
+@@ -108,7 +114,7 @@ fn options(args: impl IntoIterator<Item = String>) -> Result<Options> {
      let mut trajectory = env::var_os("RDD2_MISSION_TRAJECTORY")
          .map(PathBuf::from)
          .unwrap_or_else(|| PathBuf::from("out/mission-trajectory.csv"));
@@ -364,7 +365,7 @@ index e11a7c8..46fdf7f 100644
      let mut timeout_ms = 2_000_u64;
      let mut controller_benchmark = env::var("RDD2_FASTDYN_CONTROLLER_BENCHMARK_S")
          .ok()
-@@ -124,10 +129,39 @@ fn options(args: impl IntoIterator<Item = String>) -> Result<Options> {
+@@ -124,10 +130,39 @@ fn options(args: impl IntoIterator<Item = String>) -> Result<Options> {
          .map(|value| value.parse())
          .transpose()?
          .unwrap_or(0.0);
@@ -404,7 +405,7 @@ index e11a7c8..46fdf7f 100644
              "--report" => report = args.next().ok_or_else(value)?.into(),
              "--trajectory" => trajectory = args.next().ok_or_else(value)?.into(),
              "--duration" => duration = args.next().ok_or_else(value)?.parse()?,
-@@ -145,20 +179,48 @@ fn options(args: impl IntoIterator<Item = String>) -> Result<Options> {
+@@ -145,20 +180,48 @@ fn options(args: impl IntoIterator<Item = String>) -> Result<Options> {
              "--minimum-speedup" => minimum_speedup = args.next().ok_or_else(value)?.parse()?,
              "-h" | "--help" => {
                  println!(
@@ -456,7 +457,7 @@ index e11a7c8..46fdf7f 100644
          report,
          trajectory,
          duration,
-@@ -171,29 +233,29 @@ fn options(args: impl IntoIterator<Item = String>) -> Result<Options> {
+@@ -171,29 +234,29 @@ fn options(args: impl IntoIterator<Item = String>) -> Result<Options> {
              .context("--plant-library or RDD2_RUMOCA_PLANT_LIBRARY is required")?,
          plant_description: plant_description
              .context("--plant-description or RDD2_RUMOCA_PLANT_DESCRIPTION is required")?,
@@ -496,7 +497,7 @@ index e11a7c8..46fdf7f 100644
  }
  
  fn rc_channels(mission_time: Option<f64>, plant: &Plant) -> [i32; 16] {
-@@ -204,15 +266,16 @@ fn rc_channels(mission_time: Option<f64>, plant: &Plant) -> [i32; 16] {
+@@ -204,15 +267,16 @@ fn rc_channels(mission_time: Option<f64>, plant: &Plant) -> [i32; 16] {
          channels[5] = 1000;
          return channels;
      };
@@ -521,7 +522,7 @@ index e11a7c8..46fdf7f 100644
      if throttle_must_be_low(time) {
          channels[2] = 1000;
      } else {
-@@ -381,8 +444,7 @@ fn evaluate(report: &mut Report) {
+@@ -381,8 +445,7 @@ fn evaluate(report: &mut Report) {
              .push("vehicle had excessive vertical speed at completion".into());
      }
      report.passed = report.failures.is_empty();
@@ -531,7 +532,7 @@ index e11a7c8..46fdf7f 100644
  }
  
  fn advance_square_corner(
-@@ -448,7 +510,11 @@ where
+@@ -448,7 +511,11 @@ where
      let warmup_target_ns = 5_000_000_u64;
      let ready_deadline = Instant::now() + Duration::from_secs(60);
      loop {
@@ -544,7 +545,7 @@ index e11a7c8..46fdf7f 100644
          let inputs = protocol::lockstep_inputs(
              gyro,
              accel,
-@@ -466,7 +532,8 @@ where
+@@ -466,7 +533,8 @@ where
      }
  
      let target_ns = warmup_target_ns + (benchmark_seconds * 1.0e9).round() as u64;
@@ -554,7 +555,7 @@ index e11a7c8..46fdf7f 100644
      let inputs = protocol::lockstep_inputs(
          gyro,
          accel,
-@@ -489,8 +556,12 @@ fn run_mission<F>(options: &Options, exchange: &mut F) -> Result<()>
+@@ -489,8 +557,12 @@ fn run_mission<F>(options: &Options, exchange: &mut F) -> Result<()>
  where
      F: FnMut(&protocol::LockstepInputs, Duration) -> Result<LockstepOutputs>,
  {
@@ -567,7 +568,7 @@ index e11a7c8..46fdf7f 100644
          position_mission_continuous: true,
          mission_status_current: true,
          navigation_estimate_finite: true,
-@@ -500,7 +571,15 @@ where
+@@ -500,7 +572,15 @@ where
      let wall_start = Instant::now();
      let mut firmware_ready = false;
      let mut synthetic_gnss = SyntheticGnss::default();
@@ -584,7 +585,7 @@ index e11a7c8..46fdf7f 100644
      let mut plan_sent = false;
      let mut mission_epoch = None;
      let mut last_outputs: Option<LockstepOutputs> = None;
-@@ -529,26 +608,38 @@ where
+@@ -529,26 +609,38 @@ where
          let channels = rc_channels(mission_time, &plant);
          let (gyro, accel) = plant.imu_flu();
          let target_time = ((simulated_time + options.plant_dt) * 1.0e9).round() as u64;
@@ -637,7 +638,7 @@ index e11a7c8..46fdf7f 100644
          simulated_time += options.plant_dt;
          report.plant_steps += 1;
          let state = outputs.flight_state;
-@@ -619,7 +710,8 @@ where
+@@ -619,7 +711,8 @@ where
              .all(f32::is_finite);
          report.fresh_planner_reference_observed |= reference_current;
          if mission_time.is_some_and(|time| {
@@ -647,7 +648,7 @@ index e11a7c8..46fdf7f 100644
          }) {
              let required = MissionStatusWire::SOURCE_READY
                  | MissionStatusWire::ORIGIN_VALID
-@@ -641,14 +733,14 @@ where
+@@ -641,14 +734,14 @@ where
                  &mut report.planner_corners_reached,
                  planner_origin_value,
                  planner_position,
@@ -664,7 +665,7 @@ index e11a7c8..46fdf7f 100644
                  VEHICLE_CORNER_TOLERANCE_M,
              );
          }
-@@ -671,7 +763,8 @@ where
+@@ -671,7 +764,8 @@ where
          if mission_epoch.is_none() && status.mission_state == 1 {
              mission_epoch = Some(simulated_time);
          }
@@ -674,7 +675,7 @@ index e11a7c8..46fdf7f 100644
              report.firmware_disarmed_after_flight = true;
          }
  
-@@ -708,6 +801,7 @@ where
+@@ -708,6 +802,7 @@ where
          last_outputs = Some(outputs);
      }
  
@@ -682,11 +683,12 @@ index e11a7c8..46fdf7f 100644
      report.simulated_seconds = report.plant_steps as f64 * options.plant_dt;
      report.wall_seconds = wall_start.elapsed().as_secs_f64();
      report.speedup_over_realtime = report.simulated_seconds / report.wall_seconds;
-@@ -824,6 +918,12 @@ fn main() -> Result<()> {
+@@ -824,6 +919,13 @@ fn main() -> Result<()> {
      };
  
      match command.to_string_lossy().as_ref() {
 +        "shared-loop-check" => shared_loop::run(args),
++        "shared-sil" => shared_sil::run(args),
 +        "mission-server" => mission_server::run(args),
 +        "figure-plan" => figure_config::run(args),
 +        "speed-score" => speed_score::run(args),
@@ -695,7 +697,7 @@ index e11a7c8..46fdf7f 100644
          "fastdyn-ci" => fastdyn_ci::run(),
          "fastdyn-mission" => {
              let args = args
-@@ -870,7 +970,7 @@ mod tests {
+@@ -870,7 +972,7 @@ mod tests {
              vehicle_corners_reached: 5,
              navigation_estimate_finite: true,
              max_navigation_horizontal_error_m: 0.1,
@@ -704,7 +706,7 @@ index e11a7c8..46fdf7f 100644
              maximum_gnss_generation: 441,
              maximum_reference_generation: 100,
              maximum_plan_generation: 1,
-@@ -904,16 +1004,19 @@ mod tests {
+@@ -904,16 +1006,19 @@ mod tests {
  
      #[test]
      fn takeoff_schedule_preserves_a_low_throttle_arming_window() {
@@ -731,7 +733,7 @@ index e11a7c8..46fdf7f 100644
          );
      }
  
-@@ -926,7 +1029,7 @@ mod tests {
+@@ -926,7 +1031,7 @@ mod tests {
              &mut progress,
              origin,
              origin,
@@ -740,7 +742,7 @@ index e11a7c8..46fdf7f 100644
              VEHICLE_CORNER_TOLERANCE_M,
          );
          assert_eq!(progress, 1);
-@@ -934,15 +1037,15 @@ mod tests {
+@@ -934,15 +1039,15 @@ mod tests {
              &mut progress,
              origin,
              origin,
@@ -759,7 +761,7 @@ index e11a7c8..46fdf7f 100644
              VEHICLE_CORNER_TOLERANCE_M,
          );
          assert_eq!(progress, 2);
-@@ -1063,7 +1166,7 @@ mod tests {
+@@ -1063,7 +1168,7 @@ mod tests {
          let result = (|| -> Result<()> {
              for _ in 0..4_000 {
                  target_ns += 625_000;
@@ -768,7 +770,7 @@ index e11a7c8..46fdf7f 100644
                  let inputs = protocol::lockstep_inputs(
                      [0.0; 3],
                      [0.0, 0.0, 9.806_65],
-@@ -1096,7 +1199,7 @@ mod tests {
+@@ -1096,7 +1201,7 @@ mod tests {
              let mut last_quality = 0_i8;
              for _ in 0..320 {
                  target_ns += 625_000;
@@ -777,7 +779,7 @@ index e11a7c8..46fdf7f 100644
                  let inputs = protocol::lockstep_inputs(
                      [0.0; 3],
                      [0.0, 0.0, 9.806_65],
-@@ -1125,7 +1228,7 @@ mod tests {
+@@ -1125,7 +1230,7 @@ mod tests {
              let mut last_flight_armed = false;
              for _ in 0..1_600 {
                  target_ns += 625_000;
@@ -787,10 +789,47 @@ index e11a7c8..46fdf7f 100644
                      [0.0; 3],
                      [0.0, 0.0, 9.806_65],
 diff --git a/xtask/src/physics.rs b/xtask/src/physics.rs
-index 4df2829..e441d4f 100644
+index 4df2829..cba5f48 100644
 --- a/xtask/src/physics.rs
 +++ b/xtask/src/physics.rs
-@@ -449,3 +449,54 @@ mod tests {
+@@ -57,6 +57,7 @@ pub struct Plant {
+     api: Api,
+     instance: Instance,
+     motor_command: ValueReference,
++    ideal_quaternion: Option<ValueReference>,
+     outputs: [ValueReference; 6],
+     output_values: [f64; 16],
+     time: f64,
+@@ -90,6 +91,7 @@ impl Plant {
+         }
+         let variables = float64_variables(&document)?;
+         let motor_command = required_variable(&variables, "commands.motor", "input", 4)?.reference;
++        let ideal_quaternion = variables.get("idealQuaternion").map(|v| v.reference);
+         let outputs = required_references(
+             &variables,
+             &[
+@@ -155,6 +157,7 @@ impl Plant {
+             api,
+             instance,
+             motor_command,
++            ideal_quaternion,
+             outputs,
+             output_values: [0.0; 16],
+             time: 0.0,
+@@ -163,6 +166,12 @@ impl Plant {
+         Ok(plant)
+     }
+ 
++    pub fn set_ideal_attitude(&mut self, q: [f64;4]) -> Result<()> {
++        let reference=self.ideal_quaternion.context("this is not the ideal-attitude qualification plant")?;
++        if !q.iter().all(|v| v.is_finite()) || (q.iter().map(|v|v*v).sum::<f64>()-1.).abs()>1e-6 { bail!("invalid ideal quaternion"); }
++        check_status(unsafe {(self.api.set_float64)(self.instance,&reference,1,q.as_ptr(),4)}, "ideal attitude input")
++    }
++
+     pub fn altitude(&self) -> f64 {
+         self.output_values[2]
+     }
+@@ -449,3 +458,54 @@ mod tests {
          Ok(())
      }
  }
@@ -4421,10 +4460,10 @@ index 0000000..13faf28
 +}
 diff --git a/xtask/src/shared_loop_shim.c b/xtask/src/shared_loop_shim.c
 new file mode 100644
-index 0000000..638a0b2
+index 0000000..cf7b20d
 --- /dev/null
 +++ b/xtask/src/shared_loop_shim.c
-@@ -0,0 +1,54 @@
+@@ -0,0 +1,58 @@
 +/* Thin ABI only. All trajectory/controller mathematics come from generated C. */
 +#include <string.h>
 +#include "Benchmarks_Trajectory.h"
@@ -4478,6 +4517,186 @@ index 0000000..638a0b2
 +    memcpy(out+13,oracle.rawAttitude,4*sizeof(float));
 +    memcpy(out+17,oracle.integral,3*sizeof(float));
 +    return control.rumoca_galec_error_signal_status | oracle.rumoca_galec_error_signal_status;
++}
++void shared_shape(int shape) {
++    trajectory.shape=shape;
++    Trajectory_recalibrate(&trajectory);
++}
+diff --git a/xtask/src/shared_sil.rs b/xtask/src/shared_sil.rs
+new file mode 100644
+index 0000000..8219f17
+--- /dev/null
++++ b/xtask/src/shared_sil.rs
+@@ -0,0 +1,170 @@
++//! Real firmware, one generated position loop, one timed course, one FMI plant.
++use crate::{benchmark::{FlightStackAdapter,PilotCommand,SensorFrame,SyntheticGnss},cognipilot::CogniPilotAdapter,physics::{self,Plant},shared_memory::Transport};
++use anyhow::{Result,Context,ensure,bail};
++use libloading::Library;
++use serde::Serialize;
++use serde_json::{Value,json};
++use std::{ffi::OsString,fs::{self,File},io::{Write,BufWriter},net::UdpSocket,path::{Path,PathBuf},process::{Command,Child},thread,time::{Duration,Instant}};
++const DT:f64=0.000125;
++const TMAX:f64=41.3749272;
++struct ChildGuard(Child);
++impl Drop for ChildGuard {fn drop(&mut self){let _=self.0.kill();let _=self.0.wait();}}
++#[derive(Clone,Copy,Default,Serialize)]
++struct Sticks {roll:f64,pitch:f64,yaw_rate:f64,thrust:f64}
++impl Sticks {
++ fn channels(self,stack:&str,arm:bool,active:bool,hover:f64)->[i32;16]{
++  let mut rc=[1500;16];let tilt=35f64.to_radians();
++  rc[0]=(1500.+500.*(self.roll/tilt).clamp(-1.,1.)).round() as i32;
++  rc[1]=(1500.+500.*(self.pitch/tilt).clamp(-1.,1.)).round() as i32;
++  let yaw_full=if stack=="cognipilot"{3.5}else{200f64.to_radians()};
++  rc[3]=(1500.+500.*(-self.yaw_rate/yaw_full).clamp(-1.,1.)).round() as i32;
++  let throttle=if stack=="betaflight"{hover*(self.thrust/(2.*9.80665)).max(0.).sqrt()}else{(self.thrust/TMAX).max(0.).sqrt()};
++  rc[2]=if active{(1000.+1000.*throttle.clamp(0.,1.)).round() as i32}else{1000};
++  rc[4]=if arm{2000}else{1000};rc[5]=1500;rc
++ }
++}
++struct Offboard { _lib:Library, reference:unsafe extern "C" fn(i32,*mut f32)->u32, control:unsafe extern "C" fn(*const f32,i32,*mut f32)->u32 }
++impl Offboard {
++ fn open(path:&Path,width:f32,height:f32,altitude:f32,duration:f32,shape:i32)->Result<Self>{unsafe{
++  let lib=Library::new(path)?;let start=*lib.get::<unsafe extern "C" fn(f32,f32,f32,f32)>(b"shared_start\0")?;
++  let shape_fn=*lib.get::<unsafe extern "C" fn(i32)>(b"shared_shape\0")?;
++  let reference=*lib.get(b"shared_reference\0")?;let control=*lib.get(b"shared_control\0")?;
++  start(width,height,altitude,duration);shape_fn(shape);Ok(Self{_lib:lib,reference,control})
++ }}
++ fn reference(&self,engage:bool)->Result<[f64;11]>{let mut out=[0.;11];ensure!(unsafe{(self.reference)(i32::from(engage),out.as_mut_ptr())}==0,"trajectory error signal");ensure!(out.iter().all(|v|v.is_finite()),"nonfinite reference");Ok(out.map(f64::from))}
++ fn control(&self,plant:&Plant,r:&[f64;11],active:bool)->Result<Sticks>{
++  let mut i=[0f32;20];i[..3].copy_from_slice(&plant.position().map(|x|x as f32));i[3..6].copy_from_slice(&plant.velocity().map(|x|x as f32));i[6..10].copy_from_slice(&quaternion(plant.euler()).map(|x|x as f32));
++  for j in 0..3{i[10+j]=r[1+j] as f32;i[13+j]=r[4+j] as f32;i[16+j]=r[7+j] as f32;}i[19]=r[10] as f32;
++  let mut o=[0f32;20];ensure!(unsafe{(self.control)(i.as_ptr(),i32::from(active),o.as_mut_ptr())}==0,"position loop error signal");
++  ensure!(o.iter().all(|x|x.is_finite()) && (!active||o[4]==1.),"invalid position-loop output {o:?}");
++  Ok(Sticks{roll:o[0] as f64,pitch:o[1] as f64,yaw_rate:o[2] as f64,thrust:o[3] as f64})
++ }
++}
++fn quaternion([r,p,y]:[f64;3])->[f64;4]{let(sr,cr)=(r/2.).sin_cos();let(sp,cp)=(p/2.).sin_cos();let(sy,cy)=(y/2.).sin_cos();[cr*cp*cy+sr*sp*sy,sr*cp*cy-cr*sp*sy,cr*sp*cy+sr*cp*sy,cr*cp*sy-sr*sp*cy]}
++fn ramp(u:f64)->(f64,f64,f64){let u=u.clamp(0.,1.);(u.powi(3)*(10.+u*(-15.+6.*u)),30.*u*u*(1.-u).powi(2),60.*u*(1.-u)*(1.-2.*u))}
++#[derive(Default,Serialize)]
++struct Report {
++ passed:bool,stack:String,shape:String,simulated_seconds:f64,wall_seconds:f64,
++ armed_observed:bool,mode_observed:bool,final_armed:bool,final_motors:[f32;4],final_position:[f64;3],
++ tracking_rms_m:Option<f64>,tracking_max_m:f64,maximum_tilt_deg:f64,
++ samples:u64,firmware_exchanges:u64,offboard_updates:u64,stick_updates:u64,
++ grounded_stopped_samples:u64,arming_flags:u32,error:Option<String>,hashes:Value,
++ sensor_profile:Value,qualification:String,lap_start_s:f64,lap_end_s:f64,
++}
++struct Bf { socket:UdpSocket,_child:ChildGuard }
++impl Bf {
++ fn open(binary:&Path,out:&Path)->Result<Self>{
++  let socket=UdpSocket::bind("127.0.0.1:9002").context("Betaflight motor port busy; stop other BF simulations")?;socket.set_read_timeout(Some(Duration::from_secs(3)))?;
++  let config="map AETR1234\nfeature -GPS\nset mag_hardware = NONE\naux 0 0 0 1700 2100 0 0\naux 1 1 1 1300 1700 0 0\nset angle_limit = 35\nset rates_type = ACTUAL\nset roll_rc_rate = 20\nset pitch_rc_rate = 20\nset yaw_rc_rate = 20\nset roll_srate = 20\nset pitch_srate = 20\nset yaw_srate = 20\nset roll_expo = 0\nset pitch_expo = 0\nset yaw_expo = 0\nset deadband = 0\nset yaw_deadband = 0\nset rc_smoothing = OFF\nset thr_mid = 50\nset thr_expo = 0\nset thrust_linear = 0\n";
++  fs::write(out.join("config.txt"),config)?;
++  let p=Command::new(binary).arg("--config").arg(out.join("config.txt")).current_dir(out).output()?;
++  let text=[p.stdout,p.stderr].concat();fs::write(out.join("provision.log"),&text)?;
++  ensure!(p.status.success()&&!String::from_utf8_lossy(&text).contains("INVALID"),"Betaflight provisioning failed; inspect provision.log");
++  let log=File::create(out.join("firmware.log"))?;
++  let child=ChildGuard(Command::new(binary).current_dir(out).stdout(log.try_clone()?).stderr(log).spawn()?);
++  let deadline=Instant::now()+Duration::from_secs(15);
++  while !fs::read_to_string(out.join("firmware.log"))?.contains("ADR_LOCKSTEP_READY") {ensure!(Instant::now()<deadline,"Betaflight startup timeout");thread::sleep(Duration::from_millis(10));}
++  Ok(Self{socket,_child:child})
++ }
++ fn step(&self,plant:&Plant,tick:u32,rc:[i32;16],fresh:bool,gyro:[f32;3],acc:[f32;3])->Result<([f32;4],bool,bool,u32,Vec<u8>)>{
++  let q=quaternion(plant.euler());let p=plant.position();let v=plant.velocity();let vals=[tick as f64*DT,gyro[0] as f64,-gyro[1] as f64,gyro[2] as f64,-acc[0] as f64,-acc[1] as f64,-acc[2] as f64,q[3],q[2],q[1],q[0],v[0],v[1],v[2],-86.9212-p[0]/(111319.49079327358*40.4237f64.to_radians().cos()),40.4237-p[1]/111319.49079327358,200.+p[2],101325.];
++  let mut input=vals.iter().flat_map(|v|v.to_le_bytes()).collect::<Vec<_>>();input.extend(tick.to_le_bytes());input.extend(u32::from(fresh).to_le_bytes());for c in rc{input.extend((c as u16).to_le_bytes());}
++  self.socket.send_to(&input,"127.0.0.1:9003")?;
++  let mut out=[0;128];let(n,peer)=self.socket.recv_from(&mut out)?;ensure!(n==64&&peer.ip().is_loopback(),"invalid BF response {n}");
++  let u=|i|u32::from_le_bytes(out[i..i+4].try_into().unwrap());ensure!(u(0)==1&&u(4)==tick&&u64::from_le_bytes(out[48..56].try_into().unwrap())==tick as u64*125,"stale BF response");
++  let m:[f32;4]=std::array::from_fn(|i|f32::from_le_bytes(out[8+i*4..12+i*4].try_into().unwrap()));
++  ensure!(m.iter().all(|v|v.is_finite()&&(0.0..=1.).contains(v)),"invalid motors");
++  Ok(([m[1],m[0],m[2],m[3]],u(24)!=0,u(32)!=0,u(28),out[..64].to_vec()))
++ }
++}
++struct Noise {state:u64,gyro:f64,acc:f64}
++impl Noise {
++ fn normal(&mut self)->f64 {let mut sum=0.;for _ in 0..12{self.state^=self.state<<13;self.state^=self.state>>7;self.state^=self.state<<17;sum+=(self.state>>11) as f64/((1u64<<53) as f64);}sum-6.}
++ fn apply(&mut self,g:[f32;3],a:[f32;3])->([f32;3],[f32;3]) {let mut g=g;let mut a=a;for j in 0..3{g[j]+=(self.gyro*self.normal()) as f32;a[j]+=(self.acc*self.normal()) as f32;}(g,a)}
++}
++pub fn run(args:impl Iterator<Item=OsString>)->Result<()> {
++ let a:Vec<_>=args.collect();ensure!(a.len()>=7,"shared-sil CONFIG PLANT_DIRECTORY GENERATED_LIBRARY BINARY STACK OUTPUT_DIRECTORY SHAPE [SEED NOISE]");
++ let cfg:Value=serde_json::from_slice(&fs::read(&a[0])?)?;let c=&cfg["course"];let stack=a[4].to_str().context("stack utf8")?;let shape=a[6].to_str().context("shape utf8")?;
++ ensure!(["ideal","cognipilot","betaflight"].contains(&stack),"unsupported stack");ensure!(["hover","step","square","figure-eight"].contains(&shape),"unsupported shape");
++ ensure!(c["width_m"]==10&&c["height_m"]==10&&c["altitude_m"]==2&&c["laps"]==1,"fixed qualification is 10x10 at 2 m, one lap");
++ ensure!(c["scale"]==1 && c["center_enu_m"]==json!([0,0]) && c["yaw_rad"]==0 && c["phase_law"]=="minimum_jerk_each_lap", "unsupported course placement or phase");
++ ensure!(cfg["controller"]["sample_rate_hz"]==100 && cfg["controller"]["tilt_limit_deg"]==35 && cfg["controller"]["yaw_rate_limit_deg_s"]==200 && cfg["controller"]["translational_correction_fraction"]==0.7,"config does not match generated controller");
++ let duration=match shape{"hover"=>10.,"step"=>15.,"square"=>40.,_=>c["lap_time_s"].as_f64().context("lap time")?};
++ let shape_id=match shape{"hover"=>0,"step"=>1,"square"=>2,_=>3};
++ let out=PathBuf::from(&a[5]);ensure!(!out.exists(),"use a fresh output directory to preserve every attempt");fs::create_dir_all(&out)?;let out=out.canonicalize()?;
++ let generated=PathBuf::from(&a[2]).canonicalize()?;let binary=PathBuf::from(&a[3]).canonicalize()?;
++ let(lib,description)=physics::host_paths(&PathBuf::from(&a[1]))?;
++ let seed=a.get(7).map(|s|s.to_str().unwrap().parse::<u64>()).transpose()?.unwrap_or(1);ensure!(seed>0,"seed must be positive");
++ let level=a.get(8).and_then(|s|s.to_str()).unwrap_or("none");let(gs,asigma)=match level{"none"=>(0.,0.),"realistic"=>(0.002,0.03),"harsh"=>(0.01,0.15),_=>bail!("unknown noise")};
++ let mut noise=Noise{state:seed,gyro:gs,acc:asigma};
++ let mut report=Report{stack:stack.into(),shape:shape.into(),lap_start_s:25.,lap_end_s:25.+duration,
++  qualification:"shared offboard loop, real native self-level firmware; commissioning flight, not a matched-hardware performance ranking".into(),
++  hashes:json!({"plant":physics::file_sha256(&lib)?,"plant_description":physics::file_sha256(&description)?,"offboard":physics::file_sha256(&generated)?,"firmware":physics::file_sha256(&binary)?,"config":physics::file_sha256(Path::new(&a[0]))?}),
++  sensor_profile:json!({"seed":seed,"level":level,"imu_hz":1600,"gyro_std_rad_s":gs,"accel_std_m_s2":asigma,"distribution":"12-uniform sum approximation; assumed diagnostic magnitudes, not measured hardware","motor_vibration":"not yet modeled","position_feedback":"plant truth","betaflight_hover_throttle":"nominal sqrt(mg/Tmax); empirical calibration pending","rc_smoothing":"OFF","position_loop_hz":100,"stick_schedule_hz":250,"master_tick_hz":8000,"sensor_and_command_ingress":"BF packets at 8000Hz hold 1600Hz IMU; CG reads latest at 1600Hz (up to 0.5ms stick-delivery quantization)"}),..Report::default()};
++ if stack=="ideal" { report.qualification="ideal attitude isolation test; no flight firmware executed".into(); report.hashes["firmware"]=Value::Null; }
++ fs::write(out.join("config.json"),serde_json::to_vec_pretty(&cfg)?)?;
++ let mut trajectory=BufWriter::new(File::create(out.join("trajectory.csv"))?);
++ writeln!(trajectory,"time_s,x_m,y_m,z_m,roll_rad,pitch_rad,yaw_rad,ref_x,ref_y,ref_z,armed,mode,m0,m1,m2,m3")?;
++ let mut trace=BufWriter::new(File::create(out.join("actuator-trace.bin"))?);
++ let mut rows=Vec::<Vec<f64>>::new();let wall=Instant::now();
++ let result=(||->Result<()> {
++  let mut plant=Plant::open(&lib,&description)?;
++  let offboard=Offboard::open(&generated,if shape=="square"{1.}else{10.},if shape=="square"{1.}else{10.},2.,duration as f32,shape_id)?;
++  let mut transport=if stack=="cognipilot"{Some(Transport::create_direct(&out.join("lockstep.shm"))?)}else{None};
++  let _cg=if stack=="cognipilot"{let log=File::create(out.join("firmware.log"))?;Some(ChildGuard(Command::new(&binary).env("RDD2_LOCKSTEP_SHM",out.join("lockstep.shm")).stdout(log.try_clone()?).stderr(log).spawn()?))}else{None};
++  let mut bf=if stack=="betaflight"{Some(Bf::open(&binary,&out)?)}else{None};
++  let mut gnss=SyntheticGnss::default();let mut motors=[0.;4];let mut sticks=Sticks::default();let mut channels=[1500;16];let mut sampled=plant.imu_flu();
++  let(mut armed,mut mode)=(false,false);let(mut touchdown,mut ground_count)=(false,0u64);let(mut sum,mut count)=(0.,0u64);let mut last_ref=[0.;11];let mut lap_started=false;
++  let end=report.lap_end_s;let land_start=end+5.;let land_end=land_start+8.;let finish=land_end+5.;
++  let hover=cfg["stacks"]["betaflight"]["hover_throttle"].as_f64().unwrap_or((2.*9.80665/TMAX).sqrt());
++  for tick in 1..=(finish/DT).round() as u32 {
++   let t=tick as f64*DT;let arm=t>=8. && !touchdown;let active=t>=9. && !touchdown;
++   if tick%80==0 {
++    let is_lap=t>=25. && t<=end;
++    let mut r=if is_lap {let r=offboard.reference(lap_started)?;lap_started=true;r}else if t>end{last_ref}else{offboard.reference(false)?};
++    if t<15. {let(b,v,a)=ramp((t-9.)/6.);r[3]=0.1+1.9*b;r[6]=1.9*v/6.;r[9]=1.9*a/36.;}
++    if t>=land_start {let(b,v,a)=ramp((t-land_start)/8.);r[3]=2.-2.3*b;r[6]=-2.3*v/8.;r[9]=-2.3*a/64.;}
++    if t>end {r[4..10].fill(0.);if t>=land_start {let(_,v,a)=ramp((t-land_start)/8.);r[6]=-2.3*v/8.;r[9]=-2.3*a/64.;}}
++    last_ref=r;sticks=offboard.control(&plant,&r,active)?;report.offboard_updates+=1;
++   }
++   let fresh=tick==1 || tick%32==0;
++   if fresh {channels=sticks.channels(stack,arm,active,hover);report.stick_updates+=1;}
++   if tick==1||tick%5==0 {let(g,a)=plant.imu_flu();sampled=noise.apply(g,a);}
++   if let Some(b)=bf.as_mut(){let(m,ar,mo,flags,bytes)=b.step(&plant,tick,channels,fresh,sampled.0,sampled.1)?;motors=m;armed=ar;mode=mo;report.arming_flags=flags;trace.write_all(&bytes)?;report.firmware_exchanges+=1;}
++   if let Some(tr)=transport.as_mut(){if tick%5==0{
++    let mut adapter=CogniPilotAdapter{exchange:|i:&crate::protocol::LockstepInputs,timeout|tr.exchange(i,timeout),origin_enu_m:None};
++    let s=SensorFrame{target_time_ns:tick as u64*125_000,gyro_flu_rad_s:sampled.0,specific_force_flu_m_s2:sampled.1,gnss:gnss.sample(plant.position(),plant.velocity(),tick as u64*125_000),simulator_state:None};
++    let response=adapter.step(&s,&PilotCommand{channels_us:channels,square_plan:None,reference:None},Duration::from_secs(if tick==5{30}else{2}))?;
++    motors=response.motors;armed=response.diagnostics.flight_state.armed;mode=response.diagnostics.flight_state.flight_mode==1;
++    trace.write_all(&motors.iter().flat_map(|v|v.to_le_bytes()).collect::<Vec<_>>())?;report.firmware_exchanges+=1;
++   }}
++   if stack=="ideal" {armed=arm;mode=true;let q=quaternion([sticks.roll,sticks.pitch,0.]);plant.set_ideal_attitude(q)?;motors=if active{[(sticks.thrust/TMAX).max(0.).sqrt().clamp(0.,1.) as f32;4]}else{[0.;4]};}
++   if (10.0..land_start).contains(&t) {ensure!(armed,"firmware failed to remain armed at {t:.3}; flags={}",report.arming_flags);ensure!(mode,"self-level mode not active at {t:.3}");}
++   plant.step(motors,DT)?;let p=plant.position();let e=plant.euler();
++   ensure!(p.iter().chain(e.iter()).all(|v|v.is_finite()),"nonfinite plant");let outside=!(p[0].abs()<24. && p[1].abs()<12. && p[2]<8.);
++   let tilt=(e[0].cos()*e[1].cos()).clamp(-1.,1.).acos().to_degrees();report.maximum_tilt_deg=report.maximum_tilt_deg.max(tilt);let excessive_tilt=tilt>=45.;
++   if t>=land_start && p[2]<0.13 && plant.vertical_speed().abs()<0.1 {ground_count+=1;}else{ground_count=0;}
++   if ground_count>=4000 {touchdown=true;}
++   report.armed_observed|=armed;report.mode_observed|=armed&&mode;
++   if !armed && p[2]<0.13 && plant.vertical_speed().abs()<0.1 && motors.iter().all(|v|*v<0.001){report.grounded_stopped_samples+=1;}else{report.grounded_stopped_samples=0;}
++   if (25.0..=end).contains(&t){let err=(0..3).map(|j|(p[j]-last_ref[1+j]).powi(2)).sum::<f64>().sqrt();sum+=err*err;count+=1;report.tracking_max_m=report.tracking_max_m.max(err);}
++   report.samples+=1;report.simulated_seconds=t;report.final_position=p;report.final_armed=armed;report.final_motors=motors;
++   if outside || excessive_tilt || tick%80==0 || tick==(finish/DT).round() as u32 {let row=vec![t,p[0],p[1],p[2],e[0],e[1],e[2],last_ref[1],last_ref[2],last_ref[3],f64::from(armed),f64::from(mode),motors[0] as f64,motors[1] as f64,motors[2] as f64,motors[3] as f64];writeln!(trajectory,"{}",row.iter().map(ToString::to_string).collect::<Vec<_>>().join(","))?;rows.push(row);}
++   if count>0 {report.tracking_rms_m=Some((sum/count as f64).sqrt());}
++   ensure!(!outside,"PURT envelope abort at {p:?}");ensure!(!excessive_tilt,"tilt abort {tilt:.2} deg at {t:.3}");
++  }
++  ensure!(report.armed_observed && report.mode_observed,"no valid armed self-level flight");
++  ensure!(report.grounded_stopped_samples>=4000 && !report.final_armed,"landing/disarm/motor-stop not verified");
++  ensure!(report.tracking_rms_m.is_some_and(|r|r<0.35)&&report.tracking_max_m<0.75,"commissioning accuracy threshold exceeded");
++  Ok(())
++ })();
++ report.wall_seconds=wall.elapsed().as_secs_f64();report.passed=result.is_ok();report.error=result.as_ref().err().map(|e|format!("{e:#}"));trajectory.flush()?;trace.flush()?;
++ fs::write(out.join("report.json"),serde_json::to_vec_pretty(&report)?)?;
++ let replay_cfg=json!({"width_m":10,"height_m":10,"scale":1,"altitude_m":2,"center_enu_m":[0,0],"lap_time_s":duration,"laps":1,"phase_law":"minimum_jerk_each_lap","id":cfg["id"]});
++ fs::write(out.join("replay.json"),serde_json::to_vec(&json!({"stack":stack,"passed":report.passed,"config":replay_cfg,"report":report,"rows":rows.iter().enumerate().map(|(i,r)| {let mut v=r[..7].to_vec();let speed=if i==0{0.}else{let prev=&rows[i-1];(1..4).map(|j|(r[j]-prev[j]).powi(2)).sum::<f64>().sqrt()/(r[0]-prev[0])};v.push(speed);v}).collect::<Vec<_>>()}))?)?;
++ println!("{}",serde_json::to_string(&report)?);result
++}
++#[cfg(test)] mod tests {use super::*;
++ #[test] fn common_sticks_have_known_center_hover_and_yaw_scale(){let s=Sticks{thrust:2.*9.80665,yaw_rate:200f64.to_radians(),..Sticks::default()};let cg=s.channels("cognipilot",true,true,0.6885);let bf=s.channels("betaflight",true,true,0.6885);assert_eq!(&cg[..2],&[1500,1500]);assert_eq!(bf[3],1000);assert_eq!(cg[3],1001);assert_eq!(cg[5],1500);assert_eq!(s.channels("betaflight",false,false,0.6885)[2],1000);}
++ #[test] fn noise_seed_repeats_and_profile_zero_is_exact(){let mut a=Noise{state:9,gyro:0.01,acc:0.1};let mut b=Noise{state:9,gyro:0.01,acc:0.1};for _ in 0..100{assert_eq!(a.apply([0.;3],[1.;3]),b.apply([0.;3],[1.;3]));}let mut z=Noise{state:9,gyro:0.,acc:0.};assert_eq!(z.apply([2.;3],[3.;3]),([2.;3],[3.;3]));}
 +}
 diff --git a/xtask/src/speed_score.rs b/xtask/src/speed_score.rs
 new file mode 100644

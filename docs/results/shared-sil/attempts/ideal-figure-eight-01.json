@@ -1,0 +1,55 @@
+{
+  "passed": true,
+  "stack": "ideal",
+  "shape": "figure-eight",
+  "simulated_seconds": 123.0,
+  "wall_seconds": 4.501740758,
+  "armed_observed": true,
+  "mode_observed": true,
+  "final_armed": false,
+  "final_motors": [
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "final_position": [
+    0.0010743758854067987,
+    0.0010896685924003003,
+    0.09836555706976113
+  ],
+  "tracking_rms_m": 0.05978215574090662,
+  "tracking_max_m": 0.1599737664410128,
+  "maximum_tilt_deg": 2.553425453517658,
+  "samples": 984000,
+  "firmware_exchanges": 0,
+  "offboard_updates": 12300,
+  "stick_updates": 30751,
+  "grounded_stopped_samples": 54731,
+  "arming_flags": 0,
+  "error": null,
+  "hashes": {
+    "config": "7ed46f0f8e5f9d5a85635f9babfffc4b2f4e74276f1112e91921d9bca2b1c785",
+    "firmware": "c4649110c5eaf43fb218fb34cdb492129faa235d1f99887264ca5a68a93f284e",
+    "offboard": "1d47b0048b790ffc667bf7f3932163ee543d7beebfd2482417c5318f8e57c291",
+    "plant": "3bde4ea6ed428ec9665849c766f3ffb873ee31b7bd08453d4c070ae353d4de0e",
+    "plant_description": "88fba5884c9aceed347921698633133129bbebd9ff60b0c752e68e1600e3fa66"
+  },
+  "sensor_profile": {
+    "accel_std_m_s2": 0.0,
+    "distribution": "12-uniform sum approximation; assumed diagnostic magnitudes, not measured hardware",
+    "gyro_std_rad_s": 0.0,
+    "imu_hz": 1600,
+    "level": "none",
+    "master_tick_hz": 8000,
+    "motor_vibration": "not yet modeled",
+    "position_feedback": "plant truth",
+    "position_loop_hz": 100,
+    "seed": 1,
+    "sensor_and_command_ingress": "BF packets at 8000Hz hold 1600Hz IMU; CG reads latest at 1600Hz (up to 0.5ms stick-delivery quantization)",
+    "stick_schedule_hz": 250
+  },
+  "qualification": "shared offboard loop, real native self-level firmware; commissioning flight, not a matched-hardware performance ranking",
+  "lap_start_s": 25.0,
+  "lap_end_s": 105.0
+}

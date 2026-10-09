@@ -1,3 +1,69 @@
+diff --git a/RigidBody/RigidBody6DOF.mo b/RigidBody/RigidBody6DOF.mo
+index c6496e0..4d822d7 100644
+--- a/RigidBody/RigidBody6DOF.mo
++++ b/RigidBody/RigidBody6DOF.mo
+@@ -1,5 +1,7 @@
+ within RigidBody;
+ partial model RigidBody6DOF "Six-degree-of-freedom rigid body"
++  parameter Boolean idealAttitude = false "Test-only prescribed orientation; full 6DOF remains the default";
++  input Real attitudeOverride[4] = {1,0,0,0};
+   parameter Real mass = 1.0 "Mass [kg]";
+   parameter Real g = 9.8 "Gravity [m/s^2]";
+   parameter Real ixx = 1.0 "Body inertia matrix xx entry [kg*m^2]";
+@@ -22,13 +24,13 @@ partial model RigidBody6DOF "Six-degree-of-freedom rigid body"
+   Real F_b[3] "Total non-gravity force in body frame [N]";
+   Real M_b[3] "Total moment in body frame [N*m]";
+   output Real p[3](start = p_start, each fixed = true) "World position [m]";
+-  output Real v_b[3](start = v_b_start, each fixed = true) "Body velocity [m/s]";
+-  output Real q[4](start = q_start, each fixed = true) "Quaternion w,x,y,z";
+-  output Real omega[3](start = omega_start, each fixed = true)
++  output Real v_b[3](start = v_b_start, each fixed = not idealAttitude) "Body velocity [m/s]";
++  output Real q[4](start = q_start, each fixed = not idealAttitude) "Quaternion w,x,y,z";
++  output Real omega[3](start = omega_start, each fixed = not idealAttitude)
+     "Body angular velocity [rad/s]";
+   output Real R[3, 3](start = identity(3))
+     "Direction cosine matrix, body to world";
+-  output Real v_w[3](start = v_b_start) "World velocity [m/s]";
++  output Real v_w[3](start = v_b_start, each fixed = idealAttitude) "World velocity [m/s]";
+   output Real a_b[3](start = {0, 0, 0}) "Body specific force [m/s^2]";
+ 
+ protected
+@@ -62,10 +64,19 @@ equation
+     state, wrench, physicalParameters);
+ 
+   R = LieGroups.SO3.Quat.to_DCM(state.attitude);
+-  v_w = worldPositionRate;
++
+   a_b = F_b / mass;
+-  der(p) = worldPositionRate;
+-  der(v_b) = bodyVelocityRate;
+-  der(q) = attitudeRate;
+-  der(omega) = bodyAngularVelocityRate;
++  if idealAttitude then
++    q = attitudeOverride;
++    omega = {0.0,0.0,0.0};
++    v_b = transpose(R)*v_w;
++    der(p) = v_w;
++    der(v_w) = R*F_b/mass + {0,0,-g};
++  else
++    v_w = worldPositionRate;
++    der(p) = worldPositionRate;
++    der(v_b) = bodyVelocityRate;
++    der(q) = attitudeRate;
++    der(omega) = bodyAngularVelocityRate;
++  end if;
+ end RigidBody6DOF;
+diff --git a/Benchmarks/IdealAttitudePlant.mo b/Benchmarks/IdealAttitudePlant.mo
+new file mode 100644
+index 0000000..b13935a
+--- /dev/null
++++ b/Benchmarks/IdealAttitudePlant.mo
+@@ -0,0 +1,5 @@
++within Benchmarks;
++model IdealAttitudePlant "Test gate: common RDD2 forces, motors, drag and ground; prescribed attitude only"
++  input Real idealQuaternion[4](start={1,0,0,0});
++  extends Vehicles.Rdd2.Plant(dynamics(idealAttitude=true,attitudeOverride=idealQuaternion));
++end IdealAttitudePlant;
 diff --git a/Benchmarks/PositionLoop.mo b/Benchmarks/PositionLoop.mo
 new file mode 100644
 index 0000000..2ca1f2f
@@ -73,7 +139,7 @@ index 0000000..239e616
 +end PositionOracle;
 diff --git a/Benchmarks/Trajectory.mo b/Benchmarks/Trajectory.mo
 new file mode 100644
-index 0000000..6a7e7b0
+index 0000000..2bf9f48
 --- /dev/null
 +++ b/Benchmarks/Trajectory.mo
 @@ -0,0 +1,57 @@
@@ -122,7 +188,7 @@ index 0000000..6a7e7b0
 +  endPoint = if leg < 0.5 then {width,0.0} elseif leg < 1.5 then {width,height} elseif leg < 2.5 then {0.0,height} else {0.0,0.0};
 +  delta = endPoint-startPoint;
 +  position = if shape == 3 then {width/2.0*sin(q),height/2.0*sin(2.0*q),altitude}
-+    elseif shape == 2 then {startPoint[1]+delta[1]*blend-width/2.0,startPoint[2]+delta[2]*blend-height/2.0,altitude}
++    elseif shape == 2 then {startPoint[1]+delta[1]*blend,startPoint[2]+delta[2]*blend,altitude}
 +    elseif shape == 1 then {if elapsed >= 1.0 then 0.5 else 0.0,0.0,altitude} else {0.0,0.0,altitude};
 +  velocity = if shape == 3 then {width/2.0*cos(q)*dq,height*cos(2.0*q)*dq,0.0}
 +    elseif shape == 2 then {delta[1]*blendRate,delta[2]*blendRate,0.0} else zeros(3);
