@@ -28,7 +28,7 @@ The diagram describes the **implemented shared-controller SIL architecture**. Bo
 
 | Repository | Verified base revision | What it contributes / where it lives |
 |---|---|---|
-| [An1Sura/PURT-UAS_Autonomous_Drone_Racing](https://github.com/An1Sura/PURT-UAS_Autonomous_Drone_Racing) | This document's containing commit | Our configuration, dependency patches, experiment evidence, docs and website. It does not vendor entire firmware repositories. |
+| [An1Sura/PURT-UAS_Autonomous_Drone_Racing_Workspace](https://github.com/An1Sura/PURT-UAS_Autonomous_Drone_Racing_Workspace) | This document's containing commit | Our configuration, dependency patches, experiment evidence, docs and website. It does not vendor entire firmware repositories. |
 | [CogniPilot/cognipilot_workspace](https://github.com/CogniPilot/cognipilot_workspace) | Workspace ancestry, not a second installed dependency | Basis of root `devenv.nix`, `devenv/`, and `setup`. Do not clone another workspace inside this one. Root history identifies our actual orchestration code. |
 | [CogniPilot/modelica_models](https://github.com/CogniPilot/modelica_models/tree/a41f7c0c00b55c1bf54f03c9b66b901ba8e43c6f) | `a41f7c0c00b55c1bf54f03c9b66b901ba8e43c6f` | `src/modelica_models`: `Vehicles.Rdd2.Plant`, motor/rigid-body models, `Vehicles.Rdd2.LogLinearController`, and `GuidanceController`. Our `Benchmarks.*` wrappers are additions preserved in a patch; they are not claimed as upstream features. |
 | [CogniPilot/rumoca](https://github.com/CogniPilot/rumoca/tree/4d0e521d9a0bd2527808dbce2c5689834d1a0349) | `4d0e521d9a0bd2527808dbce2c5689834d1a0349` | `src/rumoca`: Modelica compiler. The exercised executable reports **0.10.0**. It generates the plant and the offboard C; it is not a flight stack. |
