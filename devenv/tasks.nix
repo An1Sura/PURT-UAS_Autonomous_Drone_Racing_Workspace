@@ -335,9 +335,12 @@ let
     map (
       output:
       lib.nameValuePair "cache:${output.repository}:${output.attribute}" (
-        task output.repository "Realize ${output.repository}#${output.attribute} for Cachix." ''
+        (task output.repository "Realize ${output.repository}#${output.attribute} for Cachix." ''
           nix build --no-link .#${output.attribute}
-        ''
+        '')
+        // {
+          after = lib.optional (output.repository == "rumoca") "rumoca:vendor-fix";
+        }
       )
     ) cacheFlakeOutputs
   );
@@ -402,6 +405,16 @@ let
           after = [ "synapse-fbs:build" ];
         };
 
+      "rumoca:vendor-fix" =
+        task "rumoca" "Apply the reviewed vendor checksum fix to the pinned Rumoca flake."
+          ''
+            test "$(git rev-parse HEAD)" = 4d0e521d9a0bd2527808dbce2c5689834d1a0349
+            if ! git apply --reverse --check --include=flake.nix ${root}/patches/rumoca-runtime-fixes.patch; then
+              git apply --check --include=flake.nix ${root}/patches/rumoca-runtime-fixes.patch
+              git apply --include=flake.nix ${root}/patches/rumoca-runtime-fixes.patch
+            fi
+          '';
+
       "rumoca:compiler" =
         (task "rumoca" "Build the local Rumoca compiler." ''
           nix build .#rumoca --out-link ${resultRoot}/rumoca
@@ -415,7 +428,10 @@ let
           nix build .#rumoca-python-env --out-link ${resultRoot}/rumoca-python
         '')
         // {
-          after = [ "results:prepare" ];
+          after = [
+            "results:prepare"
+            "rumoca:vendor-fix"
+          ];
         };
 
       "rumoca:javascript" = task "rumoca" "Build the local Rumoca JavaScript package." ''
@@ -957,16 +973,21 @@ let
         };
 
       "rdd2:benchmark:shared-loop:check" =
-        (task "cerebri_rdd2" "Generate and numerically verify the PDF shared offboard trajectory and position loop." ''
-          cargo run --release --locked --package cerebri-rdd2-xtask -- shared-loop-check \
-            ${root}/docs/config/shared-position-benchmark.json \
-            ${source "modelica_models"} ${resultRoot}/rumoca/bin/rumoca \
-            ${root}/artifacts/shared-loop
-        '') // {
-          after = [ "rumoca:compiler" "sources:ensure:modelica_models" ];
+        (task "cerebri_rdd2"
+          "Generate and numerically verify the PDF shared offboard trajectory and position loop."
+          ''
+            cargo run --release --locked --package cerebri-rdd2-xtask -- shared-loop-check \
+              ${root}/docs/config/shared-position-benchmark.json \
+              ${source "modelica_models"} ${resultRoot}/rumoca/bin/rumoca \
+              ${root}/artifacts/shared-loop
+          ''
+        )
+        // {
+          after = [
+            "rumoca:compiler"
+            "sources:ensure:modelica_models"
+          ];
         };
-
-
 
       "rdd2:benchmark:shared-sil:betaflight" =
         (task "cerebri_rdd2" "Run the fixed shared-controller betaflight commissioning figure eight." ''
@@ -976,7 +997,14 @@ let
             ${root}/artifacts/shared-loop/libshared_loop.so \
             ${source "betaflight"}/obj/main/betaflight_SITL.elf \
             betaflight "${root}/artifacts/shared-sil/betaflight-$(date +%s%N)" figure-eight
-        '') // { after = [ "rdd2:benchmark:shared-loop:check" "rdd2:simulation:sil:test" "rdd2:benchmark:betaflight:shared-build" ]; };
+        '')
+        // {
+          after = [
+            "rdd2:benchmark:shared-loop:check"
+            "rdd2:simulation:sil:test"
+            "rdd2:benchmark:betaflight:shared-build"
+          ];
+        };
 
       "rdd2:benchmark:shared-sil:cognipilot" =
         (task "cerebri_rdd2" "Run the fixed shared-controller cognipilot commissioning figure eight." ''
@@ -986,30 +1014,45 @@ let
             ${root}/artifacts/shared-loop/libshared_loop.so \
             "$PWD/build-native_sim/zephyr/zephyr.exe" \
             cognipilot "${root}/artifacts/shared-sil/cognipilot-$(date +%s%N)" figure-eight
-        '') // { after = [ "rdd2:benchmark:shared-loop:check" "rdd2:simulation:sil:test" ]; };
+        '')
+        // {
+          after = [
+            "rdd2:benchmark:shared-loop:check"
+            "rdd2:simulation:sil:test"
+          ];
+        };
 
       "rdd2:benchmark:plan" =
-        (task "cerebri_rdd2" "Calculate figure-eight size, timing, profiles and PURT fit from JSON." ''
-          cargo run --release --locked --package cerebri-rdd2-xtask -- figure-plan \
-            ${root}/docs/config/figure-eight.json ${root}/docs/config/purt-environment.json \
-            "$PWD/artifacts/figure-plan"
-        '');
-
+        task "cerebri_rdd2" "Calculate figure-eight size, timing, profiles and PURT fit from JSON."
+          ''
+            cargo run --release --locked --package cerebri-rdd2-xtask -- figure-plan \
+              ${root}/docs/config/figure-eight.json ${root}/docs/config/purt-environment.json \
+              "$PWD/artifacts/figure-plan"
+          '';
 
       "rdd2:benchmark:betaflight:build" =
         (task "betaflight" "Reproduce historical research SITL; not the PDF shared-position benchmark." ''
           test "$(git rev-parse HEAD)" = 744f95fa31542c4c906f18072348a366ab11b6b7
           git apply --reverse --check ../../patches/betaflight-sitl-speed.patch
           make TARGET=SITL -j4
-        '') // { after = [ "sources:ensure:betaflight" ]; };
+        '')
+        // {
+          after = [ "sources:ensure:betaflight" ];
+        };
 
       "rdd2:benchmark:betaflight:shared-build" =
-        (task "betaflight" "Build unchanged Betaflight control algorithms with simulator transport fixes and PID synchronization." ''
-          test "$(git rev-parse HEAD)" = 744f95fa31542c4c906f18072348a366ab11b6b7
-          git apply --reverse --check ../../patches/betaflight-sitl-lockstep.patch
-          git diff --exit-code HEAD -- src/main/flight src/main/fc src/main/sensors
-          make TARGET=SITL EXTRA_FLAGS="-DENABLE_SIMULATOR_GYROPID_SYNC=1 -DADR_LOCKSTEP=1" -j4
-        '') // { after = [ "sources:ensure:betaflight" ]; };
+        (task "betaflight"
+          "Build unchanged Betaflight control algorithms with simulator transport fixes and PID synchronization."
+          ''
+            test "$(git rev-parse HEAD)" = 744f95fa31542c4c906f18072348a366ab11b6b7
+            git apply --reverse --check ../../patches/betaflight-sitl-lockstep.patch
+            git diff --exit-code HEAD -- src/main/flight src/main/fc src/main/sensors
+            make TARGET=SITL EXTRA_FLAGS="-DENABLE_SIMULATOR_GYROPID_SYNC=1 -DADR_LOCKSTEP=1" -j4
+          ''
+        )
+        // {
+          after = [ "sources:ensure:betaflight" ];
+        };
 
       "rdd2:benchmark:betaflight:hover" =
         (task "cerebri_rdd2" "Check Betaflight hover before attempting a moving trajectory." ''
@@ -1017,7 +1060,13 @@ let
             ${source "betaflight"}/obj/main/betaflight_SITL.elf \
             ${source "modelica_models"}/artifacts/vehicles/rdd2/plant/Vehicles_Rdd2_Plant \
             "$PWD/artifacts/betaflight-hover/run-$(date +%s%N)" --hover
-        '') // { after = [ "rdd2:benchmark:betaflight:build" "rdd2:simulation:sil:test" ]; };
+        '')
+        // {
+          after = [
+            "rdd2:benchmark:betaflight:build"
+            "rdd2:simulation:sil:test"
+          ];
+        };
 
       "rdd2:benchmark:betaflight:figure-eight" =
         (task "cerebri_rdd2" "Exercise Betaflight native figure-eight mode on the common FMI plant." ''
@@ -1025,7 +1074,14 @@ let
             ${source "betaflight"}/obj/main/betaflight_SITL.elf \
             ${source "modelica_models"}/artifacts/vehicles/rdd2/plant/Vehicles_Rdd2_Plant \
             "$PWD/artifacts/betaflight-figure-eight/run-$(date +%s%N)" --config ${root}/docs/config/betaflight-figure-eight.json
-        '') // { after = [ "rdd2:benchmark:betaflight:build" "rdd2:simulation:sil:test" "rdd2:benchmark:plan" ]; };
+        '')
+        // {
+          after = [
+            "rdd2:benchmark:betaflight:build"
+            "rdd2:simulation:sil:test"
+            "rdd2:benchmark:plan"
+          ];
+        };
 
       "rdd2:benchmark:cognipilot:figure-eight" =
         (task "cerebri_rdd2" "Fly CogniPilot with the shared timed figure-eight reference." ''
@@ -1036,7 +1092,13 @@ let
             --plant-directory ${source "modelica_models"}/artifacts/vehicles/rdd2/plant/Vehicles_Rdd2_Plant \
             --report "$PWD/artifacts/cognipilot-figure-eight/report.json" \
             --trajectory "$PWD/artifacts/cognipilot-figure-eight/mission-trajectory.csv"
-        '') // { after = [ "rdd2:simulation:sil:test" "rdd2:benchmark:plan" ]; };
+        '')
+        // {
+          after = [
+            "rdd2:simulation:sil:test"
+            "rdd2:benchmark:plan"
+          ];
+        };
 
       "rdd2:benchmark:cognipilot:reference" =
         (task "cerebri_rdd2" "Fly CogniPilot with the shared time-indexed square reference." ''
