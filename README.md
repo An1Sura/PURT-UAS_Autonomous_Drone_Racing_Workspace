@@ -1,4 +1,4 @@
-# Autonomous Drone Racing Benchmark
+# PURT-UAS Autonomous Drone Racing
 
 **Our goal is to make CogniPilot fly the same figure-eight course faster than Betaflight while maintaining accurate, reliable flight.**
 
@@ -6,7 +6,7 @@ Betaflight is the performance baseline; CogniPilot is the stack we aim to improv
 
 **This repository is the SIL stage before our separate latency tests.** It establishes working autonomous flights, shared physics, command interfaces and recorded baseline behavior. Subsequent latency tests will investigate control, communication and driver timing to guide CogniPilot improvements. The current flight recordings do not isolate those latencies or prove that CogniPilot is already faster. Hardware-in-the-loop (HIL) and physical flights at PURT build on this foundation.
 
-[**Watch the Flight Simulation & Stats page**](https://an1sura.github.io/autonomous-drone-bench/sim/) · [Open the VM-connected simulation](http://127.0.0.1:8766/sim/) · [PDF-aligned benchmark](docs/shared-position-benchmark.md) · [Repository source map](docs/repository-map.md)
+[**Watch the Flight Simulation & Stats page**](https://an1sura.github.io/PURT-UAS_Autonomous_Drone_Racing/sim/) · [Open the VM-connected simulation](http://127.0.0.1:8766/sim/) · [PDF-aligned benchmark](docs/shared-position-benchmark.md) · [Repository source map](docs/repository-map.md)
 
 **Current milestone (October 9):** both real firmware stacks completed the new **10 × 10 m figure eight at 2 m altitude**, using the same generated offboard position loop and shared plant. The 80-second commissioning reference produced **0.0667 m Betaflight RMS** and **0.1342 m CogniPilot RMS**, with verified landing/disarm/motor stop. These are initial noise-free baselines, not a fastest-flight or hardware-latency result. Old replay payloads were removed; [new recordings and qualification limits](docs/shared-position-benchmark.md) replace them.
 
@@ -75,7 +75,7 @@ Both use ground-truth offboard position feedback and a noise-free 1600 Hz IMU so
 
 | Repository / tool | Role in this project |
 | --- | --- |
-| [This benchmark workspace](https://github.com/An1Sura/autonomous-drone-bench) | Experiment configuration, dependency patches, documentation, published recordings and site |
+| [This benchmark workspace](https://github.com/An1Sura/PURT-UAS_Autonomous_Drone_Racing) | Experiment configuration, dependency patches, documentation, published recordings and site |
 | [CogniPilot/cognipilot_workspace](https://github.com/CogniPilot/cognipilot_workspace) | Basis of this workspace's Devenv setup and development profiles |
 | [CogniPilot/cerebri_rdd2](https://github.com/CogniPilot/cerebri_rdd2) | RDD2 firmware, native Rust simulation runner and patched benchmark interfaces |
 | [CogniPilot/modelica_models](https://github.com/CogniPilot/modelica_models) | Modelica vehicle/plant definitions |
@@ -93,8 +93,8 @@ The [Lean coverage report](docs/formal-verification.md) explains the proofs of p
 The exercised flight environment is an Ubuntu 24.04 ARM64 Linux VM. Use this repository as the workspace:
 
 ```sh
-git clone https://github.com/An1Sura/autonomous-drone-bench.git
-cd autonomous-drone-bench
+git clone https://github.com/An1Sura/PURT-UAS_Autonomous_Drone_Racing.git
+cd PURT-UAS_Autonomous_Drone_Racing
 ./setup rdd2
 ```
 

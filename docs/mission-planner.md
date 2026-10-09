@@ -1,6 +1,6 @@
 # Flight Simulation & Stats
 
-The [public simulation](https://an1sura.github.io/autonomous-drone-bench/sim/) shows the selected October 5 speed-search recordings: one 8 × 4 m figure eight at 1.5 m altitude. CogniPilot uses a 23.7-second smooth reference. Betaflight uses its separately tested native-pattern setting. See [exact settings, errors and repeats](speed-search.md).
+The [public simulation](https://an1sura.github.io/PURT-UAS_Autonomous_Drone_Racing/sim/) shows the selected October 5 speed-search recordings: one 8 × 4 m figure eight at 1.5 m altitude. CogniPilot uses a 23.7-second smooth reference. Betaflight uses its separately tested native-pattern setting. See [exact settings, errors and repeats](speed-search.md).
 
 The fixed page has no editable stats controls. `docs/config/stack-configs.json` holds each tested configuration, while `figure-eight.json` supplies the shared geometry and CogniPilot reference. The native server rejects mismatched geometry. **Rerun both** runs one fresh attempt per stack, preserving failures and scoring accuracy separately from native completion. Three-repeat selection is documented in the campaign; a single button click is not that qualification.
 
