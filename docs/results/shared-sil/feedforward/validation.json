@@ -1,0 +1,19 @@
+{
+  "stock_parity": {
+    "betaflight": "trajectory.csv and actuator-trace.bin byte-identical with preserved pre-change firmware",
+    "cognipilot": "trajectory.csv and actuator-trace.bin byte-identical with preserved pre-change firmware"
+  },
+  "rust_tests": {
+    "passed": 47,
+    "ignored": 2
+  },
+  "betaflight_pid_tests_passed": 16,
+  "generated_cognipilot_c_checks": "passed",
+  "ideal_scenarios": [
+    "hover",
+    "step",
+    "square",
+    "figure-eight"
+  ],
+  "scope": "SIL commissioning; remaining gates in feedforward-update.md"
+}

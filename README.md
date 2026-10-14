@@ -8,7 +8,7 @@ Betaflight is the performance baseline; CogniPilot is the stack we aim to improv
 
 [**Watch the Flight Simulation & Stats page**](https://an1sura.github.io/PURT-UAS_Autonomous_Drone_Racing_Workspace/sim/) · [Open the VM-connected simulation](http://127.0.0.1:8766/sim/) · [PDF-aligned benchmark](docs/shared-position-benchmark.md) · [Repository source map](docs/repository-map.md)
 
-**Current milestone (October 9):** both real firmware stacks completed the new **10 × 10 m figure eight at 2 m altitude**, using the same generated offboard position loop and shared plant. The 80-second commissioning reference produced **0.0667 m Betaflight RMS** and **0.1342 m CogniPilot RMS**, with verified landing/disarm/motor stop. These are initial noise-free baselines, not a fastest-flight or hardware-latency result. Old replay payloads were removed; [new recordings and qualification limits](docs/shared-position-benchmark.md) replace them.
+**Current milestone (October 13):** both stacks now accept the updated PDF’s shared rate/acceleration feed-forward and fly the **10 × 10 m figure eight at 2 m altitude** with a **40-second reference**. The fixed seed-1 noise-free feed-forward runs measured **0.1425 m Betaflight RMS** and **0.2139 m CogniPilot RMS**, with verified landing/disarm/motor stop. Off/on noise repeats and the rate-only diagnostic are reported separately. Feed-forward helped Betaflight but worsened CogniPilot with its current gains; this is not a fastest-flight or latency claim. [Results and qualification limits](docs/feedforward-update.md).
 
 ## What this project does
 
@@ -18,7 +18,7 @@ The simulator acts as the drone: it produces sensor readings, receives motor com
 flowchart LR
     T[Shared 10 x 10 m trajectory eFMU] --> C[Shared position-loop eFMU]
     P[Shared Rumoca quadrotor plant] --> C
-    C --> A[Attitude and thrust to stack sticks]
+    C --> A[Attitude, thrust, rate and acceleration feed-forward]
     A --> BF[Betaflight ANGLE]
     A --> CG[CogniPilot ATTITUDE]
     BF --> P
@@ -36,7 +36,7 @@ The comparison must hold these conditions constant:
 - Sensor models, update rates, noise, delays and disturbances.
 - Lap start/finish rules, tracking tolerances, failure criteria and scoring windows.
 
-Shared physics is working. The new harness shares reference timing and takeoff/landing. Sensor delivery quantization, noise qualification and hardware calibration remain active work. The physical drones are intended to be identical; the current RDD2 plant is a shared test vehicle, **not yet a measured calibration of those drones**.
+Shared physics is working. The new harness shares reference timing and takeoff/landing. The repeated diagnostic noise matrix is recorded; sensor-delivery quantization, matched gain tuning and hardware calibration remain active work. The physical drones are intended to be identical; the current RDD2 plant is a shared test vehicle, **not yet a measured calibration of those drones**.
 
 ## How SIL supports making CogniPilot faster
 
@@ -50,26 +50,26 @@ Keep the **same course size** for both stacks, then progressively shorten the re
 
 The lap clock measures **flight around the course**, separately from estimator warmup, arming, takeoff, end hold and landing. Total mission time is still reported. Simulation time is not the computer's execution time or the replay playback speed.
 
-The historical search used ≤0.25 m course RMS, ≤0.50 m maximum, complete-course gates and verified landing, with three repeats. Same-time tracking was reported separately. Those results remain available, but the new shared-controller campaign must establish its own agreed criteria before running. See [the speed-search evidence](docs/speed-search.md).
+The historical search used ≤0.25 m course RMS, ≤0.50 m maximum, complete-course gates and verified landing, with three repeats. Same-time tracking was reported separately. Those results remain available, but the shared-controller commissioning campaign uses the previously declared RMS <0.35 m and maximum <0.75 m gates. A final non-inferiority margin and speed-ranking protocol remain to be agreed. See [the speed-search evidence](docs/speed-search.md).
 
 ## Current implementation
 
 | Component | Verified now | Still required by the PDF |
 |---|---|---|
-| Shared course | 10 × 10 m, z = 2 m; 100 Hz generated-C trajectory; 8,001 samples and two exact reference repeats | Repeated noisy campaign and speed search |
-| Shared position loop | Existing RDD2 log-linear controller wrapped as a separate eFMU; numerical comparison with GuidanceController POSITION passes | Empirical hover-throttle calibration and expanded diagnostics |
-| Firmware | Real ANGLE/ATTITUDE flights, timestamped packet exchange and verified landing | Repeated noisy qualification and hardware sensor/timing parity |
+| Shared course | 10 × 10 m, z = 2 m; 100 Hz generated-C trajectory; 4,001 samples at 40 s and two exact reference repeats | Speed-limit search |
+| Shared position loop | Existing RDD2 log-linear controller wrapped as a separate eFMU; numerical comparison with GuidanceController POSITION passes; jerk/snap and feed-forward checks; measured SIL hover throttle | Expanded estimated-attitude and torque-share diagnostics |
+| Firmware | Real ANGLE/ATTITUDE flights; bounded feed-forward; 60 diagnostic off/on noise runs | Matched response/Kf tuning and hardware sensor/timing parity |
 | PURT | Approximate envelope and unchanged black-grid / green-boundary display | Surveyed origin, clear volume, obstacle boxes and calibrated MoCap coverage |
-| Source provenance | [Repository map](docs/repository-map.md), base revisions, dependency patches and generated-code hashes | Hardware measurements and qualification campaign hashes |
+| Source provenance | [Repository map](docs/repository-map.md), base revisions, dependency patches and generated-code hashes | Hardware measurements and hardware-target qualification |
 
 ## New commissioning recordings
 
 | Stack | Shared lap reference | Same-time tracking RMS / maximum | Complete run |
 |---|---|---|---|
-| Betaflight ANGLE | 80 s | 0.0667 / 0.1751 m | 123 s, landed/disarmed |
-| CogniPilot ATTITUDE | 80 s | 0.1342 / 0.2712 m | 123 s, landed/disarmed |
+| Betaflight ANGLE, feed-forward on | 40 s | 0.1425 / 0.3485 m | 83 s, landed/disarmed |
+| CogniPilot ATTITUDE, feed-forward on | 40 s | 0.2139 / 0.5653 m | 83 s, landed/disarmed |
 
-Both use ground-truth offboard position feedback and a noise-free 1600 Hz IMU source. Betaflight receives held samples at 8000 Hz; CogniPilot exchanges at 1600 Hz. This difference remains explicit. The 80 s value is a timed-reference duration, not an independently detected fastest lap. Historical experiment reports remain in Git history and documentation; their old replay payloads are removed.
+Both use ground-truth offboard position feedback and a noise-free 1600 Hz IMU source. Betaflight receives held samples at 8000 Hz; CogniPilot exchanges at 1600 Hz. This difference remains explicit. The 40 s value is a timed-reference duration, not an independently detected fastest lap. Historical experiment reports remain in Git history and documentation; their old replay payloads are removed.
 
 ## What the repositories and tools do
 
@@ -120,7 +120,7 @@ devenv -P rdd2 tasks run rdd2:benchmark:cognipilot:figure-eight
 devenv -P rdd2 up mission-planner
 ```
 
-The service's internal process name is `mission-planner`; the user-facing page is **Flight Simulation & Stats**. It currently uses a fixed configuration with no editable stats controls. The new page shows the requested course and new shared-controller recordings. Launch new shared-SIL runs with the native command or tasks documented above; the legacy server API remains a historical diagnostic. The [startup guide](docs/mission-planner.md) explains both.
+The service's internal process name is `mission-planner`; the user-facing page is **Flight Simulation & Stats**. It currently uses a fixed configuration with no editable stats controls. The new page shows the requested course and new shared-controller recordings, including FF off, rate-only and rate-plus-acceleration variants. Launch new shared-SIL runs with the native command or tasks documented above; the legacy server API remains a historical diagnostic. The [startup guide](docs/mission-planner.md) explains both.
 
 The original qualification workflow remains available:
 

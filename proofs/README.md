@@ -26,3 +26,9 @@ See [the coverage ledger](../docs/formal-verification.md), [the theorem source](
 Compared the current Cerebri patch with the reviewed October 5 snapshot at `eb293dc5fa3b53daad69ad96d2621f98016f5d55`. All existing mathematical implementation sections, including `figure_config.rs`, `reference.rs` and the historical adapters, are byte-identical. Changes are limited to command registration, an optional ideal-attitude plant input, and new `shared_loop.rs`, `shared_loop_shim.c`, `shared_sil.rs` files. No patch sections were removed. The five other snapshot files are unchanged. The Cerebri checksum is refreshed after this review; the Lean specification and axiom allowlist remain unchanged.
 
 This does **not** extend formal coverage to the new eFMU controller, simulator scheduler, landing detector or firmware. The new minimum-jerk trajectory uses the same analytic figure-eight equations, but its generated floating-point implementation has numerical checks rather than a refinement proof. See the [coverage ledger](../docs/formal-verification.md).
+
+## October 13 feed-forward review
+
+The existing `figure_config.rs`, `reference.rs`, and `speed_score.rs` patch sections were compared byte-for-byte with the previous reviewed snapshot and are unchanged. The Cerebri snapshot now additionally includes shared-controller feed-forward transport, firmware bindings and native experiment code. Its checksum is updated as a change detector, not as a proof of these additions.
+
+New nominal-trajectory jerk, snap, body-rate and angular-acceleration calculations have independent numerical derivative checks. The Lean theorems do **not** establish equivalence to these generated calculations, closed-loop stability, failsafe correctness, or hardware safety. See [the feed-forward implementation record](../docs/feedforward-update.md).

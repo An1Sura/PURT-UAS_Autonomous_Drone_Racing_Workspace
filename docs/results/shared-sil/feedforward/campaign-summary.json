@@ -1,0 +1,195 @@
+{
+  "cells": [
+    {
+      "completed_reference_windows": 5,
+      "mode": "off",
+      "noise": "none",
+      "passed": 5,
+      "rms_max_completed": 0.2174115821643549,
+      "rms_mean_completed": 0.2174115821643549,
+      "rms_min_completed": 0.2174115821643549,
+      "runs": 5,
+      "stack": "betaflight",
+      "worst_tracking_max_m": 0.5394366335352107,
+      "worst_upper_saturation_fraction": 0.0
+    },
+    {
+      "completed_reference_windows": 5,
+      "mode": "omega_alpha",
+      "noise": "none",
+      "passed": 5,
+      "rms_max_completed": 0.14251594254152272,
+      "rms_mean_completed": 0.14251594254152272,
+      "rms_min_completed": 0.14251594254152272,
+      "runs": 5,
+      "stack": "betaflight",
+      "worst_tracking_max_m": 0.34847069830515914,
+      "worst_upper_saturation_fraction": 0.0
+    },
+    {
+      "completed_reference_windows": 5,
+      "mode": "off",
+      "noise": "realistic",
+      "passed": 5,
+      "rms_max_completed": 0.21751243159488928,
+      "rms_mean_completed": 0.21724932626882612,
+      "rms_min_completed": 0.21683436703155,
+      "runs": 5,
+      "stack": "betaflight",
+      "worst_tracking_max_m": 0.5390611776885552,
+      "worst_upper_saturation_fraction": 0.0
+    },
+    {
+      "completed_reference_windows": 5,
+      "mode": "omega_alpha",
+      "noise": "realistic",
+      "passed": 5,
+      "rms_max_completed": 0.1430116368206363,
+      "rms_mean_completed": 0.14269554448121907,
+      "rms_min_completed": 0.1424193031650239,
+      "runs": 5,
+      "stack": "betaflight",
+      "worst_tracking_max_m": 0.3497609485358221,
+      "worst_upper_saturation_fraction": 0.0
+    },
+    {
+      "completed_reference_windows": 5,
+      "mode": "off",
+      "noise": "harsh",
+      "passed": 5,
+      "rms_max_completed": 0.2186185011209092,
+      "rms_mean_completed": 0.21752276019576366,
+      "rms_min_completed": 0.21526527166003484,
+      "runs": 5,
+      "stack": "betaflight",
+      "worst_tracking_max_m": 0.5464653936955645,
+      "worst_upper_saturation_fraction": 0.0
+    },
+    {
+      "completed_reference_windows": 5,
+      "mode": "omega_alpha",
+      "noise": "harsh",
+      "passed": 5,
+      "rms_max_completed": 0.14441382735955952,
+      "rms_mean_completed": 0.14336519925766458,
+      "rms_min_completed": 0.14145443691497878,
+      "runs": 5,
+      "stack": "betaflight",
+      "worst_tracking_max_m": 0.35934576703510646,
+      "worst_upper_saturation_fraction": 0.0
+    },
+    {
+      "completed_reference_windows": 5,
+      "mode": "off",
+      "noise": "none",
+      "passed": 5,
+      "rms_max_completed": 0.188374400522869,
+      "rms_mean_completed": 0.188374400522869,
+      "rms_min_completed": 0.188374400522869,
+      "runs": 5,
+      "stack": "cognipilot",
+      "worst_tracking_max_m": 0.47086363454862634,
+      "worst_upper_saturation_fraction": 0.0
+    },
+    {
+      "completed_reference_windows": 5,
+      "mode": "omega_alpha",
+      "noise": "none",
+      "passed": 5,
+      "rms_max_completed": 0.21390786832063113,
+      "rms_mean_completed": 0.21390786832063116,
+      "rms_min_completed": 0.21390786832063113,
+      "runs": 5,
+      "stack": "cognipilot",
+      "worst_tracking_max_m": 0.565316973006387,
+      "worst_upper_saturation_fraction": 0.0
+    },
+    {
+      "completed_reference_windows": 5,
+      "mode": "off",
+      "noise": "realistic",
+      "passed": 5,
+      "rms_max_completed": 0.17262867970253787,
+      "rms_mean_completed": 0.17246721568639456,
+      "rms_min_completed": 0.17224897334682493,
+      "runs": 5,
+      "stack": "cognipilot",
+      "worst_tracking_max_m": 0.4687448045753615,
+      "worst_upper_saturation_fraction": 0.0
+    },
+    {
+      "completed_reference_windows": 5,
+      "mode": "omega_alpha",
+      "noise": "realistic",
+      "passed": 5,
+      "rms_max_completed": 0.22024938911629735,
+      "rms_mean_completed": 0.21965065977091353,
+      "rms_min_completed": 0.219033108839728,
+      "runs": 5,
+      "stack": "cognipilot",
+      "worst_tracking_max_m": 0.5788218409202415,
+      "worst_upper_saturation_fraction": 0.0
+    },
+    {
+      "completed_reference_windows": 5,
+      "mode": "off",
+      "noise": "harsh",
+      "passed": 5,
+      "rms_max_completed": 0.17348880198480554,
+      "rms_mean_completed": 0.17232432251246324,
+      "rms_min_completed": 0.17122369565292703,
+      "runs": 5,
+      "stack": "cognipilot",
+      "worst_tracking_max_m": 0.4709918663902929,
+      "worst_upper_saturation_fraction": 0.0
+    },
+    {
+      "completed_reference_windows": 5,
+      "mode": "omega_alpha",
+      "noise": "harsh",
+      "passed": 5,
+      "rms_max_completed": 0.2235887866992068,
+      "rms_mean_completed": 0.22034455628147911,
+      "rms_min_completed": 0.2175194778028914,
+      "runs": 5,
+      "stack": "cognipilot",
+      "worst_tracking_max_m": 0.5886408592484832,
+      "worst_upper_saturation_fraction": 0.0
+    }
+  ],
+  "completed_runs": 60,
+  "exported_at_unix_s": 1791934287,
+  "no_noise_repeatability": [
+    {
+      "actuator_trace_byte_identical": true,
+      "mode": "off",
+      "repeats": 5,
+      "stack": "betaflight",
+      "trajectory_byte_identical": true
+    },
+    {
+      "actuator_trace_byte_identical": true,
+      "mode": "omega_alpha",
+      "repeats": 5,
+      "stack": "betaflight",
+      "trajectory_byte_identical": true
+    },
+    {
+      "actuator_trace_byte_identical": true,
+      "mode": "off",
+      "repeats": 5,
+      "stack": "cognipilot",
+      "trajectory_byte_identical": true
+    },
+    {
+      "actuator_trace_byte_identical": true,
+      "mode": "omega_alpha",
+      "repeats": 5,
+      "stack": "cognipilot",
+      "trajectory_byte_identical": true
+    }
+  ],
+  "passed_runs": 60,
+  "planned_runs": 60,
+  "scope": "40-second commissioning reference; assumed noise; gains not matched; not a fastest-flight or physical latency result"
+}

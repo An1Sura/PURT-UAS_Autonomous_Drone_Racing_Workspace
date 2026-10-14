@@ -1,0 +1,7 @@
+{
+  "method": "mean commanded PWM fraction over 30–35 s of closed-loop native Betaflight hover at 2 m in the shared plant",
+  "samples": 501,
+  "hover_throttle": 0.6885788423153674,
+  "source": "ff-hover-calibration-01",
+  "note": "Simulation equilibrium calibration, not a physical throttle measurement; closed-loop correction retained."
+}

@@ -96,7 +96,7 @@ git -C src/betaflight apply ../../patches/betaflight-sitl-lockstep.patch
 make -C src/betaflight TARGET=SITL EXTRA_FLAGS="-DENABLE_SIMULATOR_GYROPID_SYNC=1 -DADR_LOCKSTEP=1" -j4
 ```
 
-The VM uses the isolated `artifacts/shared-loop/betaflight-stock` checkout to preserve historical research sources. This patch supersedes the transport-only patch and includes its Dyad fixes. It does not modify flight/control/sensor algorithms. The older speed patch is historical only.
+The VM uses the isolated `artifacts/shared-loop/betaflight-stock` checkout to preserve historical research sources. This patch supersedes the transport-only patch and includes its Dyad fixes. The updated PDF additionally authorizes the bounded rate/acceleration feed-forward hooks in `src/main/flight/pid.c`; estimator, mixer and feedback equations remain unchanged. Feed-forward off uses the native feedback path with the same recorded configuration. The older speed patch is historical only.
 
 After the ordinary native plant/Zephyr build and shared-loop generation, invoke `xtask shared-sil CONFIG PLANT_DIRECTORY GENERATED_LIBRARY BINARY STACK FRESH_OUTPUT_DIRECTORY figure-eight`. Native Cargo remains available; Devenv tasks `rdd2:benchmark:shared-sil:betaflight` and `rdd2:benchmark:shared-sil:cognipilot` coordinate the canonical source paths. Use the isolated BF path explicitly in the existing VM.
 

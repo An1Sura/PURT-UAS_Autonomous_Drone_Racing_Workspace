@@ -67,6 +67,57 @@ index a391e10..8b65d74 100644
  // tcpPort API
  void tcpDataIn(tcpPort_t *instance, uint8_t* ch, int size);
  void tcpDataOut(tcpPort_t *instance);
+diff --git a/src/main/flight/pid.c b/src/main/flight/pid.c
+index 5fea01e..714673d 100644
+--- a/src/main/flight/pid.c
++++ b/src/main/flight/pid.c
+@@ -25,6 +25,8 @@
+ #include <math.h>
+ 
+ #include "platform.h"
++#include "flight/failsafe.h"
++#include "rx/rx.h"
+ 
+ #include "build/build_config.h"
+ #include "build/debug.h"
+@@ -564,6 +566,19 @@ STATIC_UNIT_TESTED FAST_CODE_NOINLINE float calcHorizonLevelStrength(void)
+ // Use the FAST_CODE_NOINLINE directive to avoid this code from being inlined into ITCM RAM to avoid overflow.
+ // The impact is possibly slightly slower performance on F7/H7 but they have more than enough
+ // processing power that it should be a non-issue.
++/* ADR shared offboard feed-forward. Channels are physical FLU signs;
++ * BF roll/pitch rate signs match; native yaw is opposite FLU yaw.
++ * Same implementation builds on SITL and hardware, no simulator shortcut. */
++static bool adrFeedforwardEnabled(void)
++{
++    return ARMING_FLAG(ARMED) && FLIGHT_MODE(ANGLE_MODE) && !failsafeIsActive()
++        && isRxReceivingSignal() && rxRuntimeState.channelCount >= 12 && rcData[6] > 1750;
++}
++static float adrFeedforwardChannel(unsigned channel, float fullScale)
++{
++    return adrFeedforwardEnabled() ? constrainf((rcData[channel]-1500.0f)/500.0f,-1.0f,1.0f)*fullScale : 0.0f;
++}
++
+ STATIC_UNIT_TESTED FAST_CODE_NOINLINE float pidLevel(int axis, const pidProfile_t *pidProfile, const rollAndPitchTrims_t *angleTrim,
+                                                         float currentPidSetpoint, float horizonLevelStrength)
+ {
+@@ -645,6 +660,7 @@ STATIC_UNIT_TESTED FAST_CODE_NOINLINE float pidLevel(int axis, const pidProfile_
+     // smooth final angle rate output to clean up attitude signal steps (500hz), GPS steps (10 or 100hz), RC steps etc
+     // this filter runs at ATTITUDE_CUTOFF_HZ, currently 50hz, so GPS roll may be a bit steppy
+     angleRate = pt3FilterApply(&pidRuntime.attitudeFilter[axis], angleRate);
++    angleRate += adrFeedforwardChannel(7+axis, 4.0f*180.0f/M_PIf);
+ 
+     if (FLIGHT_MODE(ANGLE_MODE| GPS_RESCUE_MODE | POS_HOLD_MODE | LAUNCH_MODE)) {
+         currentPidSetpoint = angleRate;
+@@ -1418,6 +1434,9 @@ void FAST_CODE pidController(const pidProfile_t *pidProfile, timeUs_t currentTim
+             pidSetpointDelta = getFeedforward(axis);
+         }
+ #endif
++        if (adrFeedforwardEnabled()) {
++            pidSetpointDelta = adrFeedforwardChannel(9+axis,20.0f*180.0f/M_PIf) * (axis == FD_YAW ? -1.0f : 1.0f);
++        }
+         pidRuntime.previousPidSetpoint[axis] = currentPidSetpoint; // this is the value sent to blackbox, and used for D-max setpoint
+ 
+         // disable D if launch control is active
 diff --git a/src/main/main.c b/src/main/main.c
 index 9e026d2..4dc637f 100644
 --- a/src/main/main.c
@@ -341,3 +392,49 @@ index ee216ef..d6f703f 100644
 +    }
 +}
 +#endif
+diff --git a/src/test/unit/pid_unittest.cc b/src/test/unit/pid_unittest.cc
+index 81e65f9..2c000b3 100644
+--- a/src/test/unit/pid_unittest.cc
++++ b/src/test/unit/pid_unittest.cc
+@@ -1181,3 +1181,41 @@ TEST(pidControllerTest, testTpaHyperbolic)
+     pidUpdateTpaFactor(1.0);
+     EXPECT_NEAR(0.9f, pidRuntime.tpaFactor, 0.01f);
+ }
++
++// ADR: exercise the production pidLevel/F paths, including disabled and failsafe.
++static bool adrTestFailsafe = false;
++static bool adrTestReceiving = true;
++extern "C" {
++float rcData[MAX_SUPPORTED_RC_CHANNEL_COUNT] = {};
++bool failsafeIsActive(void) { return adrTestFailsafe; }
++bool isRxReceivingSignal(void) { return adrTestReceiving; }
++}
++TEST(pidControllerTest, adrSharedFeedforwardSignsAndFailsafe)
++{
++    resetTest();
++    ENABLE_ARMING_FLAG(ARMED);
++    enableFlightMode(ANGLE_MODE);
++    pidStabilisationState(PID_STABILISATION_ON);
++    rxRuntimeState.channelCount = 16;
++    for(int i=0;i<MAX_SUPPORTED_RC_CHANNEL_COUNT;i++)rcData[i]=1500;
++    rcData[6]=2000;rcData[7]=2000;rcData[8]=1000;
++    rollAndPitchTrims_t trim={{0,0}};
++    EXPECT_NEAR(pidLevel(FD_ROLL,pidProfile,&trim,0,0),4*180/M_PIf,0.001);
++    EXPECT_NEAR(pidLevel(FD_PITCH,pidProfile,&trim,0,0),-4*180/M_PIf,0.001);
++    rcData[6]=1000;
++    EXPECT_NEAR(pidLevel(FD_ROLL,pidProfile,&trim,0,0),0,0.001);
++    rcData[6]=2000;adrTestFailsafe=true;
++    EXPECT_NEAR(pidLevel(FD_ROLL,pidProfile,&trim,0,0),0,0.001);
++    adrTestFailsafe=false;adrTestReceiving=false;
++    EXPECT_NEAR(pidLevel(FD_ROLL,pidProfile,&trim,0,0),0,0.001);
++    adrTestReceiving=true;rcData[7]=1500;rcData[8]=1500;
++    rcData[9]=1750;rcData[10]=1250;rcData[11]=1750;
++    pidController(pidProfile,currentTestTime());
++    for(int axis=0;axis<3;axis++){
++        const float expected=pidRuntime.pidCoefficient[axis].Kf*10.0f*180.0f/M_PIf*(axis==FD_ROLL?1.0f:-1.0f);
++        EXPECT_NEAR(pidData[axis].F,expected,0.00001f);
++    }
++    rcData[6]=1000;pidController(pidProfile,currentTestTime());
++    EXPECT_FLOAT_EQ(pidData[FD_ROLL].F,0);EXPECT_FLOAT_EQ(pidData[FD_PITCH].F,0);EXPECT_FLOAT_EQ(pidData[FD_YAW].F,0);
++    rxRuntimeState.channelCount=0;
++}

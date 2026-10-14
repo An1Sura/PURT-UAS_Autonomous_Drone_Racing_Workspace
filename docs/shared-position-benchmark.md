@@ -1,44 +1,35 @@
 # Shared-controller SIL: current evidence
 
-Updated October 9, 2026. The supplied benchmark PDF defines the architecture: one generated trajectory and position loop commands Betaflight ANGLE or CogniPilot ATTITUDE against the same Rumoca/FMI plant. That flight path is now implemented and exercised. This is commissioning evidence, not completion of every PDF qualification gate.
+Updated October 13, 2026. The updated PDF’s rate and acceleration feed-forward is implemented in both native stacks. One shared Rumoca/FMU plant and generated position loop fly a **10 × 10 m figure eight at 2 m altitude**, one **40 s reference lap**, **83 s full run**. This is commissioning evidence, not full PDF qualification or a fastest-lap ranking.
 
-## New full-course recordings
+[Six actual recordings](sim/) · [Implementation, equations and remaining gates](feedforward-update.md) · [Repository provenance](repository-map.md) · [Previous baseline](archive/shared-position-2026-10-09.md)
 
-One **10 × 10 m** figure eight, **2 m altitude**, minimum-jerk phase, **80 s timed reference**. Both runs use the same generated offboard library and full-dynamics plant; their hashes are embedded in the reports.
+## Measured noise-free results
 
-| Stack | Same-time position RMS | Maximum error | Reference duration | Full run | End state |
-|---|---:|---:|---:|---:|---|
-| Betaflight ANGLE | 0.066723 m | 0.175127 m | 80 s | 123 s | Grounded, disarmed, all motors zero |
-| CogniPilot ATTITUDE | 0.134227 m | 0.271192 m | 80 s | 123 s | Grounded, disarmed, all motors zero |
+| Stack | Feed-forward | RMS error (m) | Maximum error (m) |
+|---|---|---:|---:|
+| betaflight | off | 0.217412 | 0.539437 |
+| betaflight | omega | 0.142423 | 0.348755 |
+| betaflight | omega_alpha | 0.142516 | 0.348471 |
+| cognipilot | off | 0.188374 | 0.470864 |
+| cognipilot | omega | 0.209842 | 0.550253 |
+| cognipilot | omega_alpha | 0.213908 | 0.565317 |
 
-[Watch actual telemetry](sim/) · [All attempt reports](results/shared-sil/attempts/) · [Source map](repository-map.md).
+Feed-forward improves Betaflight here, but worsens CogniPilot with the current gains. All six recordings land, disarm and stop their motors. All **60 campaign runs** passed predeclared RMS <0.35 m, maximum <0.75 m and landing gates: two stacks × three assumed noise levels × five seeds × FF off/full. Rate-only flights are additional diagnostics. No upper actuator saturation occurred in campaign course windows.
 
-The acceptance thresholds were set before these runs: course RMS <0.35 m, maximum <0.75 m, correct armed self-level mode, and at least 0.5 s grounded/disarmed/stopped at the end. These are commissioning thresholds. Faster-flight qualification must predeclare its own repeatability and accuracy rules. No fastest-lap claim is made here.
+Each stack’s five noise-free repeats have identical trajectory and actuator traces. FF off also reproduces preserved pre-change firmware’s trajectory CSV and actuator trace byte-for-byte under the same configuration.
 
-Timing: 0–8 s estimator warmup; arm at 8 s; takeoff 9–15 s; hover 15–25 s; course 25–105 s; end hold 105–110 s; descent 110–118 s; settle through 123 s. Touchdown detection triggers disarm. Height near 0.0984 m is the plant's resting body height, not a missing landing. The lap duration is the commanded reference window, not an independent geometric crossing measurement. RMS is sqrt(mean(||p_actual(t) − p_reference(t)||²)) over the course window at the plant tick rate. Total runtime includes warmup/takeoff/landing. Host wall time is separately recorded and is not flight or hardware latency.
+## Timing and interpretation
 
-## What changed
+Warmup 0–8 s; arm at 8 s; takeoff 9–15 s; hover 15–25 s; course 25–65 s; hold 65–70 s; descent 70–78 s; settle through 83 s. The sole cumulative reference lap ends at 65 s. Lap time is the reference window, not an independent geometric crossing. RMS is sqrt(mean(||actual position − same-time reference||²)) over that window. Host execution time is not hardware latency.
 
-- New native Rust `shared-sil` command loads the same generated trajectory and position controller for both stacks, updates position control at 100 Hz and sticks at 250 Hz, and records actual full-plant motion.
-- Betaflight's simulator-only patch provides sequential packet IDs, timestamp validation and one main-thread sensor/scheduler/motor exchange at 8000 Hz. It retains stock flight-control and estimator algorithms. Normal arming remains enabled.
-- The common IMU source samples at 1600 Hz. Betaflight holds those samples across its 8000 Hz packets; CogniPilot exchanges at 1600 Hz. CogniPilot stick delivery can be quantized by up to 0.5 ms. This remaining difference is explicit.
-- Both RC receivers require negative yaw-stick encoding for the common positive ENU yaw rate. Initial square/figure-eight trials exposed the incorrect sign; those failures are preserved rather than relabeled as completed flights.
-- Shared takeoff/landing comes from the generated position loop, without the old simulator-assisted throttle laws.
-- Optional ideal-attitude physics isolates the outer position loop using the same motor/force model. Full firmware runs load the unchanged full-dynamics plant artifact; ideal tests do not execute firmware.
-- Old website replay payloads were removed. New replays retain genuine final samples; Three.js only displays telemetry.
+Plant: 8 kHz; IMU: 1.6 kHz; position loop: 100 Hz; stick schedule: 250 Hz. CogniPilot has up to 0.5 ms stick-delivery quantization and synthetic GNSS for navigation/arming; Betaflight GPS is disabled. Position feedback is plant truth. Noise and motor harmonics are assumed diagnostic models. The black grid and green PURT boundary remain; approximate room-envelope fit does not establish surveyed obstacle clearance or calibrated MoCap coverage.
 
-## Checks and limits
+## Verification and limits
 
-Native Rust tests: **45 passed, 2 ignored**. Generated reference/oracle checks passed. Ideal-attitude hover, step, square and figure-eight checks passed. Both real stacks passed hover, step, square and full-course commissioning runs (the initial square tests predate the final yaw mapping; corrected full-course flights are the current evidence). Betaflight's two full-course repeats had byte-identical 100 Hz trajectory CSV and complete 8000 Hz response traces. CogniPilot’s two corrected full-course repeats also had byte-identical CSV and motor traces. See [repeatability hashes](results/shared-sil/repeatability-sha256.txt).
+47 native Rust tests passed, 2 ignored; 16 Betaflight PID tests passed; generated CogniPilot C checks passed; ideal hover, step, square and figure-eight passed. Generated formula checks use a finite-difference oracle. Existing Lean proofs do not prove the new firmware or feed-forward implementation.
 
-Still required before full PDF qualification or a fair speed ranking:
-
-- Empirical Betaflight hover-throttle calibration; current conversion uses nominal sqrt(mg/Tmax). RC smoothing is OFF, angle limit 35 degrees, yaw limit 200 degrees/s; CogniPilot native yaw normalization is 3.5 rad/s.
-- Expanded commanded-versus-estimated attitude and saturation diagnostics, and independent geometric course-completion gates.
-- Motor-vibration noise model and the prescribed three noise levels with at least five seeds per level, alternating stacks. Current published flights are noise-free; noise magnitudes in the harness are diagnostic assumptions, not measured IMU data.
-- Matched sensor delivery/timing, measured physical vehicle properties and hardware latency tests. SIL uses plant-truth position feedback; it does not reproduce a measured QTM pipeline.
-- PURT origin, obstacle inventory and calibrated MoCap coverage survey. The course fits the approximate room box, but actual clearance/coverage remains unverified.
-- Equal-budget gain tuning and shorter-lap speed search. These 80 s runs do not demonstrate CogniPilot surpassing Betaflight.
+Matched attitude-step tuning, measured Kf calibration, physical sign checks, hardware builds/latency tests, independent crossing gates, measured sensor parity and equal-budget speed optimization remain. Simulation hover calibration does not replace physical calibration. See the detailed update for derivative assumptions and C2 joins.
 
 ## Reproduce in the existing VM
 
@@ -61,3 +52,4 @@ src/cerebri_rdd2/target/release/xtask shared-sil \
 For CogniPilot, substitute `src/cerebri_rdd2/build-native_sim/zephyr/zephyr.exe`, stack `cognipilot`, and a fresh output directory. Never overwrite an attempt. Each run produces `config.json`, `trajectory.csv`, `actuator-trace.bin`, `firmware.log`, `report.json` and `replay.json`; Betaflight also saves provisioning commands/logs. The website is a replay, not a browser physics simulation. These native runs were launched on the VM; the old native-position web-run API is not the new benchmark launcher.
 
 Large binary traces and original 100 Hz CSV remain in the VM under `artifacts/shared-sil`. Website replay exports are sampled at 20 Hz, retain the final sample, and do not recompute report metrics. Earlier failures remain in the attempt reports and VM, with no fabricated landing. Old recordings remain recoverable from Git history.
+

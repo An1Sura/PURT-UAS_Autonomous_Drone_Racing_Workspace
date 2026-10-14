@@ -78,3 +78,15 @@ Fetched upstream updates for `cerebri_rdd2`, `modelica_models`, `rumoca`, `cereb
 The ideal-attitude isolation plant adds an optional rigid-body attitude override, default disabled. Real firmware runs load the unchanged full-dynamics plant artifact identified by their report hash. Ideal tests are not firmware flights.
 
 The ideal FMI source build uses official [modelica/fmi-standard](https://github.com/modelica/fmi-standard/tree/b8778deaf5b746ba4a2f6c155d53f8a33eebbd33) v3.0.2 C headers, commit `b8778deaf5b746ba4a2f6c155d53f8a33eebbd33`; these are compile-time interface headers, not a second physics model.
+
+
+
+## Updated PDF feed-forward implementation (October 13)
+
+`CogniPilot/modelica_models` supplies the shared LogLinearController, plant and generated onboard controllers. Our `Benchmarks/Trajectory.mo`, `Feedforward.mo` and `normalizeJet.mo` add jerk/snap and bounded feed-forward in the shared generated PositionLoop. The additions are preserved in `patches/modelica-shared-position.patch`. Rumoca generates the executable eFMUs; Rust calls their generated C through `shared_loop_shim.c`.
+
+Our Cerebri patch transports RC channels 6–11 through the existing Synapse `ManualControlData.aux0_milli`–`aux5_milli` fields, decodes the inputs for GuidanceController, and passes angular acceleration to RateControlAllocator on a timestamp-paired local ZROS companion topic. Upstream Synapse wire schemas are unchanged. This code is in `patches/cerebri-rdd2-benchmark.patch`; it is our integration work, not an upstream released feature.
+
+Our Betaflight patch adds rate feed-forward after the native attitude filter and acceleration feed-forward at the existing rate-loop F input. It remains pinned to `744f95fa31542c4c906f18072348a366ab11b6b7`. The patch includes transport fixes and these explicitly identified control additions; no external Betaflight adapter was downloaded.
+
+[Implementation, qualification limits and actual results](feedforward-update.md). The NXP hardware repository does not supply simulation measurements. The GNC Lean library does not prove the new generated controller or firmware correct.

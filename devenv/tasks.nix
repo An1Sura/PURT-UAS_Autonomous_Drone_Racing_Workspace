@@ -1042,11 +1042,11 @@ let
 
       "rdd2:benchmark:betaflight:shared-build" =
         (task "betaflight"
-          "Build unchanged Betaflight control algorithms with simulator transport fixes and PID synchronization."
+          "Build Betaflight with bounded shared feed-forward inputs and deterministic simulator transport."
           ''
             test "$(git rev-parse HEAD)" = 744f95fa31542c4c906f18072348a366ab11b6b7
             git apply --reverse --check ../../patches/betaflight-sitl-lockstep.patch
-            git diff --exit-code HEAD -- src/main/flight src/main/fc src/main/sensors
+            git diff --exit-code HEAD -- src/main/flight src/main/fc src/main/sensors ":(exclude)src/main/flight/pid.c"
             make TARGET=SITL EXTRA_FLAGS="-DENABLE_SIMULATOR_GYROPID_SYNC=1 -DADR_LOCKSTEP=1" -j4
           ''
         )

@@ -1,3 +1,25 @@
+diff --git a/Control/Multirotor/RateLoop/package.mo b/Control/Multirotor/RateLoop/package.mo
+index 91dad5e..c1a0fd7 100644
+--- a/Control/Multirotor/RateLoop/package.mo
++++ b/Control/Multirotor/RateLoop/package.mo
+@@ -13,6 +13,7 @@ package RateLoop "Multirotor body-rate control"
+       "Proportional body-rate bandwidth per axis";
+     input Boolean gyroscopicFeedforward = true
+       "Add omega x (I omega) so the moment holds a spinning body on rate";
++    input Real angularAccelerationFeedforward[3] = zeros(3);
+     output Real moment[3](each unit = "N.m") "Commanded body moment";
+   protected
+     Real angularMomentum[3](each unit = "kg.m2/s");
+@@ -21,7 +22,8 @@ package RateLoop "Multirotor body-rate control"
+       assert(inertia[axis] > 0.0, "Every body inertia must be positive");
+       assert(rateGain[axis] >= 0.0, "Every body-rate gain must be nonnegative");
+       moment[axis] := inertia[axis] * rateGain[axis]
+-        * (angularVelocitySetpoint[axis] - angularVelocity[axis]);
++        * (angularVelocitySetpoint[axis] - angularVelocity[axis])
++        + inertia[axis]*angularAccelerationFeedforward[axis];
+     end for;
+     if gyroscopicFeedforward then
+       angularMomentum := {
 diff --git a/RigidBody/RigidBody6DOF.mo b/RigidBody/RigidBody6DOF.mo
 index c6496e0..4d822d7 100644
 --- a/RigidBody/RigidBody6DOF.mo
@@ -53,6 +75,96 @@ index c6496e0..4d822d7 100644
 +    der(omega) = bodyAngularVelocityRate;
 +  end if;
  end RigidBody6DOF;
+diff --git a/Vehicles/Rdd2/GuidanceController.mo b/Vehicles/Rdd2/GuidanceController.mo
+index 5db1e04..02fdacb 100644
+--- a/Vehicles/Rdd2/GuidanceController.mo
++++ b/Vehicles/Rdd2/GuidanceController.mo
+@@ -10,6 +10,11 @@ block GuidanceController
+   parameter Real maximumCollectiveThrust_N = 41.3749272
+     "Four RDD2 rotors at maximum speed";
+ 
++  parameter Real attitudeGain[3] = {2.0,2.0,1.0} "Independent ATTITUDE gains; baseline preserved";
++  input Boolean feedforwardEnabled = false;
++  input Real angularVelocityFeedforward[3] = zeros(3);
++  input Real angularAccelerationFeedforward[3] = zeros(3);
++  output Real angularAccelerationCommandFlu_rad_s2[3];
+   input Integer mode(min = 0, max = 2)
+     "0=acro, 1=attitude, 2=position";
+   input Boolean armed;
+@@ -42,7 +47,7 @@ equation
+     pilotCommands.attitudeTiltDesired_rad[1]});
+   attitudeRateSetpointFlu_rad_s =
+     Control.Multirotor.LogLinear.attitudeControl(
+-      positionGuidance.attitudeGain,
++      attitudeGain,
+       navigation.quaternionWorldBody,
+       attitudeReferenceQuaternion);
+ 
+@@ -66,6 +71,7 @@ equation
+     elseif mode == 1 then
+       {1.0, 1.0, 0.0} .* attitudeRateSetpointFlu_rad_s
+       + {0.0, 0.0, 1.0} .* pilotCommands.acroRateDesired_rad_s
++      + (if armed and feedforwardEnabled then {1.0,1.0,0.0} .* MathUtilities.clipVector(angularVelocityFeedforward,-4.0,4.0) else zeros(3))
+     else
+       pilotCommands.acroRateDesired_rad_s;
+   rateCorrectionFlu_rad_s = if mode == 2 then
+@@ -75,6 +81,8 @@ equation
+   rateCommand.angularVelocityCommandFlu_rad_s =
+     angularVelocitySetpointFlu_rad_s + rateCorrectionFlu_rad_s;
+ 
++  angularAccelerationCommandFlu_rad_s2 = if armed and mode == 1 and feedforwardEnabled then MathUtilities.clipVector(angularAccelerationFeedforward,-20.0,20.0) else zeros(3);
++
+   annotation(Documentation(info = "<html>
+     <p>This block is one deployable RTOS task and one eFMU. It turns pilot,
+     navigation, and trajectory messages into the compact rate-command message
+diff --git a/Vehicles/Rdd2/RateControlAllocator.mo b/Vehicles/Rdd2/RateControlAllocator.mo
+index d0733bd..7b39af9 100644
+--- a/Vehicles/Rdd2/RateControlAllocator.mo
++++ b/Vehicles/Rdd2/RateControlAllocator.mo
+@@ -22,6 +22,7 @@ block RateControlAllocator
+       rotorGeometry.positionBodyFlu_m,
+       rotorGeometry.yawMomentPerThrust_m);
+ 
++  input Real angularAccelerationFeedforward[3] = zeros(3);
+   Interfaces.RateControlInput inputSignal;
+   Interfaces.MotorCommands commands;
+ 
+@@ -41,7 +42,7 @@ algorithm
+       inputSignal.angularVelocityCommandFlu_rad_s,
+       inputSignal.angularVelocityMeasuredFlu_rad_s,
+       inertia,
+-      rateGain);
++      rateGain, angularAccelerationFeedforward = angularAccelerationFeedforward);
+     allocatedMotorCommand := Control.Multirotor.Allocation.rotorCommands(
+       4,
+       inputSignal.thrust_N,
+diff --git a/Benchmarks/Feedforward.mo b/Benchmarks/Feedforward.mo
+new file mode 100644
+index 0000000..6f1e970
+--- /dev/null
++++ b/Benchmarks/Feedforward.mo
+@@ -0,0 +1,21 @@
++within Benchmarks;
++block Feedforward "Differential-flatness derivatives, fixed reference yaw, ENU/FLU"
++  input Real thrust; input Real desiredQuaternion[4]; input Real jerk[3]; input Real snap[3];
++  input Real yaw; input Boolean enabled;
++  output Real omega[3]; output Real alpha[3];
++protected
++  Real x[3]; Real dx[3]; Real ddx[3];
++  Real y[3]; Real dy[3]; Real ddy[3];
++  Real z[3]; Real dz[3]; Real ddz[3]; Real heading[3];
++equation
++  heading = {cos(yaw),sin(yaw),0.0};
++  (z,dz,ddz) = Benchmarks.normalizeJet(
++    if thrust > 0.001 then thrust*LieGroups.SO3.Quat.rotate(desiredQuaternion,{0.0,0.0,1.0}) else {0.0,0.0,1.0},
++    if thrust > 0.001 then 2.0*jerk else zeros(3),
++    if thrust > 0.001 then 2.0*snap else zeros(3));
++  (y,dy,ddy) = Benchmarks.normalizeJet(cross(z,heading),cross(dz,heading),cross(ddz,heading));
++  x = cross(y,z); dx = cross(dy,z)+cross(y,dz);
++  ddx = cross(ddy,z)+2*cross(dy,dz)+cross(y,ddz);
++  omega = if enabled and thrust > 0.001 then MathUtilities.clipVector({-y*dz,x*dz,y*dx},-4.0,4.0) else zeros(3);
++  alpha = if enabled and thrust > 0.001 then MathUtilities.clipVector({-dy*dz-y*ddz,dx*dz+x*ddz,dy*dx+y*ddx},-20.0,20.0) else zeros(3);
++end Feedforward;
 diff --git a/Benchmarks/IdealAttitudePlant.mo b/Benchmarks/IdealAttitudePlant.mo
 new file mode 100644
 index 0000000..b13935a
@@ -66,12 +178,12 @@ index 0000000..b13935a
 +end IdealAttitudePlant;
 diff --git a/Benchmarks/PositionLoop.mo b/Benchmarks/PositionLoop.mo
 new file mode 100644
-index 0000000..2ca1f2f
+index 0000000..978372d
 --- /dev/null
 +++ b/Benchmarks/PositionLoop.mo
-@@ -0,0 +1,51 @@
+@@ -0,0 +1,60 @@
 +within Benchmarks;
-+block PositionLoop "Shared off-board log-linear position loop; no stack control changes"
++block PositionLoop "Shared off-board log-linear position loop; bounded trajectory feed-forward"
 +  parameter Real samplePeriod = 0.01;
 +  parameter Real tiltLimit = 0.6108652381980153;
 +  parameter Real yawRateLimit = 3.490658503988659;
@@ -83,6 +195,11 @@ index 0000000..2ca1f2f
 +  input Real referencePosition[3](each start = 0.0);
 +  input Real referenceVelocity[3](each start = 0.0);
 +  input Real referenceAcceleration[3](each start = 0.0);
++  input Real referenceJerk[3](each start = 0.0);
++  input Real referenceSnap[3](each start = 0.0);
++  input Boolean feedforwardEnabled(start = false);
++  output Real omegaFeedforward[3];
++  output Real alphaFeedforward[3];
 +  input Real referenceYaw(start = 0.0);
 +  input Boolean engage(start = false);
 +  output Real roll;
@@ -93,6 +210,7 @@ index 0000000..2ca1f2f
 +  output Real rawAttitude[4];
 +  output Real integral[3];
 +protected
++  Benchmarks.Feedforward ff;
 +  Vehicles.Rdd2.LogLinearController controller(
 +    samplePeriod = samplePeriod, translationalCorrectionFraction = forceFraction);
 +  Real euler[3];
@@ -100,6 +218,9 @@ index 0000000..2ca1f2f
 +  Real headingDirection[3];
 +  Real yawError;
 +equation
++  ff.thrust=thrust; ff.desiredQuaternion=rawAttitude; ff.jerk=referenceJerk; ff.snap=referenceSnap;
++  ff.yaw=referenceYaw; ff.enabled=feedforwardEnabled and engage;
++  omegaFeedforward=ff.omega; alphaFeedforward=ff.alpha;
 +  controller.positionWorld = position;
 +  controller.velocityWorld = velocity;
 +  controller.quaternionWorldBody = quaternion;
@@ -139,10 +260,10 @@ index 0000000..239e616
 +end PositionOracle;
 diff --git a/Benchmarks/Trajectory.mo b/Benchmarks/Trajectory.mo
 new file mode 100644
-index 0000000..2bf9f48
+index 0000000..cdc908d
 --- /dev/null
 +++ b/Benchmarks/Trajectory.mo
-@@ -0,0 +1,57 @@
+@@ -0,0 +1,69 @@
 +within Benchmarks;
 +block Trajectory "One shared, engage-triggered timed reference for square or figure eight"
 +  parameter Real samplePeriod = 0.01;
@@ -155,9 +276,13 @@ index 0000000..2bf9f48
 +  output Real position[3];
 +  output Real velocity[3];
 +  output Real acceleration[3];
++  output Real jerk[3];
++  output Real snap[3];
 +  output Real yaw;
 +  output Real elapsed;
 +protected
++  Real dddq;
++  Real ddddq;
 +  discrete Integer tick(start = 0, fixed = true);
 +  Real u;
 +  Real q;
@@ -173,6 +298,8 @@ index 0000000..2bf9f48
 +  Real endPoint[2];
 +  Real delta[2];
 +equation
++  dddq = 2*3.141592653589793*60*(1-6*u+6*u^2)/lapTime^3;
++  ddddq = 2*3.141592653589793*360*(2*u-1)/lapTime^4;
 +  elapsed = min(tick*samplePeriod,lapTime);
 +  u = MathUtilities.clip(elapsed/lapTime,0.0,1.0);
 +  q = 2.0*3.141592653589793*u^3*(10.0+u*(-15.0+6.0*u));
@@ -194,12 +321,39 @@ index 0000000..2bf9f48
 +    elseif shape == 2 then {delta[1]*blendRate,delta[2]*blendRate,0.0} else zeros(3);
 +  acceleration = if shape == 3 then {width/2.0*(-sin(q)*dq^2+cos(q)*ddq),height*(-2.0*sin(2.0*q)*dq^2+cos(2.0*q)*ddq),0.0}
 +    elseif shape == 2 then {delta[1]*blendAccel,delta[2]*blendAccel,0.0} else zeros(3);
++  jerk = if shape == 3 then {width/2*(-cos(q)*dq^3-3*sin(q)*dq*ddq+cos(q)*dddq),
++    height*(-4*cos(2*q)*dq^3-6*sin(2*q)*dq*ddq+cos(2*q)*dddq),0.0}
++    elseif shape == 2 then {delta[1],delta[2],0.0}*60*(1-6*localTime+6*localTime^2)/legTime^3 else zeros(3);
++  snap = if shape == 3 then {width/2*(sin(q)*dq^4-6*cos(q)*dq^2*ddq-3*sin(q)*ddq^2-4*sin(q)*dq*dddq+cos(q)*ddddq),
++    height*(8*sin(2*q)*dq^4-24*cos(2*q)*dq^2*ddq-6*sin(2*q)*ddq^2-8*sin(2*q)*dq*dddq+cos(2*q)*ddddq),0.0}
++    elseif shape == 2 then {delta[1],delta[2],0.0}*360*(2*localTime-1)/legTime^4 else zeros(3);
 +  yaw = 0.0;
 +algorithm
 +  when sample(0.0,samplePeriod) then
 +    tick := if not engage then 0 elseif pre(tick)*samplePeriod < lapTime then pre(tick)+1 else pre(tick);
 +  end when;
 +end Trajectory;
+diff --git a/Benchmarks/normalizeJet.mo b/Benchmarks/normalizeJet.mo
+new file mode 100644
+index 0000000..1113d21
+--- /dev/null
++++ b/Benchmarks/normalizeJet.mo
+@@ -0,0 +1,15 @@
++within Benchmarks;
++function normalizeJet "Unit vector and its first two time derivatives"
++  input Real v[3]; input Real dv[3]; input Real ddv[3];
++  output Real n[3]; output Real dn[3]; output Real ddn[3];
++protected
++  Real length; Real speed; Real accel;
++algorithm
++  length := sqrt(v*v);
++  assert(length > 1e-6,"singular feed-forward axis");
++  n := v/length;
++  speed := n*dv;
++  dn := (dv-n*speed)/length;
++  accel := dn*dv+n*ddv;
++  ddn := (ddv-n*accel-2*dn*speed)/length;
++end normalizeJet;
 diff --git a/Benchmarks/package.mo b/Benchmarks/package.mo
 new file mode 100644
 index 0000000..d626750
