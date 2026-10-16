@@ -1,0 +1,141 @@
+impl Bf {
+    fn open(binary: &Path, out: &Path, cfg: &Value) -> Result<Self> {
+        let socket = UdpSocket::bind("127.0.0.1:9002")
+            .context("Betaflight motor port busy; stop other BF simulations")?;
+        socket.set_read_timeout(Some(Duration::from_secs(10)))?;
+        let config = "map AETR1234\nset max_aux_channels = 12\nfeature -GPS\nset mag_hardware = NONE\naux 0 0 0 1700 2100 0 0\naux 1 1 1 1300 1700 0 0\nset angle_limit = 35\nset rates_type = ACTUAL\nset roll_rc_rate = 20\nset pitch_rc_rate = 20\nset yaw_rc_rate = 20\nset roll_srate = 20\nset pitch_srate = 20\nset yaw_srate = 20\nset roll_expo = 0\nset pitch_expo = 0\nset yaw_expo = 0\nset deadband = 0\nset yaw_deadband = 0\nset rc_smoothing = OFF\nset thr_mid = 50\nset thr_expo = 0\nset thrust_linear = 0\nset angle_feedforward = 0\nset d_max_roll = 0\nset d_max_pitch = 0\nset d_max_yaw = 0\n";
+        let mut config = config.to_string();
+        if let Some(gain) = cfg["tuning"]["attitude_gain_per_s"].as_f64() {
+            ensure!(
+                gain.is_finite() && (1.0..=20.0).contains(&gain),
+                "invalid attitude gain"
+            );
+            config.push_str(&format!(
+                "set angle_p_gain = {}\n",
+                (gain * 10.0).round() as u32
+            ));
+        }
+        if let Some(gain) = cfg["tuning"]["betaflight_f_gain"].as_u64() {
+            ensure!(gain <= 1000, "invalid feedforward gain");
+            for axis in ["roll", "pitch", "yaw"] {
+                config.push_str(&format!("set f_{axis} = {gain}\n"));
+            }
+        }
+        if let Some(gains) = cfg["tuning"]["betaflight_f_gains"].as_array() {
+            ensure!(gains.len() == 3, "three F gains required");
+            for (axis, g) in ["roll", "pitch", "yaw"].iter().zip(gains) {
+                let gain = g.as_u64().context("integer F gain")?;
+                ensure!(gain <= 1000, "F gain out of range");
+                config.push_str(&format!("set f_{axis} = {gain}\n"));
+            }
+        }
+        fs::write(out.join("config.txt"), config)?;
+        let p = Command::new(binary)
+            .arg("--config")
+            .arg(out.join("config.txt"))
+            .current_dir(out)
+            .output()?;
+        let text = [p.stdout, p.stderr].concat();
+        fs::write(out.join("provision.log"), &text)?;
+        ensure!(
+            p.status.success() && !String::from_utf8_lossy(&text).contains("INVALID"),
+            "Betaflight provisioning failed; inspect provision.log"
+        );
+        let log = File::create(out.join("firmware.log"))?;
+        let child = ChildGuard(
+            Command::new(binary)
+                .current_dir(out)
+                .stdout(log.try_clone()?)
+                .stderr(log)
+                .spawn()?,
+        );
+        let deadline = Instant::now() + Duration::from_secs(15);
+        while !fs::read_to_string(out.join("firmware.log"))?.contains("ADR_LOCKSTEP_READY") {
+            ensure!(Instant::now() < deadline, "Betaflight startup timeout");
+            thread::sleep(Duration::from_millis(10));
+        }
+        Ok(Self {
+            socket,
+            _child: child,
+        })
+    }
+    fn step(
+        &self,
+        plant: &Plant,
+        tick: u32,
+        rc: [i32; 16],
+        fresh: bool,
+        gyro: [f32; 3],
+        acc: [f32; 3],
+    ) -> Result<([f32; 4], bool, bool, u32, Vec<u8>)> {
+        let q = quaternion(plant.euler());
+        let p = plant.position();
+        let v = plant.velocity();
+        let vals = [
+            tick as f64 * DT,
+            gyro[0] as f64,
+            -gyro[1] as f64,
+            gyro[2] as f64,
+            -acc[0] as f64,
+            -acc[1] as f64,
+            -acc[2] as f64,
+            q[3],
+            q[2],
+            q[1],
+            q[0],
+            v[0],
+            v[1],
+            v[2],
+            -86.9212 - p[0] / (111319.49079327358 * 40.4237f64.to_radians().cos()),
+            40.4237 - p[1] / 111319.49079327358,
+            200. + p[2],
+            101325.,
+        ];
+        let mut input = vals
+            .iter()
+            .flat_map(|v| v.to_le_bytes())
+            .collect::<Vec<_>>();
+        input.extend(tick.to_le_bytes());
+        input.extend(u32::from(fresh).to_le_bytes());
+        for c in rc {
+            input.extend((c as u16).to_le_bytes());
+        }
+        self.socket.send_to(&input, "127.0.0.1:9003")?;
+        let mut out = [0; 128];
+        let (n, peer) = self.socket.recv_from(&mut out)?;
+        ensure!(
+            n == 64 && peer.ip().is_loopback(),
+            "invalid BF response {n}"
+        );
+        let u = |i| u32::from_le_bytes(out[i..i + 4].try_into().unwrap());
+        ensure!(
+            u(0) == 1
+                && u(4) == tick
+                && u64::from_le_bytes(out[48..56].try_into().unwrap()) == tick as u64 * 125,
+            "stale BF response"
+        );
+        let m: [f32; 4] = std::array::from_fn(|i| {
+            f32::from_le_bytes(out[8 + i * 4..12 + i * 4].try_into().unwrap())
+        });
+        ensure!(
+            m.iter().all(|v| v.is_finite() && (0.0..=1.).contains(v)),
+            "invalid motors"
+        );
+        Ok((
+            [m[1], m[0], m[2], m[3]],
+            u(24) != 0,
+            u(32) != 0,
+            u(28),
+            out[..64].to_vec(),
+        ))
+    }
+}
+struct Noise {
+    state: u64,
+    gyro: f64,
+    acc: f64,
+    phase: [f64; 4],
+}
+impl Noise {
+    fn normal(&mut self) -> f64 {
+        let mut sum = 0.;

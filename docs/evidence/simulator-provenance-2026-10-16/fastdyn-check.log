@@ -1,0 +1,5 @@
+[ci] launching rehosted cerebri_rdd2 mission
+Error: cannot launch FastDyn
+
+Caused by:
+    No such file or directory (os error 2)

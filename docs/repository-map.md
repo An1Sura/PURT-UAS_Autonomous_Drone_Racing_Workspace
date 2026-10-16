@@ -2,6 +2,8 @@
 
 Audit date: **2026-10-09**. This map separates upstream source code, our modifications, generated artifacts, and display code. A Git commit identifies the upstream base; **base commit plus the workspace patch** identifies the source we actually run. A commit alone does not describe a dirty development checkout.
 
+**October 16 execution audit:** [Betaflight source, executable checksum, measured run, and FastDyn readiness evidence](simulator-provenance.md). Current native SIL recordings did not execute under FastDyn; the FastDyn acceptance launch is blocked by its missing runtime.
+
 ## From source to a flight
 
 ```mermaid
@@ -39,7 +41,7 @@ The diagram describes the **implemented shared-controller SIL architecture**. Bo
 | [CogniPilot/zros](https://github.com/CogniPilot/zros/tree/20ab07983224ca078f17e2e851b4fe8cb92eb517) | `20ab07983224ca078f17e2e851b4fe8cb92eb517` | `src/zros`: embedded topic/message transport used by CogniPilot. Not a separate physics engine. |
 | [CogniPilot/csyn](https://github.com/CogniPilot/csyn/tree/e0139e68d5e2db6fcaa6420a786b65cd1f8b035f) | `e0139e68d5e2db6fcaa6420a786b65cd1f8b035f` | `src/csyn`: synchronization support used by the firmware build. |
 | [CogniPilot/synapse_fbs](https://github.com/CogniPilot/synapse_fbs/tree/c7df213e48bccb414521de405474c7bca8952a74) | `c7df213e48bccb414521de405474c7bca8952a74` | `src/synapse_fbs`: generated C message schemas. Rust xtask also pins the registry crate `synapse_fbs = 0.9.0`; its resolved package is in Cargo.lock. These are separate build inputs, not interchangeable revision labels. |
-| [jgoppert/FastDyn](https://github.com/jgoppert/FastDyn/tree/94c85f3e47be410e8d760b7f8207eb1580d7cd4c) | `94c85f3e47be410e8d760b7f8207eb1580d7cd4c` (**West declaration**, not audited runtime checkout) | Optional binary-in-the-loop / ARM rehosting workflow. It is **not** the source of the quadrotor physics in the native SIL recordings. `physics.rs` loads Rumoca-generated FMI directly. |
+| [jgoppert/FastDyn](https://github.com/jgoppert/FastDyn) | West declaration: `94c85f3e47be410e8d760b7f8207eb1580d7cd4c`; actual October 16 checkout: `c235932a60a7bb839e59cac111920fb3b5cbf1aa` | ARM binary-in-the-loop rehosting workflow. Runtime launch currently fails; the checkout differs from the West declaration and must be reconciled before BIL qualification. Native SIL loads Rumoca-generated FMI directly. See [execution evidence](simulator-provenance.md). |
 | [CogniPilot/gnc_lean](https://github.com/CogniPilot/gnc_lean/tree/0c01537b94677d38c0547a72c1dc12a7e87db234) | `0c01537b94677d38c0547a72c1dc12a7e87db234` (Lake lock) | Mathematical library for `proofs/`. This is not linked into the flight executable. Existing exact-real benchmark proofs do not prove generated floating-point code, controller stability, or hardware performance. |
 | [leanprover-community/mathlib4](https://github.com/leanprover-community/mathlib4/tree/5e932f97dd25535344f80f9dd8da3aab83df0fe6) | `5e932f97dd25535344f80f9dd8da3aab83df0fe6` (Lake lock) | Lean mathematical dependencies. See `proofs/lake-manifest.json` for the complete proof dependency closure. |
 | [mrdoob/three.js](https://github.com/mrdoob/three.js/tree/r180) | Browser imports `three@0.180.0` from esm.sh | Scene rendering, camera controls, lines and illustrative drone geometry. It displays telemetry; it does not calculate flight physics or validate a controller. CDN/network access is required by the current page. |
@@ -73,7 +75,7 @@ The NXP RT1060 board, IMU choice, bus rates, driver timing, radio/trainer transp
 
 Fetched upstream updates for `cerebri_rdd2`, `modelica_models`, `rumoca`, `cerebri_modules`, `zros`, `csyn` and `synapse_fbs`; preserved the tested revisions above and local changes. See [fetch log](results/shared-sil/source-fetch.log). Fetching is not silently upgrading an experiment.
 
-`xtask/src/shared_sil.rs` is our new native shared-controller flight harness. `betaflight-sitl-lockstep.patch` changes simulator transport, clock/scheduler coordination and Dyad startup only; no flight-control or estimator algorithms are replaced. Both receivers require reversing the shared ENU yaw command when encoding RC channel 4.
+`xtask/src/shared_sil.rs` is our native shared-controller flight harness. The October 9 patch changed simulator transport, clock/scheduler coordination and Dyad startup. Subsequent versions also add the explicitly documented rate/acceleration feed-forward hooks; the current binary must not be described as transport-only or unmodified stock firmware. Both receivers reverse the shared yaw-rate command when encoding RC channel 4; the direct PID acceleration input has a separate convention.
 
 The ideal-attitude isolation plant adds an optional rigid-body attitude override, default disabled. Real firmware runs load the unchanged full-dynamics plant artifact identified by their report hash. Ideal tests are not firmware flights.
 

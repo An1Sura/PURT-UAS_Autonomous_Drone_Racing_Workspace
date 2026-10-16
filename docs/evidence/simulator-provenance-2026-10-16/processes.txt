@@ -1,0 +1,1 @@
+ 106249       00:52 /home/suraa.guest/autonomous-drone-bench/artifacts/shared-loop/betaflight-stock/obj/main/betaflight_SITL.elf

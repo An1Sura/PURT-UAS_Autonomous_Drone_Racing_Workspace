@@ -1,0 +1,1 @@
+artifacts/shared-loop/betaflight-stock/obj/main/betaflight_SITL.elf: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpreter /nix/store/jp8avbmpfcdnm0axwrzyk072nmq9cr0d-glibc-2.42-67/lib/ld-linux-aarch64.so.1, for GNU/Linux 3.10.0, not stripped
