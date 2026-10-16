@@ -19,6 +19,8 @@ From the repository root, `shasum -a 256 -c proofs/source-snapshot.sha256` check
 
 ## Scope
 
+October 16 FastDyn transport review: the recorded source snapshot includes the ARM shared-memory transport and the existing runner calibration diagnostics. The trajectory equations and shared position-loop mathematics are unchanged. Updating this change-detection hash is not a new Lean proof of the transport, firmware, calibration, or emulated flight; those are checked empirically and reported separately.
+
 See [the coverage ledger](../docs/formal-verification.md), [the theorem source](ADR/Benchmark.lean), and [local verification record](verification.json). Proofs do not themselves change flight logic. The October 4 acceleration-feedforward experiment supplies new empirical evidence; the snapshot records the reviewed source/config update. The whole upstream GNC library is not rebuilt here: only imported proof modules and their dependencies are checked.
 
 ## October 9 snapshot review

@@ -1,6 +1,30 @@
 # Where the flight simulations run — audited October 16, 2026
 
-**The current Betaflight results are native Linux SITL measurements. FastDyn has not executed those recordings.** A separate CogniPilot TROPIC ARM binary-in-the-loop (BIL) acceptance mission now passes in FastDyn/QEMU; see the report below. The existing figure-eight recordings remain native SIL.
+**The current Betaflight results are native Linux SITL measurements. FastDyn has not executed those recordings.** CogniPilot now has both a passing FastDyn baseline and a passing **10 × 10 m figure-eight at 2 m altitude**. The sim page labels the new ARM BIL recording separately from the historical native SIL flights.
+
+## FastDyn shared-controller figure-eight — October 16
+
+The new [sim-page recording](sim/) uses the existing `shared-sil` Rust runner with `RDD2_SHARED_FASTDYN_MEMORY` selecting the ARM shared-memory transport. It opens QEMU's memory using the firmware ELF symbols instead of launching a Linux firmware process. The generated position controller, trajectory, plant, sensor schedule, stick mapping, accuracy thresholds and landing checks are unchanged. Host-only attitude-gain overrides are rejected for ARM execution; this run uses the compiled firmware gains.
+
+| Result | Measured value |
+|---|---:|
+| Course | 10 × 10 m, altitude target 2 m, one lap |
+| Reference lap window | 25–65 simulated seconds (40 s) |
+| Complete recorded flight | 83 s, including takeoff, hold and landing |
+| 3D tracking RMS / maximum during lap | 0.214346 / 0.565317 m |
+| Accuracy gates | RMS < 0.35 m; maximum < 0.75 m — passed |
+| Firmware exchanges | 132,800 |
+| Geometric lap check | Four ordered quadrants, both lobes, return to center, no extra lap — passed |
+| Final altitude | 0.098366 m (plant ground-contact height) |
+| Final firmware state / motors | Disarmed / all four zero |
+| Grounded, stopped samples | 54,431 |
+| Emulator wall time | 474.932 s; not the drone's lap time |
+
+[Original report](results/fastdyn/figure-eight/report.json), [exact shared config](results/fastdyn/figure-eight/config.json), [geometric check](results/fastdyn/figure-eight/geometry-check.json), [replay](results/fastdyn/figure-eight/replay.json), [actual QEMU launch and run log](evidence/fastdyn-figure-eight-2026-10-16/mission.log), [FastDyn configuration](evidence/fastdyn-figure-eight-2026-10-16/figure-eight.toml), and [tested runner source](evidence/fastdyn-figure-eight-2026-10-16/shared_sil.rs).
+
+The replay is sampled at 20 Hz and retains the original 83-second final sample. The full 100 Hz trajectory and actuator trace remain at `artifacts/fastdyn-figure-eight-02/flight/` in the VM and `benchmark-work/fastdyn-figure-eight/` on the Mac. The trajectory checksum is saved alongside the evidence. Attempt 01 failed before flight because the plugin's relative path required FastDyn's working directory; attempt 02 completed successfully. Runner validation: 51 tests passed, 2 ignored.
+
+This is one no-noise commissioning run with plant-truth position feedback and rate-plus-acceleration feed-forward, using local firmware/model sources. It is neither a noise campaign nor a maximum-speed search, and it does not measure physical IMU/SPI/DMA latency. Betaflight's existing results remain native SITL. The earlier square acceptance mission is retained below as separate evidence.
 
 ## Betaflight: source → modified executable → measured run
 
