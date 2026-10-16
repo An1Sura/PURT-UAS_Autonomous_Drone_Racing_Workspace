@@ -1,0 +1,2 @@
+[ci] launching rehosted cerebri_rdd2 mission
+[ci] RDD2 mission passed=true provider_mode=unknown simulated=44.000s mission_speedup=0.19x launch_wall=230.462s overall_speedup=0.19x max_alt=1.54m

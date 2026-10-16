@@ -1,0 +1,1399 @@
+diff --git a/src/interfaces/rc.c b/src/interfaces/rc.c
+index 5755770..9c26588 100644
+--- a/src/interfaces/rc.c
++++ b/src/interfaces/rc.c
+@@ -120,6 +120,12 @@ static void manual_message_from_rc(synapse_topic_ManualControlData_t *manual,
+ 		.pitch_milli = centered_milli(channels[1]),
+ 		.throttle_milli = (int16_t)CLAMP(channels[2] - 1000, 0, 1000),
+ 		.yaw_milli = (int16_t)-centered_milli(channels[3]),
++		.aux0_milli = centered_milli(channels[6]),
++		.aux1_milli = centered_milli(channels[7]),
++		.aux2_milli = centered_milli(channels[8]),
++		.aux3_milli = centered_milli(channels[9]),
++		.aux4_milli = centered_milli(channels[10]),
++		.aux5_milli = centered_milli(channels[11]),
+ 		.flight_mode = rdd2_rc_flight_mode(rc),
+ 		.flags = flags,
+ 	};
+diff --git a/src/interfaces/zros_topics.c b/src/interfaces/zros_topics.c
+index c65d1d0..dd6a7fd 100644
+--- a/src/interfaces/zros_topics.c
++++ b/src/interfaces/zros_topics.c
+@@ -28,6 +28,7 @@ ZROS_TOPIC_DEFINE_SINGLE_PUBLISHER(trajectory_reference,
+                                    synapse_topic_LocalPositionCommandData_t);
+ ZROS_TOPIC_DEFINE_SINGLE_PUBLISHER(navigation_odometry,
+                                    synapse_topic_OdometryEstimateData_t);
++ZROS_TOPIC_DEFINE_SINGLE_PUBLISHER(rate_feedforward, rdd2_rate_feedforward_t);
+ ZROS_TOPIC_DEFINE_SINGLE_PUBLISHER(rate_command,
+                                    synapse_topic_RateCommandData_t);
+ 
+diff --git a/src/interfaces/zros_topics.h b/src/interfaces/zros_topics.h
+index 16350b6..c5fd0a6 100644
+--- a/src/interfaces/zros_topics.h
++++ b/src/interfaces/zros_topics.h
+@@ -26,6 +26,11 @@ ZROS_TOPIC_DECLARE(control_imu, synapse_topic_InertialSampleData_t);
+ ZROS_TOPIC_DECLARE(waypoint_plan, rdd2_waypoint_plan_t);
+ ZROS_TOPIC_DECLARE(trajectory_reference, synapse_topic_LocalPositionCommandData_t);
+ ZROS_TOPIC_DECLARE(navigation_odometry, synapse_topic_OdometryEstimateData_t);
++typedef struct {
++  uint64_t timestamp_ns;
++  float alpha_flu_rad_s2[3];
++} rdd2_rate_feedforward_t;
++ZROS_TOPIC_DECLARE(rate_feedforward, rdd2_rate_feedforward_t);
+ ZROS_TOPIC_DECLARE(rate_command, synapse_topic_RateCommandData_t);
+ ZROS_TOPIC_DECLARE(vehicle_health, synapse_topic_VehicleHealthData_t);
+ ZROS_TOPIC_DECLARE(attitude_estimate, synapse_topic_AttitudeEstimateData_t);
+diff --git a/src/processes/guidance_controller.c b/src/processes/guidance_controller.c
+index 4bd5002..d2a8519 100644
+--- a/src/processes/guidance_controller.c
++++ b/src/processes/guidance_controller.c
+@@ -3,12 +3,17 @@
+ #include "processes.h"
+ 
+ #include "control_safety.h"
++#include "interfaces/drivers.h"
+ #include "interfaces/zros_topics.h"
+ #include "scheduling.h"
+ 
+ #include "gnss_source.h"
+ 
+ #include <zephyr/kernel.h>
++#if defined(CONFIG_BOARD_NATIVE_SIM)
++#include <stdlib.h>
++#include <errno.h>
++#endif
+ #include <zephyr/logging/log.h>
+ 
+ #include <zros/private/zros_node_struct.h>
+@@ -43,6 +48,8 @@ struct guidance_controller_process {
+   struct zros_sub odometry_sub;
+   struct zros_sub reference_sub;
+   struct zros_pub rate_command_pub;
++  struct zros_pub feedforward_pub;
++  rdd2_rate_feedforward_t feedforward;
+   struct zros_pub attitude_command_pub;
+   struct rdd2_release_scheduler release_scheduler;
+   bool have_reference;
+@@ -72,6 +79,19 @@ copy_manual_inputs_to_efmu(GuidanceControllerState *efmu,
+       manual_valid &&
+       (manual->flags & synapse_topic_ManualControlFlags_ArmSwitch) != 0U;
+ 
++  rdd2_rc_channels_t rc = {0};
++  int64_t stamp = 0; bool valid = false;
++  rdd2_rc_input_latest_get(&rc, &stamp, &valid);
++  const int32_t *channels = rdd2_topic_rc_channels_data_const(&rc);
++  bool fresh = valid;
++#if !defined(CONFIG_RDD2_LOCKSTEP)
++  fresh = fresh && k_uptime_get()-stamp <= 100;
++#endif
++  efmu->feedforwardEnabled = fresh && manual_valid && !health_failsafe && channels[6] > 1750;
++  for (int axis=0; axis<3; ++axis) {
++    efmu->angularVelocityFeedforward[axis] = efmu->feedforwardEnabled && axis<2 ? 4.0f*CLAMP((channels[7+axis]-1500)/500.0f,-1.0f,1.0f) : 0.0f;
++    efmu->angularAccelerationFeedforward[axis] = efmu->feedforwardEnabled ? 20.0f*CLAMP((channels[9+axis]-1500)/500.0f,-1.0f,1.0f) : 0.0f;
++  }
+   efmu->mode = manual->flight_mode <= 2U ? manual->flight_mode : 0;
+   efmu->armed = rdd2_guidance_arm_allowed(health_armed, health_failsafe,
+                                           manual_valid, arm_switch);
+@@ -187,6 +207,9 @@ static void publish_efmu_outputs(struct guidance_controller_process *process) {
+       .body_rate_flu_rad_s = process->rate_command.body_rate_flu_rad_s,
+       .thrust = process->rate_command.thrust,
+   };
++  process->feedforward.timestamp_ns = timestamp_ns;
++  for (int axis=0; axis<3; ++axis) process->feedforward.alpha_flu_rad_s2[axis] = efmu->angularAccelerationCommandFlu_rad_s2[axis];
++  (void)zros_pub_update(&process->feedforward_pub);
+   (void)zros_pub_update(&process->rate_command_pub);
+   (void)zros_pub_update(&process->attitude_command_pub);
+ }
+@@ -197,6 +220,9 @@ static bool efmu_outputs_are_finite(const GuidanceControllerState *efmu) {
+       efmu->angularVelocityCommandFlu_rad_s[1],
+       efmu->angularVelocityCommandFlu_rad_s[2],
+       efmu->thrust_N,
++      efmu->angularAccelerationCommandFlu_rad_s2[0],
++      efmu->angularAccelerationCommandFlu_rad_s2[1],
++      efmu->angularAccelerationCommandFlu_rad_s2[2],
+   };
+ 
+   return rdd2_control_values_are_finite(values, ARRAY_SIZE(values));
+@@ -330,6 +356,20 @@ int rdd2_guidance_controller_process_start(void) {
+   *process = (struct guidance_controller_process){0};
+   process->attitude.attitude.w = 1.0f;
+   GuidanceController_startup(&process->efmu);
++  #if defined(CONFIG_BOARD_NATIVE_SIM)
++  /* Host-only tunable-parameter override, recorded in each SIL config. */
++  const char *gain_text = getenv("RDD2_SIL_ATTITUDE_GAIN");
++  if (gain_text != NULL) {
++    char *end = NULL;
++    const float gain = strtof(gain_text, &end);
++    if (end == gain_text || *end != '\0' || !(gain >= 1.0f && gain <= 20.0f)) {
++      return -EINVAL;
++    }
++    process->efmu.attitudeGain[0] = gain;
++    process->efmu.attitudeGain[1] = gain;
++    LOG_INF("SIL ATTITUDE gain: %s /s", gain_text);
++  }
++#endif
+   GuidanceController_recalibrate(&process->efmu);
+   zros_node_init(&process->node, "efmu_guidance");
+ 
+@@ -359,6 +399,8 @@ int rdd2_guidance_controller_process_start(void) {
+     return rc;
+   }
+ 
++  rc = zros_pub_init(&process->feedforward_pub, &process->node, &topic_rate_feedforward, &process->feedforward);
++  if (rc != 0) return rc;
+   rc = zros_pub_init(&process->rate_command_pub, &process->node,
+                      &topic_rate_command, &process->rate_command);
+   if (rc == 0) {
+diff --git a/src/processes/navigation_estimator.c b/src/processes/navigation_estimator.c
+index 3bfb92e..20b33ec 100644
+--- a/src/processes/navigation_estimator.c
++++ b/src/processes/navigation_estimator.c
+@@ -516,3 +516,15 @@ int rdd2_navigation_estimator_process_start(void) {
+   k_thread_name_set(&g_thread, "efmu_navigation");
+   return 0;
+ }
++
++/* Read-only origin metadata for simulator coordinate conversion. The origin
++ * is immutable after capture; g_origin_valid publishes completed capture. */
++bool rdd2_navigation_origin_get(int32_t origin_lla[3]) {
++  if (origin_lla == NULL || !rdd2_navigation_origin_valid_get()) {
++    return false;
++  }
++  origin_lla[0] = g_process.gps_adapter.origin_latitude_deg_e7;
++  origin_lla[1] = g_process.gps_adapter.origin_longitude_deg_e7;
++  origin_lla[2] = g_process.gps_adapter.origin_altitude_msl_mm;
++  return true;
++}
+diff --git a/src/processes/processes.h b/src/processes/processes.h
+index 35d14a8..f08d061 100644
+--- a/src/processes/processes.h
++++ b/src/processes/processes.h
+@@ -5,6 +5,7 @@
+ 
+ #include <stdbool.h>
+ #include <stdint.h>
++#include <synapse/control_reader.h>
+ 
+ /*
+  * Zephyr deployment boundary for the generated eFMUs.
+@@ -18,7 +19,11 @@ int rdd2_waypoint_trajectory_planner_process_start(void);
+ int rdd2_guidance_controller_process_start(void);
+ int rdd2_rate_control_allocator_process_run(void);
+ bool rdd2_navigation_origin_valid_get(void);
++bool rdd2_navigation_origin_get(int32_t origin_lla[3]);
+ uint8_t rdd2_waypoint_mission_state_get(void);
++/* Lockstep-only ingress. Retains the trajectory topic's single publisher. */
++bool rdd2_waypoint_external_reference_submit(
++    const synapse_topic_LocalPositionCommandData_t *reference);
+ 
+ /* Navigation keeps finite attitude/rate output usable during estimator
+  * recovery, while quality 1 explicitly withdraws POSITION capability. */
+diff --git a/src/processes/rate_control_allocator.c b/src/processes/rate_control_allocator.c
+index e0cfa86..1928d34 100644
+--- a/src/processes/rate_control_allocator.c
++++ b/src/processes/rate_control_allocator.c
+@@ -45,6 +45,8 @@ struct rate_control_allocator_process {
+   synapse_topic_ControlLoopMetricsData_t metrics_message;
+   struct zros_node node;
+   struct zros_sub rate_command_sub;
++  struct zros_sub feedforward_sub;
++  rdd2_rate_feedforward_t feedforward;
+   struct zros_sub navigation_sub;
+   struct zros_pub imu_pub;
+   struct zros_pub health_pub;
+@@ -213,6 +215,12 @@ copy_topic_inputs_to_efmu(struct rate_control_allocator_process *process,
+                           bool inputs_usable) {
+   RateControlAllocatorState *efmu = &process->efmu;
+ 
++  (void)zros_sub_update(&process->feedforward_sub);
++  const int32_t *channels = rdd2_topic_rc_channels_data_const(&process->rc);
++  bool ff_valid = inputs_usable && !process->status.rc_stale && process->status.flight_mode == 1 && channels[6] > 1750 &&
++      process->feedforward.timestamp_ns == process->rate_command.timestamp_ns &&
++      rdd2_control_values_are_finite(process->feedforward.alpha_flu_rad_s2,3);
++  for (int axis=0; axis<3; ++axis) efmu->angularAccelerationFeedforward[axis] = ff_valid ? CLAMP(process->feedforward.alpha_flu_rad_s2[axis],-20.0f,20.0f) : 0.0f;
+   efmu->armed = process->status.armed && inputs_usable;
+   efmu->thrust_N = inputs_usable ? process->rate_command.thrust : 0.0f;
+   efmu->angularVelocityCommandFlu_rad_s[0] =
+@@ -320,6 +328,8 @@ static int process_zros_init(struct rate_control_allocator_process *process) {
+   int rc;
+ 
+   zros_node_init(&process->node, "efmu_rate");
++  rc = zros_sub_init(&process->feedforward_sub, &process->node, &topic_rate_feedforward, &process->feedforward, 0.0);
++  if (rc != 0) return rc;
+   rc = zros_sub_init(&process->rate_command_sub, &process->node,
+                      &topic_rate_command, &process->rate_command, 0.0);
+   if (rc == 0) {
+diff --git a/src/processes/waypoint_trajectory_planner.c b/src/processes/waypoint_trajectory_planner.c
+index b392ec4..6d38e04 100644
+--- a/src/processes/waypoint_trajectory_planner.c
++++ b/src/processes/waypoint_trajectory_planner.c
+@@ -68,6 +68,7 @@ struct waypoint_trajectory_planner_process {
+ 
+ static struct waypoint_trajectory_planner_process g_process;
+ static atomic_t g_mission_state;
++static atomic_t g_external_reference_active;
+ static struct k_thread g_thread;
+ K_THREAD_STACK_DEFINE(g_planner_stack, PLANNER_STACK_SIZE);
+ 
+@@ -434,6 +435,9 @@ static void
+ waypoint_mission_cycle(struct waypoint_trajectory_planner_process *process,
+                        bool plan_updated) {
+   uint64_t control_now_ns = process->release_clock.timestamp_ns;
++  if (atomic_get(&g_external_reference_active) != 0) {
++    return;
++  }
+   bool navigation_current = odometry_is_current(process, control_now_ns);
+   bool source_ready = rdd2_position_source_ready_get();
+ 
+@@ -522,6 +526,7 @@ int rdd2_waypoint_trajectory_planner_process_start(void) {
+   int rc;
+ 
+   *process = (struct waypoint_trajectory_planner_process){0};
++  atomic_set(&g_external_reference_active, 0);
+   mission_state_set(process, RDD2_WAYPOINT_MISSION_EMPTY);
+   reset_planner_efmu(process);
+   zros_node_init(&process->node, "efmu_planner");
+@@ -559,3 +564,17 @@ int rdd2_waypoint_trajectory_planner_process_start(void) {
+   k_thread_name_set(&g_thread, "efmu_planner");
+   return 0;
+ }
++
++/* The lockstep transport validates timestamps, frames, finite values and
++ * exclusivity before this call. No generated planner state is stepped here. */
++bool rdd2_waypoint_external_reference_submit(
++    const synapse_topic_LocalPositionCommandData_t *reference) {
++  if (reference == NULL ||
++      rdd2_waypoint_mission_state_get() != RDD2_WAYPOINT_MISSION_EMPTY ||
++      !g_process.reference_pub._initialized) {
++    return false;
++  }
++  atomic_set(&g_external_reference_active, 1);
++  g_process.reference = *reference;
++  return zros_pub_update(&g_process.reference_pub) == 0;
++}
+diff --git a/subsys/lockstep/lockstep_direct.c b/subsys/lockstep/lockstep_direct.c
+index f6c4a7d..3bc84e2 100644
+--- a/subsys/lockstep/lockstep_direct.c
++++ b/subsys/lockstep/lockstep_direct.c
+@@ -1,6 +1,7 @@
+ /* SPDX-License-Identifier: Apache-2.0 */
+ 
+ #include "interfaces/data.h"
++#include "processes/processes.h"
+ #include "lockstep_shared.h"
+ #include "lockstep_transport.h"
+ 
+@@ -60,6 +61,7 @@ static void direct_thread(void *arg0, void *arg1, void *arg2) {
+     if (!rdd2_lockstep_handle_manual_control(&g_shared->manual_control) ||
+         !rdd2_lockstep_handle_gps_mission(
+             &g_shared->gnss_fix, &g_shared->waypoint_plan,
++            &g_shared->external_reference,
+             g_shared->inertial_sample.timestamp_ns) ||
+         !rdd2_lockstep_handle_input_blob(
+             (const uint8_t *)&g_shared->inertial_sample,
+@@ -87,6 +89,8 @@ static void direct_thread(void *arg0, void *arg1, void *arg2) {
+       g_shared->planner_reference = flight.planner_reference;
+     }
+     rdd2_lockstep_gps_mission_status_get(&g_shared->mission_status);
++    g_shared->navigation_origin_valid =
++        rdd2_navigation_origin_get(g_shared->navigation_origin_lla) ? 1U : 0U;
+     cerebri_lockstep_sequence_respond(&g_lockstep);
+   }
+ }
+diff --git a/subsys/lockstep/lockstep_fastdyn.c b/subsys/lockstep/lockstep_fastdyn.c
+index f0374ad..092bf99 100644
+--- a/subsys/lockstep/lockstep_fastdyn.c
++++ b/subsys/lockstep/lockstep_fastdyn.c
+@@ -1,6 +1,7 @@
+ /* SPDX-License-Identifier: Apache-2.0 */
+ 
+ #include "interfaces/data.h"
++#include "processes/processes.h"
+ #include "lockstep_shared.h"
+ #include "lockstep_transport.h"
+ 
+@@ -55,6 +56,7 @@ static void fastdyn_thread(void *arg0, void *arg1, void *arg2) {
+         !rdd2_lockstep_handle_gps_mission(
+             &rdd2_fastdyn_lockstep_shared.gnss_fix,
+             &rdd2_fastdyn_lockstep_shared.waypoint_plan,
++            &rdd2_fastdyn_lockstep_shared.external_reference,
+             rdd2_fastdyn_lockstep_shared.inertial_sample.timestamp_ns) ||
+         !rdd2_lockstep_handle_input_blob(
+             (const uint8_t *)&rdd2_fastdyn_lockstep_shared.inertial_sample,
+@@ -84,6 +86,8 @@ static void fastdyn_thread(void *arg0, void *arg1, void *arg2) {
+     }
+     rdd2_lockstep_gps_mission_status_get(
+         &rdd2_fastdyn_lockstep_shared.mission_status);
++    rdd2_fastdyn_lockstep_shared.navigation_origin_valid =
++        rdd2_navigation_origin_get(rdd2_fastdyn_lockstep_shared.navigation_origin_lla) ? 1U : 0U;
+     cerebri_lockstep_sequence_respond(&g_lockstep);
+   }
+ }
+diff --git a/subsys/lockstep/lockstep_shared.h b/subsys/lockstep/lockstep_shared.h
+index 9229f62..8ca4ed0 100644
+--- a/subsys/lockstep/lockstep_shared.h
++++ b/subsys/lockstep/lockstep_shared.h
+@@ -12,7 +12,7 @@
+ #include <synapse/sensors_reader.h>
+ #include <synapse/state_reader.h>
+ 
+-#define RDD2_LOCKSTEP_MAGIC UINT32_C(0x52444734)
++#define RDD2_LOCKSTEP_MAGIC UINT32_C(0x52444735)
+ 
+ /* Vehicle-owned storage containing only generated synapse_fbs 0.9 payloads. */
+ struct rdd2_lockstep_shared {
+@@ -32,9 +32,12 @@ struct rdd2_lockstep_shared {
+   synapse_topic_OdometryEstimateData_t odometry_estimate;
+   synapse_topic_LocalPositionCommandData_t planner_reference;
+   struct rdd2_lockstep_gps_mission_status mission_status;
++  synapse_topic_LocalPositionCommandData_t external_reference;
++  int32_t navigation_origin_lla[3];
++  uint32_t navigation_origin_valid;
+ };
+ 
+-_Static_assert(sizeof(struct rdd2_lockstep_shared) == 1192,
++_Static_assert(sizeof(struct rdd2_lockstep_shared) == 1264,
+                "native SIL shared layout mismatch");
+ _Static_assert(_Alignof(struct rdd2_lockstep_shared) == 8,
+                "native SIL shared alignment mismatch");
+@@ -64,4 +67,10 @@ _Static_assert(offsetof(struct rdd2_lockstep_shared, planner_reference) == 1088,
+ _Static_assert(offsetof(struct rdd2_lockstep_shared, mission_status) == 1144,
+                "mission status ABI offset mismatch");
+ 
++_Static_assert(offsetof(struct rdd2_lockstep_shared, external_reference) == 1192,
++               "external reference ABI offset mismatch");
++
++_Static_assert(offsetof(struct rdd2_lockstep_shared, navigation_origin_lla) == 1248,
++               "navigation origin ABI offset mismatch");
++
+ #endif
+diff --git a/subsys/lockstep/lockstep_transport.c b/subsys/lockstep/lockstep_transport.c
+index 5ddf7ee..6d7b60f 100644
+--- a/subsys/lockstep/lockstep_transport.c
++++ b/subsys/lockstep/lockstep_transport.c
+@@ -10,6 +10,7 @@
+ #include "interfaces/zros_topics.h"
+ #include "lockstep_input.h"
+ #include "processes/processes.h"
++#include "processes/control_safety.h"
+ 
+ #include <string.h>
+ 
+@@ -34,6 +35,7 @@ static K_SEM_DEFINE(g_lockstep_input_sem, 0, 1);
+ static struct zros_node g_lockstep_mission_node;
+ static struct zros_pub g_lockstep_plan_pub;
+ static rdd2_waypoint_plan_t g_lockstep_plan;
++static synapse_topic_LocalPositionCommandData_t g_external_reference;
+ static uint64_t g_control_now_ns;
+ static int32_t g_last_plan_sequence;
+ static bool g_plan_sequence_observed;
+@@ -169,6 +171,13 @@ bool rdd2_lockstep_handle_manual_control(
+                 : manual->flight_mode == 1U ? 1500
+                                             : 2000;
+ 
++  channels[6] = centered_milli_to_pwm(manual->aux0_milli);
++  channels[7] = centered_milli_to_pwm(manual->aux1_milli);
++  channels[8] = centered_milli_to_pwm(manual->aux2_milli);
++  channels[9] = centered_milli_to_pwm(manual->aux3_milli);
++  channels[10] = centered_milli_to_pwm(manual->aux4_milli);
++  channels[11] = centered_milli_to_pwm(manual->aux5_milli);
++
+   required_flags = synapse_topic_ManualControlFlags_Valid |
+                    synapse_topic_ManualControlFlags_Active;
+   required_axes = synapse_topic_ManualControlAxes_Roll |
+@@ -189,6 +198,7 @@ int rdd2_lockstep_gps_mission_init(void) {
+   int rc;
+ 
+   g_lockstep_plan = (rdd2_waypoint_plan_t){0};
++  g_external_reference = (synapse_topic_LocalPositionCommandData_t){0};
+   g_control_now_ns = 0U;
+   g_last_plan_sequence = 0;
+   g_plan_sequence_observed = false;
+@@ -204,10 +214,45 @@ int rdd2_lockstep_gps_mission_init(void) {
+ 
+ bool rdd2_lockstep_handle_gps_mission(const synapse_topic_GnssFixData_t *fix,
+                                       const rdd2_waypoint_plan_t *plan,
++                                      const synapse_topic_LocalPositionCommandData_t *reference,
+                                       uint64_t control_now_ns) {
+   bool accepted;
+ 
+-  if (!g_lockstep_mission_ready || fix == NULL || plan == NULL) {
++  if (!g_lockstep_mission_ready || fix == NULL || plan == NULL || reference == NULL) {
++    return false;
++  }
++  /* External commands never coexist with an accepted internal waypoint plan.
++   * The planner remains EMPTY; guidance still enforces its normal freshness,
++   * health, navigation, and arming requirements. */
++  if (reference->timestamp_ns != 0U) {
++    const float values[] = {
++        reference->position_enu_m.x, reference->position_enu_m.y,
++        reference->position_enu_m.z, reference->velocity_enu_m_s.x,
++        reference->velocity_enu_m_s.y, reference->velocity_enu_m_s.z,
++        reference->acceleration_or_force_enu.x,
++        reference->acceleration_or_force_enu.y,
++        reference->acceleration_or_force_enu.z,
++        reference->yaw_rad, reference->yaw_rate_rad_s};
++    if (plan->sequence != 0 || g_plan_sequence_observed ||
++        reference->timestamp_ns > control_now_ns ||
++        control_now_ns - reference->timestamp_ns > UINT64_C(100000000) ||
++        reference->timestamp_ns < g_external_reference.timestamp_ns ||
++        reference->coordinate_frame != synapse_types_LocalFrame_LocalEnu ||
++        reference->type_mask != 0U ||
++        !rdd2_control_values_are_finite(values, ARRAY_SIZE(values))) {
++      return false;
++    }
++    if (reference->timestamp_ns == g_external_reference.timestamp_ns) {
++      if (memcmp(reference, &g_external_reference, sizeof(*reference)) != 0) {
++        return false;
++      }
++    } else {
++      g_external_reference = *reference;
++      if (!rdd2_waypoint_external_reference_submit(&g_external_reference)) {
++        return false;
++      }
++    }
++  } else if (g_external_reference.timestamp_ns != 0U && plan->sequence != 0) {
+     return false;
+   }
+   accepted = rdd2_gnss_lockstep_submit(fix, control_now_ns);
+diff --git a/subsys/lockstep/lockstep_transport.h b/subsys/lockstep/lockstep_transport.h
+index a66d6ed..2b39566 100644
+--- a/subsys/lockstep/lockstep_transport.h
++++ b/subsys/lockstep/lockstep_transport.h
+@@ -25,6 +25,7 @@ bool rdd2_lockstep_handle_manual_control(
+ int rdd2_lockstep_gps_mission_init(void);
+ bool rdd2_lockstep_handle_gps_mission(const synapse_topic_GnssFixData_t *fix,
+                                       const rdd2_waypoint_plan_t *plan,
++                                      const synapse_topic_LocalPositionCommandData_t *reference,
+                                       uint64_t control_now_ns);
+ void rdd2_lockstep_gps_mission_status_get(
+     struct rdd2_lockstep_gps_mission_status *status);
+diff --git a/xtask/src/fastdyn_ci.rs b/xtask/src/fastdyn_ci.rs
+index 753d72f..0fa90f4 100644
+--- a/xtask/src/fastdyn_ci.rs
++++ b/xtask/src/fastdyn_ci.rs
+@@ -199,8 +199,7 @@ pub fn run() -> Result<()> {
+     // Which providers produced this result. A pass built from caller-selected
+     // sources is not a qualifying result, and the report is what gets pasted
+     // long after the log that said so has scrolled away.
+-    let provider_mode =
+-        env::var("RDD2_PROVIDER_MODE").unwrap_or_else(|_| "unknown".to_string());
++    let provider_mode = env::var("RDD2_PROVIDER_MODE").unwrap_or_else(|_| "unknown".to_string());
+     object.insert("provider_mode".into(), json!(provider_mode));
+     fs::write(&report_path, serde_json::to_vec_pretty(&report)?)?;
+ 
+diff --git a/xtask/src/main.rs b/xtask/src/main.rs
+index e11a7c8..39852ce 100644
+--- a/xtask/src/main.rs
++++ b/xtask/src/main.rs
+@@ -1,8 +1,21 @@
++mod benchmark;
++mod betaflight_probe;
++mod cognipilot;
++mod cognipilot_reference;
+ mod fastdyn_ci;
++mod figure_config;
+ mod format;
++mod mission;
++mod mission_server;
+ mod physics;
+ mod protocol;
++mod reference;
++mod shared_loop;
+ mod shared_memory;
++mod shared_sil;
++mod speed_score;
++mod speed_sweep;
++mod tuning;
+ 
+ use std::env;
+ use std::fs::{self, File};
+@@ -13,29 +26,21 @@ use std::thread;
+ use std::time::{Duration, Instant};
+ 
+ use anyhow::{Context, Result, anyhow, bail};
++use benchmark::{PilotCommand, SensorFrame, SquarePlan, SyntheticGnss};
++use mission::BASELINE;
+ use physics::{Plant, radians_to_degrees};
+-use protocol::{MissionStatusWire, SyntheticGnss, WaypointPlanWire};
++use protocol::{MissionStatusWire, WaypointPlanWire};
+ use serde::Serialize;
+ use shared_memory::LockstepOutputs;
+ 
+-/// RDD2's fixed 1600 Hz firmware control-loop period.
+-const CONTROLLER_DT: f64 = 0.000_625;
+-const TAKEOFF_ALTITUDE_M: f64 = 1.5;
+-const MISSION_SIDE_M: f64 = 0.5;
+-const MISSION_SPEED_M_S: f32 = 0.1;
+-const MISSION_ARM_DELAY_S: f64 = 0.5;
+-const MISSION_TAKEOFF_START_S: f64 = 1.0;
+-const MISSION_TAKEOFF_END_S: f64 = 4.0;
+-const MISSION_POSITION_START_S: f64 = 8.0;
+-const MISSION_POSITION_END_S: f64 = 34.0;
+-const MISSION_DISARM_S: f64 = 40.0;
+-const DEFAULT_MISSION_DURATION_S: f64 = 44.0;
+-const MINIMUM_MISSION_DURATION_S: f64 = MISSION_DISARM_S + 2.0;
+ const PLANNER_CORNER_TOLERANCE_M: f64 = 0.12;
+ const VEHICLE_CORNER_TOLERANCE_M: f64 = 0.25;
+ 
+ #[derive(Debug)]
+ struct Options {
++    external_reference: bool,
++    figure_eight: bool,
++    figure_config: Option<figure_config::Config>,
+     report: PathBuf,
+     trajectory: PathBuf,
+     duration: f64,
+@@ -52,6 +57,9 @@ struct Options {
+ 
+ #[derive(Debug, Default, Serialize)]
+ struct Report {
++    baseline_mission: mission::Mission,
++    adapter: String,
++    exchange_metrics: benchmark::ExchangeMetrics,
+     passed: bool,
+     /// Which providers produced the firmware under test. A pass built from
+     /// caller-selected sources is not a qualifying result, and the report
+@@ -108,7 +116,7 @@ fn options(args: impl IntoIterator<Item = String>) -> Result<Options> {
+     let mut trajectory = env::var_os("RDD2_MISSION_TRAJECTORY")
+         .map(PathBuf::from)
+         .unwrap_or_else(|| PathBuf::from("out/mission-trajectory.csv"));
+-    let mut duration: f64 = DEFAULT_MISSION_DURATION_S;
++    let mut duration: f64 = BASELINE.default_mission_duration_s;
+     let mut timeout_ms = 2_000_u64;
+     let mut controller_benchmark = env::var("RDD2_FASTDYN_CONTROLLER_BENCHMARK_S")
+         .ok()
+@@ -124,10 +132,39 @@ fn options(args: impl IntoIterator<Item = String>) -> Result<Options> {
+         .map(|value| value.parse())
+         .transpose()?
+         .unwrap_or(0.0);
++    let mut external_reference = false;
++    let mut figure_eight = false;
++    let mut figure_config = None;
++    let mut plant_directory = None;
+     let mut args = args.into_iter();
+     while let Some(arg) = args.next() {
+         let value = || anyhow!("{arg} requires a value");
+         match arg.as_str() {
++            "--plant-directory" => {
++                plant_directory = Some(PathBuf::from(args.next().ok_or_else(value)?))
++            }
++            "--config" => {
++                figure_config = Some(figure_config::Config::load(Path::new(
++                    &args.next().ok_or_else(value)?,
++                ))?);
++                figure_eight = true;
++                external_reference = true;
++            }
++            "--external-reference" => external_reference = true,
++            "--figure-eight" => {
++                figure_eight = true;
++                external_reference = true;
++            }
++            "--stack" => {
++                let stack = args.next().ok_or_else(value)?;
++                match stack.as_str() {
++                    "cognipilot" => (),
++                    "betaflight" | "px4" => bail!(
++                        "{stack} adapter is not implemented; no substitute simulator will be used"
++                    ),
++                    _ => bail!("unknown stack: {stack}"),
++                }
++            }
+             "--report" => report = args.next().ok_or_else(value)?.into(),
+             "--trajectory" => trajectory = args.next().ok_or_else(value)?.into(),
+             "--duration" => duration = args.next().ok_or_else(value)?.parse()?,
+@@ -145,20 +182,48 @@ fn options(args: impl IntoIterator<Item = String>) -> Result<Options> {
+             "--minimum-speedup" => minimum_speedup = args.next().ok_or_else(value)?.parse()?,
+             "-h" | "--help" => {
+                 println!(
+-                    "cargo xtask fastdyn-mission --shared-memory PATH (--firmware-elf PATH | --native-sim PATH) --plant-library PATH --plant-description PATH [--report PATH] [--trajectory PATH] [--duration SEC] [--controller-benchmark SEC] [--minimum-speedup X]"
++                    "cargo xtask fastdyn-mission --shared-memory PATH (--firmware-elf PATH | --native-sim PATH) --plant-library PATH --plant-description PATH [--stack cognipilot] [--external-reference] [--figure-eight] [--report PATH] [--trajectory PATH] [--duration SEC] [--controller-benchmark SEC] [--minimum-speedup X]"
+                 );
+                 std::process::exit(0);
+             }
+             _ => bail!("unknown argument: {arg}"),
+         }
+     }
+-    if !duration.is_finite() || duration < MINIMUM_MISSION_DURATION_S {
+-        bail!("--duration must be finite and at least {MINIMUM_MISSION_DURATION_S} seconds");
++    if let Some(directory) = plant_directory {
++        if plant_library.is_some() || plant_description.is_some() {
++            bail!(
++                "--plant-directory cannot be combined with explicit plant paths or their environment variables"
++            );
++        }
++        let (library, description) = physics::host_paths(&directory)?;
++        plant_library = Some(library);
++        plant_description = Some(description);
++    }
++    if !duration.is_finite() || duration < (BASELINE.mission_disarm_s + 2.0) {
++        bail!(
++            "--duration must be finite and at least {} seconds",
++            BASELINE.mission_disarm_s + 2.0
++        );
+     }
+     if !minimum_speedup.is_finite() || minimum_speedup < 0.0 {
+         bail!("--minimum-speedup must be finite and non-negative");
+     }
++    if external_reference && controller_benchmark.is_some() {
++        bail!("external reference cannot be combined with controller benchmark");
++    }
++    if let Some(c) = &figure_config {
++        let p = c.check_profile("cognipilot", "external_reference")?;
++        if p.sensor_rate_hz != 1600. || p.sensor_delay_ms != 0. || p.sensor_noise_std_m != 0. {
++            bail!(
++                "CogniPilot diagnostic currently requires 1600 Hz ingress and zero external delay/noise; profile edits are planning-only until injection support is implemented"
++            );
++        }
++        duration = p.estimator_warmup_s + p.arm_takeoff_s + c.window() + p.landing_s + 5.;
++    }
+     Ok(Options {
++        external_reference,
++        figure_eight,
++        figure_config,
+         report,
+         trajectory,
+         duration,
+@@ -171,29 +236,29 @@ fn options(args: impl IntoIterator<Item = String>) -> Result<Options> {
+             .context("--plant-library or RDD2_RUMOCA_PLANT_LIBRARY is required")?,
+         plant_description: plant_description
+             .context("--plant-description or RDD2_RUMOCA_PLANT_DESCRIPTION is required")?,
+-        plant_dt: CONTROLLER_DT,
++        plant_dt: BASELINE.controller_dt,
+         minimum_speedup,
+     })
+ }
+ 
+ fn desired_altitude(time: f64) -> f64 {
+     match time {
+-        t if t < MISSION_TAKEOFF_START_S => 0.0,
+-        t if t < MISSION_TAKEOFF_END_S => {
+-            (t - MISSION_TAKEOFF_START_S) * TAKEOFF_ALTITUDE_M
+-                / (MISSION_TAKEOFF_END_S - MISSION_TAKEOFF_START_S)
++        t if t < BASELINE.mission_takeoff_start_s => 0.0,
++        t if t < BASELINE.mission_takeoff_end_s => {
++            (t - BASELINE.mission_takeoff_start_s) * BASELINE.takeoff_altitude_m
++                / (BASELINE.mission_takeoff_end_s - BASELINE.mission_takeoff_start_s)
+         }
+-        t if t < MISSION_POSITION_END_S => TAKEOFF_ALTITUDE_M,
+-        t if t < MISSION_DISARM_S => {
+-            TAKEOFF_ALTITUDE_M * (MISSION_DISARM_S - t)
+-                / (MISSION_DISARM_S - MISSION_POSITION_END_S)
++        t if t < BASELINE.mission_position_end_s => BASELINE.takeoff_altitude_m,
++        t if t < BASELINE.mission_disarm_s => {
++            BASELINE.takeoff_altitude_m * (BASELINE.mission_disarm_s - t)
++                / (BASELINE.mission_disarm_s - BASELINE.mission_position_end_s)
+         }
+         _ => 0.0,
+     }
+ }
+ 
+ fn throttle_must_be_low(time: f64) -> bool {
+-    !(MISSION_TAKEOFF_START_S..MISSION_DISARM_S).contains(&time)
++    !(BASELINE.mission_takeoff_start_s..BASELINE.mission_disarm_s).contains(&time)
+ }
+ 
+ fn rc_channels(mission_time: Option<f64>, plant: &Plant) -> [i32; 16] {
+@@ -204,15 +269,16 @@ fn rc_channels(mission_time: Option<f64>, plant: &Plant) -> [i32; 16] {
+         channels[5] = 1000;
+         return channels;
+     };
+-    let arm_requested = (MISSION_ARM_DELAY_S..MISSION_DISARM_S).contains(&time);
++    let arm_requested = (BASELINE.mission_arm_delay_s..BASELINE.mission_disarm_s).contains(&time);
+     channels[4] = if arm_requested { 2000 } else { 1000 };
+-    channels[5] = if (MISSION_POSITION_START_S..MISSION_POSITION_END_S).contains(&time) {
+-        2000
+-    } else if arm_requested {
+-        1500
+-    } else {
+-        1000
+-    };
++    channels[5] =
++        if (BASELINE.mission_position_start_s..BASELINE.mission_position_end_s).contains(&time) {
++            2000
++        } else if arm_requested {
++            1500
++        } else {
++            1000
++        };
+     if throttle_must_be_low(time) {
+         channels[2] = 1000;
+     } else {
+@@ -381,8 +447,7 @@ fn evaluate(report: &mut Report) {
+             .push("vehicle had excessive vertical speed at completion".into());
+     }
+     report.passed = report.failures.is_empty();
+-    report.provider_mode =
+-        env::var("RDD2_PROVIDER_MODE").unwrap_or_else(|_| "unknown".to_string());
++    report.provider_mode = env::var("RDD2_PROVIDER_MODE").unwrap_or_else(|_| "unknown".to_string());
+ }
+ 
+ fn advance_square_corner(
+@@ -448,7 +513,11 @@ where
+     let warmup_target_ns = 5_000_000_u64;
+     let ready_deadline = Instant::now() + Duration::from_secs(60);
+     loop {
+-        let fix = synthetic_gnss.sample(plant.position(), plant.velocity(), warmup_target_ns);
++        let fix = protocol::gnss_fix(synthetic_gnss.sample(
++            plant.position(),
++            plant.velocity(),
++            warmup_target_ns,
++        ));
+         let inputs = protocol::lockstep_inputs(
+             gyro,
+             accel,
+@@ -466,7 +535,8 @@ where
+     }
+ 
+     let target_ns = warmup_target_ns + (benchmark_seconds * 1.0e9).round() as u64;
+-    let fix = synthetic_gnss.sample(plant.position(), plant.velocity(), target_ns);
++    let fix =
++        protocol::gnss_fix(synthetic_gnss.sample(plant.position(), plant.velocity(), target_ns));
+     let inputs = protocol::lockstep_inputs(
+         gyro,
+         accel,
+@@ -489,8 +559,12 @@ fn run_mission<F>(options: &Options, exchange: &mut F) -> Result<()>
+ where
+     F: FnMut(&protocol::LockstepInputs, Duration) -> Result<LockstepOutputs>,
+ {
++    if options.external_reference {
++        return cognipilot_reference::run(options, exchange);
++    }
+     let mut plant = Plant::open(&options.plant_library, &options.plant_description)?;
+     let mut report = Report {
++        adapter: "cognipilot".into(),
+         position_mission_continuous: true,
+         mission_status_current: true,
+         navigation_estimate_finite: true,
+@@ -500,7 +574,15 @@ where
+     let wall_start = Instant::now();
+     let mut firmware_ready = false;
+     let mut synthetic_gnss = SyntheticGnss::default();
+-    let mission_plan = protocol::bounded_square_plan(1, MISSION_SIDE_M as f32, MISSION_SPEED_M_S)?;
++    let mission_plan = SquarePlan {
++        sequence: 1,
++        side_m: BASELINE.mission_side_m as f32,
++        speed_m_s: BASELINE.mission_speed_m_s,
++    };
++    let mut adapter = cognipilot::CogniPilotAdapter {
++        exchange,
++        origin_enu_m: None,
++    };
+     let mut plan_sent = false;
+     let mut mission_epoch = None;
+     let mut last_outputs: Option<LockstepOutputs> = None;
+@@ -529,26 +611,38 @@ where
+         let channels = rc_channels(mission_time, &plant);
+         let (gyro, accel) = plant.imu_flu();
+         let target_time = ((simulated_time + options.plant_dt) * 1.0e9).round() as u64;
+-        let fix = synthetic_gnss.sample(plant.position(), plant.velocity(), target_time);
+-        let plan = if plan_sent {
+-            mission_plan
+-        } else {
+-            WaypointPlanWire::default()
++        let sensors = SensorFrame {
++            simulator_state: None,
++            target_time_ns: target_time,
++            gyro_flu_rad_s: gyro,
++            specific_force_flu_m_s2: accel,
++            gnss: synthetic_gnss.sample(plant.position(), plant.velocity(), target_time),
+         };
+-        let inputs = protocol::lockstep_inputs(gyro, accel, channels, fix, plan, target_time);
+-        let outputs = match exchange(&inputs, options.response_timeout) {
+-            Ok(response) => response,
+-            Err(error) if !firmware_ready && wall_start.elapsed() < Duration::from_secs(60) => {
+-                eprintln!("waiting for rehosted RDD2 firmware: {error}");
+-                continue;
+-            }
+-            Err(error) => return Err(error),
++        let command = PilotCommand {
++            channels_us: channels,
++            square_plan: plan_sent.then_some(mission_plan),
++            reference: None,
+         };
++        let (response, elapsed) =
++            match benchmark::exchange(&mut adapter, &sensors, &command, options.response_timeout) {
++                Ok(response) => response,
++                Err(error) if !firmware_ready && wall_start.elapsed() < Duration::from_secs(60) => {
++                    eprintln!("waiting for rehosted RDD2 firmware: {error}");
++                    continue;
++                }
++                Err(error) => return Err(error),
++            };
+         if !firmware_ready {
+             firmware_ready = true;
+         }
+ 
+-        plant.step(outputs.motor_command.values, options.plant_dt)?;
++        benchmark::commit(&mut plant, &response, options.plant_dt)?;
++        report.exchange_metrics.record(
++            elapsed,
++            response.motors,
++            response.diagnostics.flight_state.armed,
++        );
++        let outputs = response.diagnostics;
+         simulated_time += options.plant_dt;
+         report.plant_steps += 1;
+         let state = outputs.flight_state;
+@@ -619,7 +713,8 @@ where
+             .all(f32::is_finite);
+         report.fresh_planner_reference_observed |= reference_current;
+         if mission_time.is_some_and(|time| {
+-            (MISSION_POSITION_START_S + 0.1..MISSION_POSITION_END_S).contains(&time)
++            (BASELINE.mission_position_start_s + 0.1..BASELINE.mission_position_end_s)
++                .contains(&time)
+         }) {
+             let required = MissionStatusWire::SOURCE_READY
+                 | MissionStatusWire::ORIGIN_VALID
+@@ -641,14 +736,14 @@ where
+                 &mut report.planner_corners_reached,
+                 planner_origin_value,
+                 planner_position,
+-                MISSION_SIDE_M,
++                BASELINE.mission_side_m,
+                 PLANNER_CORNER_TOLERANCE_M,
+             );
+             advance_square_corner(
+                 &mut report.vehicle_corners_reached,
+                 vehicle_origin_value,
+                 [truth_position[0], truth_position[1]],
+-                MISSION_SIDE_M,
++                BASELINE.mission_side_m,
+                 VEHICLE_CORNER_TOLERANCE_M,
+             );
+         }
+@@ -671,7 +766,8 @@ where
+         if mission_epoch.is_none() && status.mission_state == 1 {
+             mission_epoch = Some(simulated_time);
+         }
+-        if mission_time.is_some_and(|time| time >= MISSION_DISARM_S + 0.25) && !state.armed {
++        if mission_time.is_some_and(|time| time >= BASELINE.mission_disarm_s + 0.25) && !state.armed
++        {
+             report.firmware_disarmed_after_flight = true;
+         }
+ 
+@@ -708,6 +804,7 @@ where
+         last_outputs = Some(outputs);
+     }
+ 
++    report.exchange_metrics.finish();
+     report.simulated_seconds = report.plant_steps as f64 * options.plant_dt;
+     report.wall_seconds = wall_start.elapsed().as_secs_f64();
+     report.speedup_over_realtime = report.simulated_seconds / report.wall_seconds;
+@@ -824,6 +921,19 @@ fn main() -> Result<()> {
+     };
+ 
+     match command.to_string_lossy().as_ref() {
++        "shared-loop-check" => shared_loop::run(args),
++        "shared-sil" => shared_sil::run(args),
++        "shared-sil-tune" => tuning::run(args),
++        "shared-sil-calibrate" => tuning::calibrate(args),
++        "shared-sil-speed" => speed_sweep::run(args),
++        "shared-sil-speed-export" => speed_sweep::export(args),
++        "shared-sil-campaign" => shared_sil::campaign(args),
++        "shared-sil-export" => shared_sil::export(args),
++        "mission-server" => mission_server::run(args),
++        "figure-plan" => figure_config::run(args),
++        "speed-score" => speed_score::run(args),
++        "speed-export" => speed_score::export(args),
++        "betaflight-probe" => betaflight_probe::run(args),
+         "fastdyn-ci" => fastdyn_ci::run(),
+         "fastdyn-mission" => {
+             let args = args
+@@ -870,7 +980,7 @@ mod tests {
+             vehicle_corners_reached: 5,
+             navigation_estimate_finite: true,
+             max_navigation_horizontal_error_m: 0.1,
+-            simulated_seconds: DEFAULT_MISSION_DURATION_S,
++            simulated_seconds: BASELINE.default_mission_duration_s,
+             maximum_gnss_generation: 441,
+             maximum_reference_generation: 100,
+             maximum_plan_generation: 1,
+@@ -904,16 +1014,19 @@ mod tests {
+ 
+     #[test]
+     fn takeoff_schedule_preserves_a_low_throttle_arming_window() {
+-        assert!(MISSION_ARM_DELAY_S < MISSION_TAKEOFF_START_S);
+-        assert!(MISSION_TAKEOFF_END_S < MISSION_POSITION_START_S);
+-        let arming_time = (MISSION_ARM_DELAY_S + MISSION_TAKEOFF_START_S) * 0.5;
++        assert!(BASELINE.mission_arm_delay_s < BASELINE.mission_takeoff_start_s);
++        assert!(BASELINE.mission_takeoff_end_s < BASELINE.mission_position_start_s);
++        let arming_time = (BASELINE.mission_arm_delay_s + BASELINE.mission_takeoff_start_s) * 0.5;
+         assert!(throttle_must_be_low(arming_time));
+         assert_eq!(desired_altitude(arming_time), 0.0);
+-        assert!(!throttle_must_be_low(MISSION_TAKEOFF_START_S));
+-        assert_eq!(desired_altitude(MISSION_TAKEOFF_END_S), TAKEOFF_ALTITUDE_M);
++        assert!(!throttle_must_be_low(BASELINE.mission_takeoff_start_s));
++        assert_eq!(
++            desired_altitude(BASELINE.mission_takeoff_end_s),
++            BASELINE.takeoff_altitude_m
++        );
+         assert_eq!(
+-            desired_altitude(MISSION_POSITION_START_S),
+-            TAKEOFF_ALTITUDE_M
++            desired_altitude(BASELINE.mission_position_start_s),
++            BASELINE.takeoff_altitude_m
+         );
+     }
+ 
+@@ -926,7 +1039,7 @@ mod tests {
+             &mut progress,
+             origin,
+             origin,
+-            MISSION_SIDE_M,
++            BASELINE.mission_side_m,
+             VEHICLE_CORNER_TOLERANCE_M,
+         );
+         assert_eq!(progress, 1);
+@@ -934,15 +1047,15 @@ mod tests {
+             &mut progress,
+             origin,
+             origin,
+-            MISSION_SIDE_M,
++            BASELINE.mission_side_m,
+             VEHICLE_CORNER_TOLERANCE_M,
+         );
+         assert_eq!(progress, 1, "the origin must not satisfy the next corner");
+         advance_square_corner(
+             &mut progress,
+             origin,
+-            [origin[0] + MISSION_SIDE_M, origin[1]],
+-            MISSION_SIDE_M,
++            [origin[0] + BASELINE.mission_side_m, origin[1]],
++            BASELINE.mission_side_m,
+             VEHICLE_CORNER_TOLERANCE_M,
+         );
+         assert_eq!(progress, 2);
+@@ -1063,7 +1176,7 @@ mod tests {
+         let result = (|| -> Result<()> {
+             for _ in 0..4_000 {
+                 target_ns += 625_000;
+-                let fix = gnss.sample([0.0; 3], [0.0; 3], target_ns);
++                let fix = protocol::gnss_fix(gnss.sample([0.0; 3], [0.0; 3], target_ns));
+                 let inputs = protocol::lockstep_inputs(
+                     [0.0; 3],
+                     [0.0, 0.0, 9.806_65],
+@@ -1096,7 +1209,7 @@ mod tests {
+             let mut last_quality = 0_i8;
+             for _ in 0..320 {
+                 target_ns += 625_000;
+-                let fix = gnss.sample([0.0; 3], [0.0; 3], target_ns);
++                let fix = protocol::gnss_fix(gnss.sample([0.0; 3], [0.0; 3], target_ns));
+                 let inputs = protocol::lockstep_inputs(
+                     [0.0; 3],
+                     [0.0, 0.0, 9.806_65],
+@@ -1125,7 +1238,7 @@ mod tests {
+             let mut last_flight_armed = false;
+             for _ in 0..1_600 {
+                 target_ns += 625_000;
+-                let fix = gnss.sample([0.0; 3], [0.0; 3], target_ns);
++                let fix = protocol::gnss_fix(gnss.sample([0.0; 3], [0.0; 3], target_ns));
+                 let inputs = protocol::lockstep_inputs(
+                     [0.0; 3],
+                     [0.0, 0.0, 9.806_65],
+diff --git a/xtask/src/physics.rs b/xtask/src/physics.rs
+index 4df2829..49c0840 100644
+--- a/xtask/src/physics.rs
++++ b/xtask/src/physics.rs
+@@ -57,6 +57,7 @@ pub struct Plant {
+     api: Api,
+     instance: Instance,
+     motor_command: ValueReference,
++    ideal_quaternion: Option<ValueReference>,
+     outputs: [ValueReference; 6],
+     output_values: [f64; 16],
+     time: f64,
+@@ -90,6 +91,7 @@ impl Plant {
+         }
+         let variables = float64_variables(&document)?;
+         let motor_command = required_variable(&variables, "commands.motor", "input", 4)?.reference;
++        let ideal_quaternion = variables.get("idealQuaternion").map(|v| v.reference);
+         let outputs = required_references(
+             &variables,
+             &[
+@@ -155,6 +157,7 @@ impl Plant {
+             api,
+             instance,
+             motor_command,
++            ideal_quaternion,
+             outputs,
+             output_values: [0.0; 16],
+             time: 0.0,
+@@ -163,6 +166,21 @@ impl Plant {
+         Ok(plant)
+     }
+ 
++    pub fn set_ideal_attitude(&mut self, q: [f64; 4]) -> Result<()> {
++        let reference = self
++            .ideal_quaternion
++            .context("this is not the ideal-attitude qualification plant")?;
++        if !q.iter().all(|v| v.is_finite())
++            || (q.iter().map(|v| v * v).sum::<f64>() - 1.).abs() > 1e-6
++        {
++            bail!("invalid ideal quaternion");
++        }
++        check_status(
++            unsafe { (self.api.set_float64)(self.instance, &reference, 1, q.as_ptr(), 4) },
++            "ideal attitude input",
++        )
++    }
++
+     pub fn altitude(&self) -> f64 {
+         self.output_values[2]
+     }
+@@ -449,3 +467,54 @@ mod tests {
+         Ok(())
+     }
+ }
++
++impl crate::benchmark::Dynamics for Plant {
++    fn advance(&mut self, motors: [f32; 4], dt_s: f64) -> Result<()> {
++        self.step(motors, dt_s)
++    }
++}
++
++/// Resolve the generated host library from the FMI description, not its random filename.
++pub fn host_paths(directory: &Path) -> Result<(std::path::PathBuf, std::path::PathBuf)> {
++    if std::env::consts::OS != "linux" {
++        bail!("native FMI host discovery currently supports Linux");
++    }
++    let description = directory.join("modelDescription.xml");
++    let xml = fs::read_to_string(&description)?;
++    let doc = roxmltree::Document::parse(&xml)?;
++    let id = doc
++        .descendants()
++        .find(|n| n.has_tag_name("CoSimulation"))
++        .and_then(|n| n.attribute("modelIdentifier"))
++        .context("missing FMI model identifier")?;
++    if id.is_empty() || !id.chars().all(|c| c.is_ascii_alphanumeric() || c == '_') {
++        bail!("invalid FMI model identifier");
++    }
++    Ok((
++        directory
++            .join("binaries")
++            .join(format!("{}-linux", std::env::consts::ARCH))
++            .join(format!("{id}.so"))
++            .canonicalize()?,
++        description.canonicalize()?,
++    ))
++}
++
++pub fn file_sha256(path: &std::path::Path) -> Result<String> {
++    let output = std::process::Command::new("sha256sum")
++        .arg(path)
++        .output()
++        .context("sha256sum is required for probe provenance")?;
++    if !output.status.success() {
++        bail!("cannot hash {}", path.display());
++    }
++    let value = String::from_utf8(output.stdout)?
++        .split_whitespace()
++        .next()
++        .context("missing hash")?
++        .to_owned();
++    if value.len() != 64 || !value.chars().all(|x| x.is_ascii_hexdigit()) {
++        bail!("invalid SHA-256 output");
++    }
++    Ok(value)
++}
+diff --git a/xtask/src/protocol.rs b/xtask/src/protocol.rs
+index b00a950..7c60466 100644
+--- a/xtask/src/protocol.rs
++++ b/xtask/src/protocol.rs
+@@ -4,10 +4,11 @@ use synapse_fbs::{
+     types::{GnssFixType, TimeStatus, Vec3f},
+ };
+ 
+-const GNSS_PERIOD_NS: u64 = 100_000_000;
+-const GNSS_ORIGIN_LATITUDE_DEG: f64 = 40.4237;
+-const GNSS_ORIGIN_LONGITUDE_DEG: f64 = -86.9212;
+-const GNSS_ORIGIN_ALTITUDE_MSL_M: f64 = 200.0;
++use crate::benchmark::{
++    GNSS_ORIGIN_ALTITUDE_MSL_M, GNSS_ORIGIN_LATITUDE_DEG, GNSS_ORIGIN_LONGITUDE_DEG,
++};
++#[cfg(test)]
++use crate::benchmark::{GNSS_PERIOD_NS, SyntheticGnss};
+ const EARTH_RADIUS_M: f64 = 6_378_137.0;
+ 
+ pub const RDD2_MAX_WAYPOINTS: usize = 16;
+@@ -117,42 +118,12 @@ pub fn bounded_square_plan(sequence: i32, side_m: f32, speed_m_s: f32) -> Result
+ }
+ 
+ #[derive(Clone, Copy, Debug)]
+-pub struct SyntheticGnss {
+-    latest: topic::GnssFixData,
+-}
+-
+-impl Default for SyntheticGnss {
+-    fn default() -> Self {
+-        Self {
+-            latest: unusable_gnss_fix(0),
+-        }
+-    }
+-}
+-
+-impl SyntheticGnss {
+-    pub fn sample(
+-        &mut self,
+-        position_enu_m: [f64; 3],
+-        velocity_enu_m_s: [f64; 3],
+-        target_boot_time_ns: u64,
+-    ) -> topic::GnssFixData {
+-        let timestamp_ns = target_boot_time_ns / GNSS_PERIOD_NS * GNSS_PERIOD_NS;
+-        if timestamp_ns != 0 && timestamp_ns > self.latest.timestamp_ns() {
+-            self.latest = if synthetic_gnss_values_are_usable(position_enu_m, velocity_enu_m_s) {
+-                make_gnss_fix(position_enu_m, velocity_enu_m_s, timestamp_ns)
+-            } else {
+-                unusable_gnss_fix(timestamp_ns)
+-            };
+-        }
+-        self.latest
+-    }
+-}
+-
+ pub struct LockstepInputs {
+     pub manual_control: topic::ManualControlData,
+     pub inertial_sample: topic::InertialSampleData,
+     pub gnss_fix: topic::GnssFixData,
+     pub waypoint_plan: WaypointPlanWire,
++    pub external_reference: topic::LocalPositionCommandData,
+ }
+ 
+ pub fn lockstep_inputs(
+@@ -199,12 +170,12 @@ pub fn lockstep_inputs(
+         centered_milli(channels[0]),
+         throttle_milli,
+         -centered_milli(channels[3]),
+-        0,
+-        0,
+-        0,
+-        0,
+-        0,
+-        0,
++        centered_milli(channels[6]),
++        centered_milli(channels[7]),
++        centered_milli(channels[8]),
++        centered_milli(channels[9]),
++        centered_milli(channels[10]),
++        centered_milli(channels[11]),
+         if channels[5] < 1333 {
+             0
+         } else if channels[5] < 1667 {
+@@ -221,17 +192,20 @@ pub fn lockstep_inputs(
+         inertial_sample,
+         gnss_fix,
+         waypoint_plan,
++        external_reference: topic::LocalPositionCommandData::default(),
+     }
+ }
+ 
+-fn synthetic_gnss_values_are_usable(position_enu_m: [f64; 3], velocity_enu_m_s: [f64; 3]) -> bool {
+-    position_enu_m
+-        .iter()
+-        .chain(velocity_enu_m_s.iter())
+-        .all(|value| value.is_finite())
+-        && position_enu_m.iter().all(|value| value.abs() <= 10_000.0)
+-        && velocity_enu_m_s.iter().all(|value| value.abs() <= 300.0)
+-        && (-1_000.0..=20_000.0).contains(&(GNSS_ORIGIN_ALTITUDE_MSL_M + position_enu_m[2]))
++pub fn gnss_fix(sample: crate::benchmark::GnssObservation) -> topic::GnssFixData {
++    if sample.valid {
++        make_gnss_fix(
++            sample.position_enu_m,
++            sample.velocity_enu_m_s,
++            sample.timestamp_ns,
++        )
++    } else {
++        unusable_gnss_fix(sample.timestamp_ns)
++    }
+ }
+ 
+ fn unusable_gnss_fix(timestamp_ns: u64) -> topic::GnssFixData {
+@@ -401,7 +375,8 @@ mod tests {
+         channels[4] = 2000;
+         channels[5] = 2000;
+         let mut synthetic_gnss = SyntheticGnss::default();
+-        let gnss_fix = synthetic_gnss.sample([1.0, 2.0, 3.0], [4.0, 0.0, 0.25], GNSS_PERIOD_NS);
++        let gnss_fix =
++            gnss_fix(synthetic_gnss.sample([1.0, 2.0, 3.0], [4.0, 0.0, 0.25], GNSS_PERIOD_NS));
+         let plan = bounded_square_plan(1, 2.0, 0.3).unwrap();
+         let inputs = lockstep_inputs(
+             [1.0, 2.0, 3.0],
+@@ -427,7 +402,7 @@ mod tests {
+     #[test]
+     fn synthetic_gnss_updates_at_exactly_ten_hertz() {
+         let mut gnss = SyntheticGnss::default();
+-        let before_first_period = gnss.sample([0.0; 3], [0.0; 3], GNSS_PERIOD_NS - 1);
++        let before_first_period = gnss_fix(gnss.sample([0.0; 3], [0.0; 3], GNSS_PERIOD_NS - 1));
+         assert_eq!(before_first_period.timestamp_ns(), 0);
+         assert_eq!(before_first_period.fix_type(), GnssFixType::NoFix);
+         assert_eq!(before_first_period.horizontal_accuracy_mm(), u16::MAX);
+@@ -436,13 +411,13 @@ mod tests {
+         assert_eq!(before_first_period.yaw_accuracy_cdeg(), u16::MAX);
+         assert_eq!(before_first_period.time_status(), TimeStatus::LocalFreerun);
+ 
+-        let first = gnss.sample([1.0, 2.0, 3.0], [2.0, 0.0, 0.25], GNSS_PERIOD_NS);
+-        let repeated = gnss.sample(
++        let first = gnss_fix(gnss.sample([1.0, 2.0, 3.0], [2.0, 0.0, 0.25], GNSS_PERIOD_NS));
++        let repeated = gnss_fix(gnss.sample(
+             [99.0, 99.0, 99.0],
+             [99.0, 99.0, 99.0],
+             GNSS_PERIOD_NS + GNSS_PERIOD_NS / 2,
+-        );
+-        let second = gnss.sample([2.0, 4.0, 6.0], [0.0; 3], 2 * GNSS_PERIOD_NS);
++        ));
++        let second = gnss_fix(gnss.sample([2.0, 4.0, 6.0], [0.0; 3], 2 * GNSS_PERIOD_NS));
+ 
+         assert_eq!(first, repeated);
+         assert_eq!(first.timestamp_ns(), GNSS_PERIOD_NS);
+@@ -507,7 +482,7 @@ mod tests {
+     #[test]
+     fn synthetic_gnss_marks_nonfinite_input_unusable() {
+         let mut gnss = SyntheticGnss::default();
+-        let fix = gnss.sample([f64::NAN, 0.0, 0.0], [0.0; 3], GNSS_PERIOD_NS);
++        let fix = gnss_fix(gnss.sample([f64::NAN, 0.0, 0.0], [0.0; 3], GNSS_PERIOD_NS));
+         assert_eq!(fix.timestamp_ns(), GNSS_PERIOD_NS);
+         assert_eq!(fix.fix_type(), GnssFixType::NoFix);
+         assert_eq!(fix.horizontal_accuracy_mm(), u16::MAX);
+@@ -555,3 +530,33 @@ mod tests {
+         assert!(state.armed && state.rc_valid && state.imu_ok);
+     }
+ }
++
++#[cfg(test)]
++mod auxiliary_transport_tests {
++    use super::*;
++    #[test]
++    fn shared_manual_auxiliary_channels_are_not_dropped() {
++        let mut c = [1500; 16];
++        c[6..12].copy_from_slice(&[2000, 1000, 1750, 1250, 1600, 1400]);
++        let i = lockstep_inputs(
++            [0.; 3],
++            [0.; 3],
++            c,
++            topic::GnssFixData::default(),
++            WaypointPlanWire::default(),
++            1,
++        );
++        let m = i.manual_control;
++        assert_eq!(
++            [
++                m.aux0_milli(),
++                m.aux1_milli(),
++                m.aux2_milli(),
++                m.aux3_milli(),
++                m.aux4_milli(),
++                m.aux5_milli()
++            ],
++            [1000, -1000, 500, -500, 200, -200]
++        );
++    }
++}
+diff --git a/xtask/src/shared_memory.rs b/xtask/src/shared_memory.rs
+index f5c82b8..2002247 100644
+--- a/xtask/src/shared_memory.rs
++++ b/xtask/src/shared_memory.rs
+@@ -12,7 +12,7 @@ use synapse_fbs::topic;
+ 
+ use crate::protocol::{self, FlightState, LockstepInputs, MotorCommand};
+ 
+-const RDD2_LOCKSTEP_MAGIC: u32 = 0x5244_4734;
++const RDD2_LOCKSTEP_MAGIC: u32 = 0x5244_4735;
+ const SHARED_SYMBOL: &str = "rdd2_fastdyn_lockstep_shared";
+ const RAM_START_SYMBOL: &str = "_image_ram_start";
+ 
+@@ -34,6 +34,9 @@ struct SharedLayout {
+     odometry_estimate: topic::OdometryEstimateData,
+     planner_reference: topic::LocalPositionCommandData,
+     mission_status: protocol::MissionStatusWire,
++    external_reference: topic::LocalPositionCommandData,
++    navigation_origin_lla: [i32; 3],
++    navigation_origin_valid: u32,
+ }
+ 
+ pub struct LockstepOutputs {
+@@ -42,6 +45,7 @@ pub struct LockstepOutputs {
+     pub odometry_estimate: topic::OdometryEstimateData,
+     pub planner_reference: topic::LocalPositionCommandData,
+     pub mission_status: protocol::MissionStatusWire,
++    pub navigation_origin_lla: Option<[i32; 3]>,
+ }
+ 
+ pub struct Transport {
+@@ -148,7 +152,7 @@ impl Transport {
+ 
+     fn shared(&self) -> &SharedLayout {
+         // SAFETY: offset was resolved from the ELF and bounds-checked against
+-        // the mapped RAM file. The C and Rust layouts are asserted to 1192 B.
++        // the mapped RAM file. The C and Rust layouts are asserted to 1264 B.
+         unsafe {
+             &*(self
+                 .mapping
+@@ -189,6 +193,11 @@ impl Transport {
+                 ptr::addr_of_mut!((*shared).manual_control),
+                 1,
+             );
++            ptr::copy_nonoverlapping(
++                &inputs.external_reference,
++                ptr::addr_of_mut!((*shared).external_reference),
++                1,
++            );
+             ptr::copy_nonoverlapping(&inputs.gnss_fix, ptr::addr_of_mut!((*shared).gnss_fix), 1);
+             ptr::copy_nonoverlapping(
+                 &inputs.waypoint_plan,
+@@ -249,7 +258,11 @@ impl Transport {
+                 1,
+             );
+         }
++        let navigation_origin_lla = unsafe {
++            ((*shared).navigation_origin_valid == 1).then_some((*shared).navigation_origin_lla)
++        };
+         Ok(LockstepOutputs {
++            navigation_origin_lla,
+             motor_command: protocol::motor_output(&pwm.0)?,
+             flight_state: protocol::flight_state(&health.0)?,
+             odometry_estimate: odometry,
+@@ -265,7 +278,7 @@ impl Drop for Transport {
+     }
+ }
+ 
+-const _: () = assert!(size_of::<SharedLayout>() == 1192);
++const _: () = assert!(size_of::<SharedLayout>() == 1264);
+ 
+ #[cfg(test)]
+ mod tests {
+@@ -274,7 +287,7 @@ mod tests {
+ 
+     #[test]
+     fn layout_matches_firmware_abi() {
+-        assert_eq!(size_of::<SharedLayout>(), 1192);
++        assert_eq!(size_of::<SharedLayout>(), 1264);
+         assert_eq!(align_of::<SharedLayout>(), 8);
+         assert_eq!(offset_of!(SharedLayout, inertial_sample), 16);
+         assert_eq!(offset_of!(SharedLayout, manual_control), 56);
+@@ -288,6 +301,8 @@ mod tests {
+         assert_eq!(offset_of!(SharedLayout, odometry_estimate), 856);
+         assert_eq!(offset_of!(SharedLayout, planner_reference), 1088);
+         assert_eq!(offset_of!(SharedLayout, mission_status), 1144);
++        assert_eq!(offset_of!(SharedLayout, external_reference), 1192);
++        assert_eq!(offset_of!(SharedLayout, navigation_origin_lla), 1248);
+     }
+ 
+     #[test]
+@@ -396,14 +411,14 @@ mod tests {
+             .shared()
+             .magic
+             .store(RDD2_LOCKSTEP_MAGIC, Ordering::Release);
+-        let mut synthetic_gnss = protocol::SyntheticGnss::default();
++        let mut synthetic_gnss = crate::benchmark::SyntheticGnss::default();
+         let gnss_fix = synthetic_gnss.sample([0.0; 3], [0.0; 3], 100_000_000);
+         let waypoint_plan = protocol::bounded_square_plan(1, 2.0, 0.3).unwrap();
+         let inputs = protocol::lockstep_inputs(
+             [0.1, 0.2, 0.3],
+             [0.0, 0.0, 9.8],
+             [1500; 16],
+-            gnss_fix,
++            protocol::gnss_fix(gnss_fix),
+             waypoint_plan,
+             5_000_000,
+         );

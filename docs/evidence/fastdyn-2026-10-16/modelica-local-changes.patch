@@ -1,0 +1,169 @@
+diff --git a/Control/Multirotor/RateLoop/package.mo b/Control/Multirotor/RateLoop/package.mo
+index 91dad5e..c1a0fd7 100644
+--- a/Control/Multirotor/RateLoop/package.mo
++++ b/Control/Multirotor/RateLoop/package.mo
+@@ -13,6 +13,7 @@ package RateLoop "Multirotor body-rate control"
+       "Proportional body-rate bandwidth per axis";
+     input Boolean gyroscopicFeedforward = true
+       "Add omega x (I omega) so the moment holds a spinning body on rate";
++    input Real angularAccelerationFeedforward[3] = zeros(3);
+     output Real moment[3](each unit = "N.m") "Commanded body moment";
+   protected
+     Real angularMomentum[3](each unit = "kg.m2/s");
+@@ -21,7 +22,8 @@ package RateLoop "Multirotor body-rate control"
+       assert(inertia[axis] > 0.0, "Every body inertia must be positive");
+       assert(rateGain[axis] >= 0.0, "Every body-rate gain must be nonnegative");
+       moment[axis] := inertia[axis] * rateGain[axis]
+-        * (angularVelocitySetpoint[axis] - angularVelocity[axis]);
++        * (angularVelocitySetpoint[axis] - angularVelocity[axis])
++        + inertia[axis]*angularAccelerationFeedforward[axis];
+     end for;
+     if gyroscopicFeedforward then
+       angularMomentum := {
+diff --git a/RigidBody/RigidBody6DOF.mo b/RigidBody/RigidBody6DOF.mo
+index c6496e0..4d822d7 100644
+--- a/RigidBody/RigidBody6DOF.mo
++++ b/RigidBody/RigidBody6DOF.mo
+@@ -1,5 +1,7 @@
+ within RigidBody;
+ partial model RigidBody6DOF "Six-degree-of-freedom rigid body"
++  parameter Boolean idealAttitude = false "Test-only prescribed orientation; full 6DOF remains the default";
++  input Real attitudeOverride[4] = {1,0,0,0};
+   parameter Real mass = 1.0 "Mass [kg]";
+   parameter Real g = 9.8 "Gravity [m/s^2]";
+   parameter Real ixx = 1.0 "Body inertia matrix xx entry [kg*m^2]";
+@@ -22,13 +24,13 @@ partial model RigidBody6DOF "Six-degree-of-freedom rigid body"
+   Real F_b[3] "Total non-gravity force in body frame [N]";
+   Real M_b[3] "Total moment in body frame [N*m]";
+   output Real p[3](start = p_start, each fixed = true) "World position [m]";
+-  output Real v_b[3](start = v_b_start, each fixed = true) "Body velocity [m/s]";
+-  output Real q[4](start = q_start, each fixed = true) "Quaternion w,x,y,z";
+-  output Real omega[3](start = omega_start, each fixed = true)
++  output Real v_b[3](start = v_b_start, each fixed = not idealAttitude) "Body velocity [m/s]";
++  output Real q[4](start = q_start, each fixed = not idealAttitude) "Quaternion w,x,y,z";
++  output Real omega[3](start = omega_start, each fixed = not idealAttitude)
+     "Body angular velocity [rad/s]";
+   output Real R[3, 3](start = identity(3))
+     "Direction cosine matrix, body to world";
+-  output Real v_w[3](start = v_b_start) "World velocity [m/s]";
++  output Real v_w[3](start = v_b_start, each fixed = idealAttitude) "World velocity [m/s]";
+   output Real a_b[3](start = {0, 0, 0}) "Body specific force [m/s^2]";
+ 
+ protected
+@@ -62,10 +64,19 @@ equation
+     state, wrench, physicalParameters);
+ 
+   R = LieGroups.SO3.Quat.to_DCM(state.attitude);
+-  v_w = worldPositionRate;
++
+   a_b = F_b / mass;
+-  der(p) = worldPositionRate;
+-  der(v_b) = bodyVelocityRate;
+-  der(q) = attitudeRate;
+-  der(omega) = bodyAngularVelocityRate;
++  if idealAttitude then
++    q = attitudeOverride;
++    omega = {0.0,0.0,0.0};
++    v_b = transpose(R)*v_w;
++    der(p) = v_w;
++    der(v_w) = R*F_b/mass + {0,0,-g};
++  else
++    v_w = worldPositionRate;
++    der(p) = worldPositionRate;
++    der(v_b) = bodyVelocityRate;
++    der(q) = attitudeRate;
++    der(omega) = bodyAngularVelocityRate;
++  end if;
+ end RigidBody6DOF;
+diff --git a/Vehicles/Rdd2/GuidanceController.mo b/Vehicles/Rdd2/GuidanceController.mo
+index 5db1e04..02fdacb 100644
+--- a/Vehicles/Rdd2/GuidanceController.mo
++++ b/Vehicles/Rdd2/GuidanceController.mo
+@@ -10,6 +10,11 @@ block GuidanceController
+   parameter Real maximumCollectiveThrust_N = 41.3749272
+     "Four RDD2 rotors at maximum speed";
+ 
++  parameter Real attitudeGain[3] = {2.0,2.0,1.0} "Independent ATTITUDE gains; baseline preserved";
++  input Boolean feedforwardEnabled = false;
++  input Real angularVelocityFeedforward[3] = zeros(3);
++  input Real angularAccelerationFeedforward[3] = zeros(3);
++  output Real angularAccelerationCommandFlu_rad_s2[3];
+   input Integer mode(min = 0, max = 2)
+     "0=acro, 1=attitude, 2=position";
+   input Boolean armed;
+@@ -42,7 +47,7 @@ equation
+     pilotCommands.attitudeTiltDesired_rad[1]});
+   attitudeRateSetpointFlu_rad_s =
+     Control.Multirotor.LogLinear.attitudeControl(
+-      positionGuidance.attitudeGain,
++      attitudeGain,
+       navigation.quaternionWorldBody,
+       attitudeReferenceQuaternion);
+ 
+@@ -66,6 +71,7 @@ equation
+     elseif mode == 1 then
+       {1.0, 1.0, 0.0} .* attitudeRateSetpointFlu_rad_s
+       + {0.0, 0.0, 1.0} .* pilotCommands.acroRateDesired_rad_s
++      + (if armed and feedforwardEnabled then {1.0,1.0,0.0} .* MathUtilities.clipVector(angularVelocityFeedforward,-4.0,4.0) else zeros(3))
+     else
+       pilotCommands.acroRateDesired_rad_s;
+   rateCorrectionFlu_rad_s = if mode == 2 then
+@@ -75,6 +81,8 @@ equation
+   rateCommand.angularVelocityCommandFlu_rad_s =
+     angularVelocitySetpointFlu_rad_s + rateCorrectionFlu_rad_s;
+ 
++  angularAccelerationCommandFlu_rad_s2 = if armed and mode == 1 and feedforwardEnabled then MathUtilities.clipVector(angularAccelerationFeedforward,-20.0,20.0) else zeros(3);
++
+   annotation(Documentation(info = "<html>
+     <p>This block is one deployable RTOS task and one eFMU. It turns pilot,
+     navigation, and trajectory messages into the compact rate-command message
+diff --git a/Vehicles/Rdd2/RateControlAllocator.mo b/Vehicles/Rdd2/RateControlAllocator.mo
+index d0733bd..7b39af9 100644
+--- a/Vehicles/Rdd2/RateControlAllocator.mo
++++ b/Vehicles/Rdd2/RateControlAllocator.mo
+@@ -22,6 +22,7 @@ block RateControlAllocator
+       rotorGeometry.positionBodyFlu_m,
+       rotorGeometry.yawMomentPerThrust_m);
+ 
++  input Real angularAccelerationFeedforward[3] = zeros(3);
+   Interfaces.RateControlInput inputSignal;
+   Interfaces.MotorCommands commands;
+ 
+@@ -41,7 +42,7 @@ algorithm
+       inputSignal.angularVelocityCommandFlu_rad_s,
+       inputSignal.angularVelocityMeasuredFlu_rad_s,
+       inertia,
+-      rateGain);
++      rateGain, angularAccelerationFeedforward = angularAccelerationFeedforward);
+     allocatedMotorCommand := Control.Multirotor.Allocation.rotorCommands(
+       4,
+       inputSignal.thrust_N,
+diff --git a/Vehicles/Rdd2/Test/run_waypoint_qualification.py b/Vehicles/Rdd2/Test/run_waypoint_qualification.py
+index 365b7e7..6e8fcc5 100644
+--- a/Vehicles/Rdd2/Test/run_waypoint_qualification.py
++++ b/Vehicles/Rdd2/Test/run_waypoint_qualification.py
+@@ -79,10 +79,10 @@ def columns(result: "rum.Result") -> dict[str, list[float]]:
+     """Copy only qualification signals, then release Rumoca's full trace."""
+     values = {"time": [float(value) for value in result.time]}
+     for requested in TRACE_NAMES:
+-        matches = [
++        matches = [requested] if requested in result.names else [
+             name
+             for name in result.names
+-            if name == requested or name.endswith(f".{requested}")
++            if name.endswith(f".{requested}")
+         ]
+         if len(matches) != 1:
+             raise KeyError(
+@@ -369,9 +369,9 @@ def main() -> None:
+                 "sha256": source_digest(MODEL_DIR / "WaypointMission.mo"),
+             },
+             "guidance": {
+-                "path": "Control/Multirotor/Navigation/package.mo",
++                "path": "Vehicles/Rdd2/GuidanceController.mo",
+                 "sha256": source_digest(
+-                    ROOT / "Control" / "Multirotor" / "Navigation" / "package.mo"
++                    ROOT / "Vehicles" / "Rdd2" / "GuidanceController.mo"
+                 ),
+             },
+             "geodesy": {

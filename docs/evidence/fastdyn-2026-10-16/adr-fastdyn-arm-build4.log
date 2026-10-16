@@ -1,0 +1,427 @@
+• Validating lock
+✓ Validating lock in 5.59ms
+• Configuring shell
+• Configuring cachix
+  [35;1mwarning:[0m Substituter '[35;1mhttps://devenv.cachix.org[0m' is already present in the substituters list
+✓ Configuring cachix in 2.02ms
+• Evaluating shell
+  [35;1mwarning:[0m ignoring the client-specified setting 'always-allow-substitutes', because it is a restricted setting and you are not a trusted user
+  [35;1mwarning:[0m ignoring the client-specified setting 'http-connections', because it is a restricted setting and you are not a trusted user
+  [35;1mwarning:[0m ignoring the client-specified setting 'system', because it is a restricted setting and you are not a trusted user
+✓ Evaluating shell in 4.64ms (cached)
+✓ Configuring shell in 8.64ms
+• Loading tasks
+• Evaluating devenv.config.task.config
+✓ Evaluating devenv.config.task.config in 286µs (cached)
+✓ Loading tasks in 1.29ms
+• Running tasks
+• Running devenv:files:cleanup
+✓ Running devenv:files:cleanup in 5.41ms
+• Running devenv:files
+✓ Running devenv:files in 7.77ms
+• Running devenv:git-hooks:install
+✓ Running devenv:git-hooks:install in 10.8ms
+• Running devenv:enterShell
+✓ Running devenv:enterShell in 4.92ms
+• Running devenv:enterTest
+✓ Running devenv:enterTest in 500ns (no command)
+✓ Running tasks in 29.0ms
+RDD2 firmware: devenv -P rdd2 tasks run rdd2:firmware:build
+RDD2 Modelica: devenv -P rdd2 tasks run rdd2:simulation:modelica:test
+RDD2 SIL test: devenv -P rdd2 tasks run rdd2:simulation:sil:test
+RDD2 BIL test: devenv -P rdd2 tasks run rdd2:simulation:bil:test
+RDD2 guide:    docs/rdd2.md
+CogniPilot workspace (rdd2 profile)
+Tasks: devenv -P rdd2 tasks list
+Guide: README.md#pick-a-profile
+[0/2] Re-checking globbed directories...
+[1/235] Preparing syscall dependency handling
+
+[2/235] Generating include/generated/zephyr/version.h
+-- Zephyr version: 4.4.99 (/home/suraa.guest/autonomous-drone-bench/.devenv/state/west/rdd2/zephyr), build: 5ddc8c25b49a
+[3/235] Generating misc/generated/syscalls_subdirs.trigger
+[4/235] Generating Planning.Bezier.WaypointTrajectoryPlanner eFMI Production Code with rumoca 0.10.0 (a8665e8d22124183d7e1fc16b244d3dd5221f8f280bb7de746eab1ff0dbf7b02)
+Compiling target 'galec-production' for Planning_Bezier_WaypointTrajectoryPlanner
+  eFMI Production Code export: eFMU container with generated C99 + LogicalData mapping manifest (ProductionCode/) and co-emitted Algorithm Code representation (AlgorithmCode/), directory and .efmu zip forms
+
+eFMI Production Code eFMU written to: /home/suraa.guest/autonomous-drone-bench/src/cerebri_rdd2/build-mr_vmu_tropic-fastdyn/cerebri_rdd2/generated/rumoca
+  Planning_Bezier_WaypointTrajectoryPlanner/       eFMU container, directory form (__content.xml + schemas/ + AlgorithmCode/ + ProductionCode/)
+  Planning_Bezier_WaypointTrajectoryPlanner.efmu   eFMU container, zip form (same content, __content.xml at zip root)
+Conformance: "eFMI Production Code export" (SPEC_0034 GAL-021/GAL-024) — schema-valid
+eFMU with Algorithm Code + Production Code representations, all SHA-1 checksums
+computed from the written bytes, LogicalData mapping every block variable and
+method; the co-emitted GALEC also round-trip parses ("GALEC language conformance").
+Safety assurance: designed for the MISRA C:2023 profile in GAL-029/030;
+MISRA compliance and DO-178C compliance are not claimed.
+[5/235] Generating misc/generated/syscalls.json, misc/generated/struct_tags.json
+[6/235] Generating include/generated/zephyr/syscall_dispatch.c, include/generated/zephyr/syscall_exports_llext.c, syscall_weakdefs_llext.c, include/generated/zephyr/syscall_list.h
+[7/235] Generating include/generated/zephyr/driver-validation.h
+[8/235] Generating Vehicles.Rdd2.GuidanceController eFMI Production Code with rumoca 0.10.0 (a8665e8d22124183d7e1fc16b244d3dd5221f8f280bb7de746eab1ff0dbf7b02)
+Compiling target 'galec-production' for Vehicles_Rdd2_GuidanceController
+  eFMI Production Code export: eFMU container with generated C99 + LogicalData mapping manifest (ProductionCode/) and co-emitted Algorithm Code representation (AlgorithmCode/), directory and .efmu zip forms
+
+eFMI Production Code eFMU written to: /home/suraa.guest/autonomous-drone-bench/src/cerebri_rdd2/build-mr_vmu_tropic-fastdyn/cerebri_rdd2/generated/rumoca
+  Vehicles_Rdd2_GuidanceController/       eFMU container, directory form (__content.xml + schemas/ + AlgorithmCode/ + ProductionCode/)
+  Vehicles_Rdd2_GuidanceController.efmu   eFMU container, zip form (same content, __content.xml at zip root)
+Conformance: "eFMI Production Code export" (SPEC_0034 GAL-021/GAL-024) — schema-valid
+eFMU with Algorithm Code + Production Code representations, all SHA-1 checksums
+computed from the written bytes, LogicalData mapping every block variable and
+method; the co-emitted GALEC also round-trip parses ("GALEC language conformance").
+Safety assurance: designed for the MISRA C:2023 profile in GAL-029/030;
+MISRA compliance and DO-178C compliance are not claimed.
+[9/235] Generating include/generated/device-api-sections.ld, include/generated/device-api-sections.cmake
+[10/235] Generating include/generated/zephyr/kobj-types-enum.h, include/generated/zephyr/otype-to-str.h, include/generated/zephyr/otype-to-size.h
+[11/235] Building C object zephyr/lib/heap/CMakeFiles/heap_constants.dir/heap_constants.c.obj
+[12/235] Generating ../../include/generated/zephyr/heap_constants.h
+[13/235] Building C object zephyr/CMakeFiles/offsets.dir/arch/arm/core/offsets/offsets.c.obj
+[14/235] Generating Vehicles.Rdd2.NavigationEstimator eFMI Production Code with rumoca 0.10.0 (a8665e8d22124183d7e1fc16b244d3dd5221f8f280bb7de746eab1ff0dbf7b02)
+Compiling target 'galec-production' for Vehicles_Rdd2_NavigationEstimator
+  eFMI Production Code export: eFMU container with generated C99 + LogicalData mapping manifest (ProductionCode/) and co-emitted Algorithm Code representation (AlgorithmCode/), directory and .efmu zip forms
+
+eFMI Production Code eFMU written to: /home/suraa.guest/autonomous-drone-bench/src/cerebri_rdd2/build-mr_vmu_tropic-fastdyn/cerebri_rdd2/generated/rumoca
+  Vehicles_Rdd2_NavigationEstimator/       eFMU container, directory form (__content.xml + schemas/ + AlgorithmCode/ + ProductionCode/)
+  Vehicles_Rdd2_NavigationEstimator.efmu   eFMU container, zip form (same content, __content.xml at zip root)
+Conformance: "eFMI Production Code export" (SPEC_0034 GAL-021/GAL-024) — schema-valid
+eFMU with Algorithm Code + Production Code representations, all SHA-1 checksums
+computed from the written bytes, LogicalData mapping every block variable and
+method; the co-emitted GALEC also round-trip parses ("GALEC language conformance").
+Safety assurance: designed for the MISRA C:2023 profile in GAL-029/030;
+MISRA compliance and DO-178C compliance are not claimed.
+[15/235] Generating include/generated/zephyr/offsets.h
+[16/235] Building C object zephyr/arch/common/CMakeFiles/isr_tables.dir/isr_tables.c.obj
+[17/235] Generating Vehicles.Rdd2.RateControlAllocator eFMI Production Code with rumoca 0.10.0 (a8665e8d22124183d7e1fc16b244d3dd5221f8f280bb7de746eab1ff0dbf7b02)
+Compiling target 'galec-production' for Vehicles_Rdd2_RateControlAllocator
+  eFMI Production Code export: eFMU container with generated C99 + LogicalData mapping manifest (ProductionCode/) and co-emitted Algorithm Code representation (AlgorithmCode/), directory and .efmu zip forms
+
+eFMI Production Code eFMU written to: /home/suraa.guest/autonomous-drone-bench/src/cerebri_rdd2/build-mr_vmu_tropic-fastdyn/cerebri_rdd2/generated/rumoca
+  Vehicles_Rdd2_RateControlAllocator/       eFMU container, directory form (__content.xml + schemas/ + AlgorithmCode/ + ProductionCode/)
+  Vehicles_Rdd2_RateControlAllocator.efmu   eFMU container, zip form (same content, __content.xml at zip root)
+Conformance: "eFMI Production Code export" (SPEC_0034 GAL-021/GAL-024) — schema-valid
+eFMU with Algorithm Code + Production Code representations, all SHA-1 checksums
+computed from the written bytes, LogicalData mapping every block variable and
+method; the co-emitted GALEC also round-trip parses ("GALEC language conformance").
+Safety assurance: designed for the MISRA C:2023 profile in GAL-029/030;
+MISRA compliance and DO-178C compliance are not claimed.
+[18/235] Verifying the shared generated eFMI kernel
+[19/235] Building C object zephyr/CMakeFiles/zephyr.dir/lib/libc/validate_libc.c.obj
+[20/235] Building C object zephyr/CMakeFiles/zephyr.dir/lib/heap/heap.c.obj
+[21/235] Building C object zephyr/CMakeFiles/zephyr.dir/lib/os/boot_banner.c.obj
+[22/235] Building C object zephyr/CMakeFiles/zephyr.dir/lib/os/clock.c.obj
+[23/235] Building C object zephyr/CMakeFiles/zephyr.dir/lib/os/cbprintf_packaged.c.obj
+[24/235] Building C object zephyr/CMakeFiles/zephyr.dir/lib/os/printk.c.obj
+[25/235] Building C object zephyr/CMakeFiles/zephyr.dir/lib/os/cbprintf_complete.c.obj
+[26/235] Building C object zephyr/CMakeFiles/zephyr.dir/lib/utils/dec.c.obj
+[27/235] Building C object zephyr/CMakeFiles/zephyr.dir/lib/os/assert.c.obj
+[28/235] Building C object zephyr/CMakeFiles/zephyr.dir/lib/utils/hex.c.obj
+[29/235] Building C object zephyr/CMakeFiles/zephyr.dir/lib/utils/set.c.obj
+[30/235] Building C object zephyr/CMakeFiles/zephyr.dir/lib/utils/timeutil.c.obj
+[31/235] Building C object zephyr/CMakeFiles/zephyr.dir/lib/utils/rb.c.obj
+[32/235] Building C object zephyr/CMakeFiles/zephyr.dir/lib/utils/bitmask.c.obj
+[33/235] Building C object zephyr/CMakeFiles/zephyr.dir/lib/utils/bitarray.c.obj
+[34/235] Building C object zephyr/CMakeFiles/zephyr.dir/lib/utils/getopt/getopt.c.obj
+[35/235] Building C object zephyr/CMakeFiles/zephyr.dir/lib/utils/getopt/getopt_common.c.obj
+[36/235] Building C object zephyr/CMakeFiles/zephyr.dir/lib/utils/last_section_id.c.obj
+[37/235] Building C object zephyr/CMakeFiles/zephyr.dir/lib/utils/ring_buffer.c.obj
+[38/235] Building C object zephyr/CMakeFiles/zephyr.dir/misc/generated/configs.c.obj
+[39/235] Building C object zephyr/CMakeFiles/zephyr.dir/soc/nxp/imxrt/mpu_regions.c.obj
+[40/235] Building C object zephyr/CMakeFiles/zephyr.dir/subsys/mem_mgmt/mem_attr.c.obj
+[41/235] Building C object zephyr/CMakeFiles/zephyr.dir/subsys/tracing/tracing_none.c.obj
+[42/235] Building C object zephyr/CMakeFiles/zephyr.dir/kernel/sys/sem.c.obj
+[43/235] Generating linker_zephyr_pre0.cmd
+[44/235] Building C object zephyr/CMakeFiles/zephyr.dir/kernel/sys/thread_entry.c.obj
+[45/235] Building C object zephyr/arch/common/CMakeFiles/arch__common.dir/init.c.obj
+[46/235] Building C object zephyr/arch/common/CMakeFiles/arch__common.dir/sw_isr_common.c.obj
+[47/235] Building C object zephyr/arch/common/CMakeFiles/arch__common.dir/instr_mem.c.obj
+[48/235] Linking C static library zephyr/arch/common/libisr_tables.a
+[49/235] Building C object zephyr/arch/common/CMakeFiles/arch__common.dir/xip.c.obj
+[50/235] Building C object zephyr/arch/arch/arm/core/CMakeFiles/arch__arm__core.dir/fatal.c.obj
+[51/235] Building ASM object zephyr/arch/arch/arm/core/CMakeFiles/arch__arm__core.dir/nmi_on_reset.S.obj
+[52/235] Building C object zephyr/arch/arch/arm/core/CMakeFiles/arch__arm__core.dir/nmi.c.obj
+[53/235] Building C object zephyr/arch/arch/arm/core/CMakeFiles/arch__arm__core.dir/tls.c.obj
+[54/235] Building ASM object zephyr/arch/arch/arm/core/cortex_m/CMakeFiles/arch__arm__core__cortex_m.dir/fault_s.S.obj
+[55/235] Building C object zephyr/arch/arch/arm/core/cortex_m/CMakeFiles/arch__arm__core__cortex_m.dir/fault.c.obj
+[56/235] Building ASM object zephyr/arch/arch/arm/core/cortex_m/CMakeFiles/arch__arm__core__cortex_m.dir/reset.S.obj
+[57/235] Building C object zephyr/arch/arch/arm/core/cortex_m/CMakeFiles/arch__arm__core__cortex_m.dir/fpu.c.obj
+[58/235] Building ASM object zephyr/arch/arch/arm/core/cortex_m/CMakeFiles/arch__arm__core__cortex_m.dir/vector_table.S.obj
+[59/235] Building ASM object zephyr/arch/arch/arm/core/cortex_m/CMakeFiles/arch__arm__core__cortex_m.dir/svc.S.obj
+[60/235] Building C object zephyr/arch/arch/arm/core/cortex_m/CMakeFiles/arch__arm__core__cortex_m.dir/scb.c.obj
+[61/235] Building C object zephyr/arch/arch/arm/core/cortex_m/CMakeFiles/arch__arm__core__cortex_m.dir/irq_manage.c.obj
+[62/235] Building C object zephyr/arch/arch/arm/core/cortex_m/CMakeFiles/arch__arm__core__cortex_m.dir/prep_c.c.obj
+[63/235] Building C object zephyr/arch/arch/arm/core/cortex_m/CMakeFiles/arch__arm__core__cortex_m.dir/thread.c.obj
+[64/235] Building C object zephyr/arch/arch/arm/core/cortex_m/CMakeFiles/arch__arm__core__cortex_m.dir/cpu_idle.c.obj
+[65/235] Building C object zephyr/arch/arch/arm/core/cortex_m/CMakeFiles/arch__arm__core__cortex_m.dir/exc_exit.c.obj
+[66/235] Building ASM object zephyr/arch/arch/arm/core/cortex_m/CMakeFiles/arch__arm__core__cortex_m.dir/swap_helper.S.obj
+[67/235] Building C object zephyr/arch/arch/arm/core/cortex_m/CMakeFiles/arch__arm__core__cortex_m.dir/thread_abort.c.obj
+[68/235] Building C object zephyr/arch/arch/arm/core/cortex_m/CMakeFiles/arch__arm__core__cortex_m.dir/irq_init.c.obj
+[69/235] Building ASM object zephyr/arch/arch/arm/core/cortex_m/CMakeFiles/arch__arm__core__cortex_m.dir/__aeabi_read_tp.S.obj
+[70/235] Building C object zephyr/arch/arch/arm/core/cortex_m/CMakeFiles/arch__arm__core__cortex_m.dir/isr_wrapper.c.obj
+[71/235] Building C object zephyr/arch/arch/arm/core/cortex_m/CMakeFiles/arch__arm__core__cortex_m.dir/cache.c.obj
+[72/235] Building C object zephyr/arch/arch/arm/core/mpu/CMakeFiles/arch__arm__core__mpu.dir/arm_core_mpu.c.obj
+[73/235] Building C object zephyr/arch/arch/arm/core/mpu/CMakeFiles/arch__arm__core__mpu.dir/arm_mpu.c.obj
+[74/235] Building C object zephyr/lib/libc/picolibc/CMakeFiles/lib__libc__picolibc.dir/assert.c.obj
+[75/235] Building C object zephyr/lib/libc/picolibc/CMakeFiles/lib__libc__picolibc.dir/cbprintf.c.obj
+[76/235] Building C object zephyr/lib/libc/picolibc/CMakeFiles/lib__libc__picolibc.dir/chk_fail.c.obj
+[77/235] Building C object zephyr/lib/libc/picolibc/CMakeFiles/lib__libc__picolibc.dir/errno_wrap.c.obj
+[78/235] Building C object zephyr/lib/libc/picolibc/CMakeFiles/lib__libc__picolibc.dir/exit.c.obj
+[79/235] Building C object zephyr/lib/libc/picolibc/CMakeFiles/lib__libc__picolibc.dir/locks.c.obj
+[80/235] Building C object zephyr/lib/libc/picolibc/CMakeFiles/lib__libc__picolibc.dir/stdio.c.obj
+[81/235] Building C object zephyr/lib/libc/common/CMakeFiles/lib__libc__common.dir/source/time/time.c.obj
+[82/235] Building C object zephyr/lib/libc/common/CMakeFiles/lib__libc__common.dir/source/stdlib/abort.c.obj
+[83/235] Building C object zephyr/lib/libc/common/CMakeFiles/lib__libc__common.dir/source/stdlib/malloc.c.obj
+[84/235] Building C object zephyr/lib/libc/common/CMakeFiles/lib__libc__common.dir/source/errno/errno.c.obj
+[85/235] Building C object zephyr/soc/soc/mimxrt1064/imxrt10xx/CMakeFiles/soc__nxp__imxrt__imxrt10xx.dir/soc.c.obj
+[86/235] Building C object zephyr/subsys/portability/posix/c_lib_ext/CMakeFiles/subsys__portability__posix__c_lib_ext.dir/fnmatch.c.obj
+[87/235] Building C object zephyr/boards/boards/arm/mr_vmu_tropic/CMakeFiles/..__modules__lib__zephyr_boards__boards__nxp__mr_vmu_tropic.dir/board.c.obj
+[88/235] Building C object zephyr/subsys/portability/posix/c_lib_ext/CMakeFiles/subsys__portability__posix__c_lib_ext.dir/getopt_shim.c.obj
+[89/235] Building C object zephyr/subsys/portability/posix/c_lib_ext/CMakeFiles/subsys__portability__posix__c_lib_ext.dir/getentropy.c.obj
+[90/235] Building C object zephyr/subsys/random/CMakeFiles/subsys__random.dir/random_test_csprng.c.obj
+[91/235] Building C object zephyr/subsys/random/CMakeFiles/subsys__random.dir/random_timer.c.obj
+[92/235] Building C object zephyr/subsys/crc/CMakeFiles/subsys__crc.dir/crc4_sw.c.obj
+[93/235] Building C object zephyr/subsys/crc/CMakeFiles/subsys__crc.dir/crc8_sw.c.obj
+[94/235] Building C object zephyr/subsys/crc/CMakeFiles/subsys__crc.dir/crc7_sw.c.obj
+[95/235] Building C object zephyr/subsys/crc/CMakeFiles/subsys__crc.dir/crc16_sw.c.obj
+[96/235] Building C object zephyr/subsys/crc/CMakeFiles/subsys__crc.dir/crc24_sw.c.obj
+[97/235] Building C object zephyr/subsys/crc/CMakeFiles/subsys__crc.dir/crc32c_sw.c.obj
+[98/235] Building C object zephyr/subsys/crc/CMakeFiles/subsys__crc.dir/crc32k_4_2_sw.c.obj
+[99/235] Building C object zephyr/subsys/crc/CMakeFiles/subsys__crc.dir/crc32_sw.c.obj
+[100/235] Building C object zephyr/subsys/input/CMakeFiles/subsys__input.dir/input_hid.c.obj
+[101/235] Building C object zephyr/subsys/input/CMakeFiles/subsys__input.dir/input.c.obj
+[102/235] Building C object zephyr/subsys/input/CMakeFiles/subsys__input.dir/input_utils.c.obj
+[103/235] Building C object zephyr/drivers/misc/nxp_flexram/CMakeFiles/drivers__misc__nxp_flexram.dir/nxp_flexram.c.obj
+[104/235] Building C object zephyr/drivers/clock_control/CMakeFiles/drivers__clock_control.dir/clock_control_mcux_ccm.c.obj
+[105/235] Building C object zephyr/drivers/console/CMakeFiles/drivers__console.dir/uart_console.c.obj
+[106/235] Building C object zephyr/drivers/dma/CMakeFiles/drivers__dma.dir/dma_mcux_edma.c.obj
+[107/235] Building C object zephyr/drivers/gpio/CMakeFiles/drivers__gpio.dir/gpio_mcux_igpio.c.obj
+[108/235] Building C object zephyr/drivers/input/CMakeFiles/drivers__input.dir/input_gpio_keys.c.obj
+[109/235] Building C object zephyr/drivers/led/CMakeFiles/drivers__led.dir/led_pwm.c.obj
+[110/235] Building C object zephyr/drivers/pinctrl/CMakeFiles/drivers__pinctrl.dir/common.c.obj
+[111/235] Building C object zephyr/drivers/pinctrl/CMakeFiles/drivers__pinctrl.dir/pinctrl_imx.c.obj
+[112/235] Building C object zephyr/drivers/pwm/CMakeFiles/drivers__pwm.dir/pwm_mcux.c.obj
+[113/235] Building C object zephyr/drivers/timer/CMakeFiles/drivers__timer.dir/sys_clock_init.c.obj
+[114/235] Building C object zephyr/drivers/serial/CMakeFiles/drivers__serial.dir/uart_mcux_lpuart.c.obj
+[115/235] Building ASM object modules/hal_nxp/CMakeFiles/modules__hal_nxp.dir/home/suraa.guest/autonomous-drone-bench/.devenv/state/west/rdd2/modules/hal/nxp/mcux/mcux-sdk-ng/components/misc_utilities/fsl_memcpy.S.obj
+[116/235] Building ASM object modules/hal_nxp/CMakeFiles/modules__hal_nxp.dir/home/suraa.guest/autonomous-drone-bench/.devenv/state/west/rdd2/modules/hal/nxp/mcux/mcux-sdk-ng/components/misc_utilities/fsl_memset.S.obj
+[117/235] Building C object modules/hal_nxp/CMakeFiles/modules__hal_nxp.dir/home/suraa.guest/autonomous-drone-bench/.devenv/state/west/rdd2/modules/hal/nxp/mcux/mcux-sdk-ng/drivers/common/fsl_common.c.obj
+[118/235] Building C object zephyr/drivers/timer/CMakeFiles/drivers__timer.dir/cortex_m_systick.c.obj
+[119/235] Building C object modules/hal_nxp/CMakeFiles/modules__hal_nxp.dir/home/suraa.guest/autonomous-drone-bench/.devenv/state/west/rdd2/modules/hal/nxp/mcux/mcux-sdk-ng/drivers/common/fsl_common_arm.c.obj
+[120/235] Building C object modules/hal_nxp/CMakeFiles/modules__hal_nxp.dir/home/suraa.guest/autonomous-drone-bench/.devenv/state/west/rdd2/modules/hal/nxp/mcux/mcux-sdk-ng/drivers/dmamux/fsl_dmamux.c.obj
+[121/235] Building C object modules/hal_nxp/CMakeFiles/modules__hal_nxp.dir/home/suraa.guest/autonomous-drone-bench/.devenv/state/west/rdd2/modules/hal/nxp/mcux/mcux-sdk-ng/drivers/gpc_1/fsl_gpc.c.obj
+[122/235] Building C object modules/hal_nxp/CMakeFiles/modules__hal_nxp.dir/home/suraa.guest/autonomous-drone-bench/.devenv/state/west/rdd2/modules/hal/nxp/mcux/mcux-sdk-ng/drivers/edma/fsl_edma.c.obj
+[123/235] Building C object modules/hal_nxp/CMakeFiles/modules__hal_nxp.dir/home/suraa.guest/autonomous-drone-bench/.devenv/state/west/rdd2/modules/hal/nxp/mcux/mcux-sdk-ng/drivers/igpio/fsl_gpio.c.obj
+[124/235] Building C object modules/hal_nxp/CMakeFiles/modules__hal_nxp.dir/home/suraa.guest/autonomous-drone-bench/.devenv/state/west/rdd2/modules/hal/nxp/mcux/mcux-sdk-ng/drivers/ocotp/fsl_ocotp.c.obj
+[125/235] Building C object modules/hal_nxp/CMakeFiles/modules__hal_nxp.dir/home/suraa.guest/autonomous-drone-bench/.devenv/state/west/rdd2/modules/hal/nxp/mcux/mcux-sdk-ng/drivers/lpuart/fsl_lpuart.c.obj
+[126/235] Building C object modules/hal_nxp/CMakeFiles/modules__hal_nxp.dir/home/suraa.guest/autonomous-drone-bench/.devenv/state/west/rdd2/modules/hal/nxp/mcux/mcux-sdk-ng/drivers/xbara/fsl_xbara.c.obj
+[127/235] Building C object modules/hal_nxp/CMakeFiles/modules__hal_nxp.dir/home/suraa.guest/autonomous-drone-bench/.devenv/state/west/rdd2/modules/hal/nxp/mcux/mcux-sdk-ng/drivers/pwm/fsl_pwm.c.obj
+[128/235] Building C object modules/hal_nxp/CMakeFiles/modules__hal_nxp.dir/home/suraa.guest/autonomous-drone-bench/.devenv/state/west/rdd2/modules/hal/nxp/mcux/mcux-sdk-ng/devices/RT/RT1064/MIMXRT1064/system_MIMXRT1064.c.obj
+[129/235] Building C object modules/hal_nxp/CMakeFiles/modules__hal_nxp.dir/home/suraa.guest/autonomous-drone-bench/.devenv/state/west/rdd2/modules/hal/nxp/mcux/mcux-sdk-ng/drivers/cache/armv7-m7/fsl_cache.c.obj
+[130/235] Building C object modules/hal_nxp/CMakeFiles/modules__hal_nxp.dir/home/suraa.guest/autonomous-drone-bench/.devenv/state/west/rdd2/modules/hal/nxp/mcux/mcux-sdk-ng/devices/RT/RT1064/MIMXRT1064/drivers/fsl_clock.c.obj
+[131/235] Building C object modules/cerebri_lockstep/CMakeFiles/cerebri_lockstep.dir/home/suraa.guest/autonomous-drone-bench/src/cerebri_modules/src/sequence.c.obj
+[132/235] Building C object modules/zros/CMakeFiles/zros.dir/home/suraa.guest/autonomous-drone-bench/src/zros/src/zros_node.c.obj
+[133/235] Building C object modules/zros/CMakeFiles/zros.dir/home/suraa.guest/autonomous-drone-bench/src/zros/src/zros_broker.c.obj
+[134/235] Building C object modules/zros/CMakeFiles/zros.dir/home/suraa.guest/autonomous-drone-bench/src/zros/src/zros_pub.c.obj
+[135/235] Building C object modules/zros/CMakeFiles/zros.dir/home/suraa.guest/autonomous-drone-bench/src/zros/src/zros_sub.c.obj
+[136/235] Building C object modules/zros/CMakeFiles/zros.dir/home/suraa.guest/autonomous-drone-bench/src/zros/src/zros_topic.c.obj
+[137/235] Building C object modules/csyn/CMakeFiles/csyn.dir/src/csyn.c.obj
+[138/235] Building C object modules/csyn/CMakeFiles/csyn.dir/src/csyn_codec.c.obj
+[139/235] Building C object modules/csyn/CMakeFiles/csyn.dir/home/suraa.guest/autonomous-drone-bench/src/synapse_fbs/target/xtask/artifacts-work/synapse_fbs-c/src/flatcc-runtime/verifier.c.obj
+[140/235] Building C object zephyr/kernel/CMakeFiles/kernel.dir/main_weak.c.obj
+[141/235] Building C object modules/csyn/CMakeFiles/csyn.dir/src/csyn_zros_bridge.c.obj
+[142/235] Building C object zephyr/kernel/CMakeFiles/kernel.dir/busy_wait.c.obj
+[143/235] Building C object zephyr/kernel/CMakeFiles/kernel.dir/device.c.obj
+[144/235] Building C object zephyr/kernel/CMakeFiles/kernel.dir/fatal.c.obj
+[145/235] Building C object zephyr/kernel/CMakeFiles/kernel.dir/kheap.c.obj
+[146/235] Building C object zephyr/kernel/CMakeFiles/kernel.dir/init.c.obj
+[147/235] Building C object zephyr/kernel/CMakeFiles/kernel.dir/float.c.obj
+[148/235] Building C object zephyr/kernel/CMakeFiles/kernel.dir/mem_slab.c.obj
+[149/235] Building C object zephyr/kernel/CMakeFiles/kernel.dir/version.c.obj
+[150/235] Building C object zephyr/kernel/CMakeFiles/kernel.dir/idle.c.obj
+[151/235] Building C object zephyr/kernel/CMakeFiles/kernel.dir/mailbox.c.obj
+[152/235] Building C object zephyr/kernel/CMakeFiles/kernel.dir/msg_q.c.obj
+[153/235] Building C object zephyr/kernel/CMakeFiles/kernel.dir/mutex.c.obj
+[154/235] Building C object zephyr/kernel/CMakeFiles/kernel.dir/sem.c.obj
+[155/235] Building C object zephyr/kernel/CMakeFiles/kernel.dir/queue.c.obj
+[156/235] Building C object zephyr/kernel/CMakeFiles/kernel.dir/stack.c.obj
+[157/235] Building C object zephyr/kernel/CMakeFiles/kernel.dir/system_work_q.c.obj
+[158/235] Building C object zephyr/kernel/CMakeFiles/kernel.dir/condvar.c.obj
+[159/235] Building C object zephyr/kernel/CMakeFiles/kernel.dir/work.c.obj
+[160/235] Building C object zephyr/kernel/CMakeFiles/kernel.dir/thread.c.obj
+[161/235] Building C object zephyr/kernel/CMakeFiles/kernel.dir/sched.c.obj
+[162/235] Building C object zephyr/kernel/CMakeFiles/kernel.dir/sleep.c.obj
+[163/235] Building C object zephyr/kernel/CMakeFiles/kernel.dir/pipe.c.obj
+[164/235] Building C object zephyr/kernel/CMakeFiles/kernel.dir/scheduler.c.obj
+[165/235] Building C object zephyr/kernel/CMakeFiles/kernel.dir/timeslicing.c.obj
+[166/235] Building C object zephyr/kernel/CMakeFiles/kernel.dir/timeout.c.obj
+[167/235] Building C object zephyr/kernel/CMakeFiles/kernel.dir/timer.c.obj
+[168/235] Building C object zephyr/kernel/CMakeFiles/kernel.dir/poll.c.obj
+[169/235] Building C object zephyr/kernel/CMakeFiles/kernel.dir/events.c.obj
+[170/235] Building C object zephyr/kernel/CMakeFiles/kernel.dir/mempool.c.obj
+[171/235] Building C object zephyr/kernel/CMakeFiles/kernel.dir/dynamic_disabled.c.obj
+[172/235] Building C object CMakeFiles/app.dir/src/interfaces/data.c.obj
+[173/235] Building C object CMakeFiles/app.dir/src/interfaces/imu.c.obj
+[174/235] Building C object CMakeFiles/app.dir/src/interfaces/rc.c.obj
+[175/235] Building C object CMakeFiles/app.dir/src/interfaces/zros_topics.c.obj
+[176/235] Building C object CMakeFiles/app.dir/src/main.c.obj
+[177/235] Building C object CMakeFiles/app.dir/generated/rumoca/Vehicles_Rdd2_GuidanceController/ProductionCode/Vehicles_Rdd2_GuidanceController.c.obj
+[178/235] Building C object CMakeFiles/app.dir/generated/rumoca/Vehicles_Rdd2_RateControlAllocator/ProductionCode/Vehicles_Rdd2_RateControlAllocator.c.obj
+[179/235] Building C object CMakeFiles/app.dir/generated/rumoca/Planning_Bezier_WaypointTrajectoryPlanner/ProductionCode/Planning_Bezier_WaypointTrajectoryPlanner.c.obj
+[180/235] Building C object CMakeFiles/app.dir/generated/rumoca/Planning_Bezier_WaypointTrajectoryPlanner/ProductionCode/rumoca_galec_kernels.c.obj
+[181/235] Building C object CMakeFiles/app.dir/src/interfaces/motors.c.obj
+[182/235] Building C object CMakeFiles/app.dir/src/processes/guidance_controller.c.obj
+[183/235] Building C object CMakeFiles/app.dir/src/processes/navigation_estimator.c.obj
+[184/235] Building C object CMakeFiles/app.dir/src/processes/navigation_gps.c.obj
+[185/235] Building C object CMakeFiles/app.dir/generated/rumoca/Vehicles_Rdd2_NavigationEstimator/ProductionCode/Vehicles_Rdd2_NavigationEstimator.c.obj
+/home/suraa.guest/autonomous-drone-bench/src/cerebri_rdd2/build-mr_vmu_tropic-fastdyn/cerebri_rdd2/generated/rumoca/Vehicles_Rdd2_NavigationEstimator/ProductionCode/Vehicles_Rdd2_NavigationEstimator.c: In function 'step.isra':
+/home/suraa.guest/autonomous-drone-bench/src/cerebri_rdd2/build-mr_vmu_tropic-fastdyn/cerebri_rdd2/generated/rumoca/Vehicles_Rdd2_NavigationEstimator/ProductionCode/Vehicles_Rdd2_NavigationEstimator.c:10817:52: warning: 'result159' may be used uninitialized [-Wmaybe-uninitialized]
+10817 |                             ctx->correctionOutcome = result159;
+      |                             ~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~
+/home/suraa.guest/autonomous-drone-bench/src/cerebri_rdd2/build-mr_vmu_tropic-fastdyn/cerebri_rdd2/generated/rumoca/Vehicles_Rdd2_NavigationEstimator/ProductionCode/Vehicles_Rdd2_NavigationEstimator.c:10093:17: note: 'result159' was declared here
+10093 |         int32_t result159;
+      |                 ^~~~~~~~~
+/home/suraa.guest/autonomous-drone-bench/src/cerebri_rdd2/build-mr_vmu_tropic-fastdyn/cerebri_rdd2/generated/rumoca/Vehicles_Rdd2_NavigationEstimator/ProductionCode/Vehicles_Rdd2_NavigationEstimator.c:10789:42: warning: 'result50' may be used uninitialized [-Wmaybe-uninitialized]
+10789 |             ctx->mocapCorrectionAccepted = result50;
+      |             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~
+/home/suraa.guest/autonomous-drone-bench/src/cerebri_rdd2/build-mr_vmu_tropic-fastdyn/cerebri_rdd2/generated/rumoca/Vehicles_Rdd2_NavigationEstimator/ProductionCode/Vehicles_Rdd2_NavigationEstimator.c:10084:14: note: 'result50' was declared here
+10084 |         bool result50;
+      |              ^~~~~~~~
+/home/suraa.guest/autonomous-drone-bench/src/cerebri_rdd2/build-mr_vmu_tropic-fastdyn/cerebri_rdd2/generated/rumoca/Vehicles_Rdd2_NavigationEstimator/ProductionCode/Vehicles_Rdd2_NavigationEstimator.c:10805:36: warning: 'result51' may be used uninitialized [-Wmaybe-uninitialized]
+10805 |             ctx->correctionOutcome = result51;
+      |             ~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~
+/home/suraa.guest/autonomous-drone-bench/src/cerebri_rdd2/build-mr_vmu_tropic-fastdyn/cerebri_rdd2/generated/rumoca/Vehicles_Rdd2_NavigationEstimator/ProductionCode/Vehicles_Rdd2_NavigationEstimator.c:10085:17: note: 'result51' was declared here
+10085 |         int32_t result51;
+      |                 ^~~~~~~~
+/home/suraa.guest/autonomous-drone-bench/src/cerebri_rdd2/build-mr_vmu_tropic-fastdyn/cerebri_rdd2/generated/rumoca/Vehicles_Rdd2_NavigationEstimator/ProductionCode/Vehicles_Rdd2_NavigationEstimator.c:10814:48: warning: 'result132' may be used uninitialized [-Wmaybe-uninitialized]
+10814 |                         ctx->correctionOutcome = result132;
+      |                         ~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~
+/home/suraa.guest/autonomous-drone-bench/src/cerebri_rdd2/build-mr_vmu_tropic-fastdyn/cerebri_rdd2/generated/rumoca/Vehicles_Rdd2_NavigationEstimator/ProductionCode/Vehicles_Rdd2_NavigationEstimator.c:10091:17: note: 'result132' was declared here
+10091 |         int32_t result132;
+      |                 ^~~~~~~~~
+/home/suraa.guest/autonomous-drone-bench/src/cerebri_rdd2/build-mr_vmu_tropic-fastdyn/cerebri_rdd2/generated/rumoca/Vehicles_Rdd2_NavigationEstimator/ProductionCode/Vehicles_Rdd2_NavigationEstimator.c:10811:44: warning: 'result105' may be used uninitialized [-Wmaybe-uninitialized]
+10811 |                     ctx->correctionOutcome = result105;
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~
+/home/suraa.guest/autonomous-drone-bench/src/cerebri_rdd2/build-mr_vmu_tropic-fastdyn/cerebri_rdd2/generated/rumoca/Vehicles_Rdd2_NavigationEstimator/ProductionCode/Vehicles_Rdd2_NavigationEstimator.c:10089:17: note: 'result105' was declared here
+10089 |         int32_t result105;
+      |                 ^~~~~~~~~
+/home/suraa.guest/autonomous-drone-bench/src/cerebri_rdd2/build-mr_vmu_tropic-fastdyn/cerebri_rdd2/generated/rumoca/Vehicles_Rdd2_NavigationEstimator/ProductionCode/Vehicles_Rdd2_NavigationEstimator.c:10808:40: warning: 'result78' may be used uninitialized [-Wmaybe-uninitialized]
+10808 |                 ctx->correctionOutcome = result78;
+      |                 ~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~
+/home/suraa.guest/autonomous-drone-bench/src/cerebri_rdd2/build-mr_vmu_tropic-fastdyn/cerebri_rdd2/generated/rumoca/Vehicles_Rdd2_NavigationEstimator/ProductionCode/Vehicles_Rdd2_NavigationEstimator.c:10087:17: note: 'result78' was declared here
+10087 |         int32_t result78;
+      |                 ^~~~~~~~
+/home/suraa.guest/autonomous-drone-bench/src/cerebri_rdd2/build-mr_vmu_tropic-fastdyn/cerebri_rdd2/generated/rumoca/Vehicles_Rdd2_NavigationEstimator/ProductionCode/Vehicles_Rdd2_NavigationEstimator.c:10909:60: warning: 'result131' may be used uninitialized [-Wmaybe-uninitialized]
+10909 |                         ctx->gpsVelocityCorrectionAccepted = result131;
+      |                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~
+/home/suraa.guest/autonomous-drone-bench/src/cerebri_rdd2/build-mr_vmu_tropic-fastdyn/cerebri_rdd2/generated/rumoca/Vehicles_Rdd2_NavigationEstimator/ProductionCode/Vehicles_Rdd2_NavigationEstimator.c:10090:14: note: 'result131' was declared here
+10090 |         bool result131;
+      |              ^~~~~~~~~
+/home/suraa.guest/autonomous-drone-bench/src/cerebri_rdd2/build-mr_vmu_tropic-fastdyn/cerebri_rdd2/generated/rumoca/Vehicles_Rdd2_NavigationEstimator/ProductionCode/Vehicles_Rdd2_NavigationEstimator.c:10890:56: warning: 'result104' may be used uninitialized [-Wmaybe-uninitialized]
+10890 |                     ctx->gpsPositionCorrectionAccepted = result104;
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~
+/home/suraa.guest/autonomous-drone-bench/src/cerebri_rdd2/build-mr_vmu_tropic-fastdyn/cerebri_rdd2/generated/rumoca/Vehicles_Rdd2_NavigationEstimator/ProductionCode/Vehicles_Rdd2_NavigationEstimator.c:10088:14: note: 'result104' was declared here
+10088 |         bool result104;
+      |              ^~~~~~~~~
+/home/suraa.guest/autonomous-drone-bench/src/cerebri_rdd2/build-mr_vmu_tropic-fastdyn/cerebri_rdd2/generated/rumoca/Vehicles_Rdd2_NavigationEstimator/ProductionCode/Vehicles_Rdd2_NavigationEstimator.c:10887:52: warning: 'result77' may be used uninitialized [-Wmaybe-uninitialized]
+10887 |                 ctx->gpsPositionCorrectionAccepted = result77;
+      |                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~
+/home/suraa.guest/autonomous-drone-bench/src/cerebri_rdd2/build-mr_vmu_tropic-fastdyn/cerebri_rdd2/generated/rumoca/Vehicles_Rdd2_NavigationEstimator/ProductionCode/Vehicles_Rdd2_NavigationEstimator.c:10086:14: note: 'result77' was declared here
+10086 |         bool result77;
+      |              ^~~~~~~~
+/home/suraa.guest/autonomous-drone-bench/src/cerebri_rdd2/build-mr_vmu_tropic-fastdyn/cerebri_rdd2/generated/rumoca/Vehicles_Rdd2_NavigationEstimator/ProductionCode/Vehicles_Rdd2_NavigationEstimator.c:10927:64: warning: 'result158' may be used uninitialized [-Wmaybe-uninitialized]
+10927 |                             ctx->opticalFlowCorrectionAccepted = result158;
+      |                             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~
+/home/suraa.guest/autonomous-drone-bench/src/cerebri_rdd2/build-mr_vmu_tropic-fastdyn/cerebri_rdd2/generated/rumoca/Vehicles_Rdd2_NavigationEstimator/ProductionCode/Vehicles_Rdd2_NavigationEstimator.c:10092:14: note: 'result158' was declared here
+10092 |         bool result158;
+      |              ^~~~~~~~~
+/home/suraa.guest/autonomous-drone-bench/src/cerebri_rdd2/build-mr_vmu_tropic-fastdyn/cerebri_rdd2/generated/rumoca/Vehicles_Rdd2_NavigationEstimator/ProductionCode/Vehicles_Rdd2_NavigationEstimator.c:11416:24: warning: 'correctionAccepted' may be used uninitialized [-Wmaybe-uninitialized]
+11416 |                     if (rumoca_value_conditional_182) {
+      |                        ^
+/home/suraa.guest/autonomous-drone-bench/src/cerebri_rdd2/build-mr_vmu_tropic-fastdyn/cerebri_rdd2/generated/rumoca/Vehicles_Rdd2_NavigationEstimator/ProductionCode/Vehicles_Rdd2_NavigationEstimator.c:9833:10: note: 'correctionAccepted' was declared here
+ 9833 |     bool correctionAccepted;
+      |          ^~~~~~~~~~~~~~~~~~
+/home/suraa.guest/autonomous-drone-bench/src/cerebri_rdd2/build-mr_vmu_tropic-fastdyn/cerebri_rdd2/generated/rumoca/Vehicles_Rdd2_NavigationEstimator/ProductionCode/Vehicles_Rdd2_NavigationEstimator.c:11507:24: warning: 'result231' may be used uninitialized [-Wmaybe-uninitialized]
+11507 |                     if (rumoca_value_conditional_290) {
+      |                        ^
+/home/suraa.guest/autonomous-drone-bench/src/cerebri_rdd2/build-mr_vmu_tropic-fastdyn/cerebri_rdd2/generated/rumoca/Vehicles_Rdd2_NavigationEstimator/ProductionCode/Vehicles_Rdd2_NavigationEstimator.c:10096:14: note: 'result231' was declared here
+10096 |         bool result231;
+      |              ^~~~~~~~~
+/home/suraa.guest/autonomous-drone-bench/src/cerebri_rdd2/build-mr_vmu_tropic-fastdyn/cerebri_rdd2/generated/rumoca/Vehicles_Rdd2_NavigationEstimator/ProductionCode/Vehicles_Rdd2_NavigationEstimator.c:11507:24: warning: 'result210' may be used uninitialized [-Wmaybe-uninitialized]
+11507 |                     if (rumoca_value_conditional_290) {
+      |                        ^
+/home/suraa.guest/autonomous-drone-bench/src/cerebri_rdd2/build-mr_vmu_tropic-fastdyn/cerebri_rdd2/generated/rumoca/Vehicles_Rdd2_NavigationEstimator/ProductionCode/Vehicles_Rdd2_NavigationEstimator.c:10095:14: note: 'result210' was declared here
+10095 |         bool result210;
+      |              ^~~~~~~~~
+/home/suraa.guest/autonomous-drone-bench/src/cerebri_rdd2/build-mr_vmu_tropic-fastdyn/cerebri_rdd2/generated/rumoca/Vehicles_Rdd2_NavigationEstimator/ProductionCode/Vehicles_Rdd2_NavigationEstimator.c:11507:24: warning: 'result252' may be used uninitialized [-Wmaybe-uninitialized]
+11507 |                     if (rumoca_value_conditional_290) {
+      |                        ^
+/home/suraa.guest/autonomous-drone-bench/src/cerebri_rdd2/build-mr_vmu_tropic-fastdyn/cerebri_rdd2/generated/rumoca/Vehicles_Rdd2_NavigationEstimator/ProductionCode/Vehicles_Rdd2_NavigationEstimator.c:10097:14: note: 'result252' was declared here
+10097 |         bool result252;
+      |              ^~~~~~~~~
+/home/suraa.guest/autonomous-drone-bench/src/cerebri_rdd2/build-mr_vmu_tropic-fastdyn/cerebri_rdd2/generated/rumoca/Vehicles_Rdd2_NavigationEstimator/ProductionCode/Vehicles_Rdd2_NavigationEstimator.c:11507:24: warning: 'result273' may be used uninitialized [-Wmaybe-uninitialized]
+11507 |                     if (rumoca_value_conditional_290) {
+      |                        ^
+/home/suraa.guest/autonomous-drone-bench/src/cerebri_rdd2/build-mr_vmu_tropic-fastdyn/cerebri_rdd2/generated/rumoca/Vehicles_Rdd2_NavigationEstimator/ProductionCode/Vehicles_Rdd2_NavigationEstimator.c:10098:14: note: 'result273' was declared here
+10098 |         bool result273;
+      |              ^~~~~~~~~
+/home/suraa.guest/autonomous-drone-bench/src/cerebri_rdd2/build-mr_vmu_tropic-fastdyn/cerebri_rdd2/generated/rumoca/Vehicles_Rdd2_NavigationEstimator/ProductionCode/Vehicles_Rdd2_NavigationEstimator.c:11507:24: warning: 'result189' may be used uninitialized [-Wmaybe-uninitialized]
+11507 |                     if (rumoca_value_conditional_290) {
+      |                        ^
+/home/suraa.guest/autonomous-drone-bench/src/cerebri_rdd2/build-mr_vmu_tropic-fastdyn/cerebri_rdd2/generated/rumoca/Vehicles_Rdd2_NavigationEstimator/ProductionCode/Vehicles_Rdd2_NavigationEstimator.c:10094:14: note: 'result189' was declared here
+10094 |         bool result189;
+      |              ^~~~~~~~~
+[186/235] Building C object CMakeFiles/app.dir/src/processes/navigation_optical_flow.c.obj
+[187/235] Building C object CMakeFiles/app.dir/src/processes/rate_control_allocator.c.obj
+[188/235] Building C object CMakeFiles/app.dir/src/platform/fastdyn_board.c.obj
+[189/235] Building C object CMakeFiles/app.dir/src/processes/waypoint_trajectory_planner.c.obj
+[190/235] Building C object CMakeFiles/app.dir/subsys/lockstep/lockstep_input.c.obj
+[191/235] Building C object CMakeFiles/app.dir/subsys/gnss_source/gnss_lockstep.c.obj
+[192/235] Building C object CMakeFiles/app.dir/subsys/lockstep/lockstep_transport.c.obj
+[193/235] Building C object CMakeFiles/app.dir/drivers/input/lockstep_rc.c.obj
+[194/235] Building C object CMakeFiles/app.dir/subsys/lockstep/lockstep_fastdyn.c.obj
+[195/235] Building C object CMakeFiles/app.dir/drivers/nxp_flexio_dshot/nxp_flexio_dshot_api.c.obj
+[196/235] Building C object CMakeFiles/app.dir/drivers/nxp_flexio_dshot/lockstep_dshot.c.obj
+[197/235] Linking C static library zephyr/libzephyr.a
+[198/235] Building C object zephyr/CMakeFiles/zephyr_pre0.dir/misc/empty_file.c.obj
+[199/235] Linking C static library zephyr/arch/common/libarch__common.a
+[200/235] Linking C static library zephyr/arch/arch/arm/core/libarch__arm__core.a
+[201/235] Linking C static library zephyr/arch/arch/arm/core/cortex_m/libarch__arm__core__cortex_m.a
+[202/235] Linking C static library zephyr/arch/arch/arm/core/mpu/libarch__arm__core__mpu.a
+[203/235] Linking C static library zephyr/lib/libc/picolibc/liblib__libc__picolibc.a
+[204/235] Linking C static library zephyr/lib/libc/common/liblib__libc__common.a
+[205/235] Linking C static library zephyr/soc/soc/mimxrt1064/imxrt10xx/libsoc__nxp__imxrt__imxrt10xx.a
+[206/235] Linking C static library zephyr/boards/boards/arm/mr_vmu_tropic/lib..__modules__lib__zephyr_boards__boards__nxp__mr_vmu_tropic.a
+[207/235] Linking C static library zephyr/subsys/portability/posix/c_lib_ext/libsubsys__portability__posix__c_lib_ext.a
+[208/235] Linking C static library zephyr/subsys/random/libsubsys__random.a
+[209/235] Linking C static library zephyr/subsys/crc/libsubsys__crc.a
+[210/235] Linking C static library zephyr/subsys/input/libsubsys__input.a
+[211/235] Linking C static library zephyr/drivers/misc/nxp_flexram/libdrivers__misc__nxp_flexram.a
+[212/235] Linking C static library zephyr/drivers/clock_control/libdrivers__clock_control.a
+[213/235] Linking C static library zephyr/drivers/console/libdrivers__console.a
+[214/235] Linking C static library zephyr/drivers/dma/libdrivers__dma.a
+[215/235] Linking C static library zephyr/drivers/gpio/libdrivers__gpio.a
+[216/235] Linking C static library zephyr/drivers/input/libdrivers__input.a
+[217/235] Linking C static library zephyr/drivers/led/libdrivers__led.a
+[218/235] Linking C static library zephyr/drivers/pinctrl/libdrivers__pinctrl.a
+[219/235] Linking C static library zephyr/drivers/pwm/libdrivers__pwm.a
+[220/235] Linking C static library zephyr/drivers/serial/libdrivers__serial.a
+[221/235] Linking C static library zephyr/drivers/timer/libdrivers__timer.a
+[222/235] Linking C static library modules/hal_nxp/libmodules__hal_nxp.a
+[223/235] Linking C static library modules/cerebri_lockstep/libcerebri_lockstep.a
+[224/235] Linking C static library modules/zros/libzros.a
+[225/235] Linking C static library modules/csyn/libcsyn.a
+[226/235] Linking C static library zephyr/kernel/libkernel.a
+[227/235] Building C object CMakeFiles/app.dir/drivers/sensor/lockstep_imu.c.obj
+[228/235] Linking C static library app/libapp.a
+[229/235] Linking C executable zephyr/zephyr_pre0.elf; Logical command for additional byproducts on target: zephyr_pre0
+[230/235] Generating linker.cmd
+[231/235] Generating isr_tables.c, isr_tables_vt.ld, isr_tables_swi.ld
+[232/235] Building C object zephyr/CMakeFiles/zephyr_final.dir/misc/empty_file.c.obj
+[233/235] Building C object zephyr/CMakeFiles/zephyr_final.dir/isr_tables.c.obj
+[234/235] Linking C executable zephyr/zephyr.elf
+Memory region         Used Size  Region Size  %age Used
+           FLASH:      231100 B    2027370 B     11.40%
+             RAM:      257748 B       512 KB     49.16%
+            ITCM:           0 B       256 KB      0.00%
+            DTCM:        3104 B       256 KB      1.18%
+          OCRAM2:           0 B       512 KB      0.00%
+        IDT_LIST:           0 B        32 KB      0.00%
+Generating files from /home/suraa.guest/autonomous-drone-bench/src/cerebri_rdd2/build-mr_vmu_tropic-fastdyn/cerebri_rdd2/zephyr/zephyr.elf for board: mr_vmu_tropic/mimxrt1064
+image.py: sign the payload

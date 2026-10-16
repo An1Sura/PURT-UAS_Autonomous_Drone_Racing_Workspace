@@ -1,0 +1,103 @@
+diff --git a/core/core.c b/core/core.c
+index bc681cc..5fe6dcd 100644
+--- a/core/core.c
++++ b/core/core.c
+@@ -867,7 +867,14 @@ static void vcpu_tb_trans(qemu_plugin_id_t id, struct qemu_plugin_tb *tb)
+ #include <stdio.h>
+ #include <time.h>
+ #include <pthread.h>
++#if defined(__i386__) || defined(__x86_64__)
+ #include <immintrin.h>
++static inline void fastdyn_cpu_relax(void) { _mm_pause(); }
++#elif defined(__aarch64__)
++static inline void fastdyn_cpu_relax(void) { __asm__ volatile("yield"); }
++#else
++static inline void fastdyn_cpu_relax(void) { __asm__ volatile("" ::: "memory"); }
++#endif
+ 
+ static pthread_t thread;
+ static int tracer_ready = 0;
+@@ -900,12 +907,12 @@ void core_wait_for_trace_drain(void) {
+     if (!coverage) return;
+ 
+     while (!tracer_ready) {
+-        _mm_pause();
++        fastdyn_cpu_relax();
+     }
+ 
+     uint16_t target = __atomic_load_n(&core_cc_list.log_buf.index, __ATOMIC_ACQUIRE);
+     while (tracer_consumed_index != target) {
+-        _mm_pause();
++        fastdyn_cpu_relax();
+     }
+ }
+ 
+diff --git a/patches/qemu-fastdyn-plugin-icount.patch b/patches/qemu-fastdyn-plugin-icount.patch
+index 7e880be..6f0bfc6 100644
+--- a/patches/qemu-fastdyn-plugin-icount.patch
++++ b/patches/qemu-fastdyn-plugin-icount.patch
+@@ -89,7 +89,7 @@ index f285fcf53f..9f78d24395 100644
+ +	return qemu_plugin_get_virtual_time_ns();
+  }
+  
+- extern void raise_irq(CPUState *cs, int irq_num, int secure);
++ void raise_irq(CPUState *cs, int irq_num, int secure);
+ diff --git a/plugins/core.c b/plugins/core.c
+ --- a/plugins/core.c
+ +++ b/plugins/core.c
+@@ -101,45 +101,3 @@ diff --git a/plugins/core.c b/plugins/core.c
+                                                   .userp = udata,
+                                                   .info = &info[flags & (~(QEMU_PLUGIN_CB_RW_CFI))] };
+      dyn_cb->type = PLUGIN_CB_REGULAR;
+-diff --git a/target/arm/tcg/m_helper.c b/target/arm/tcg/m_helper.c
+-index 3dcd0b41ba..f69f797531 100644
+---- a/target/arm/tcg/m_helper.c
+-+++ b/target/arm/tcg/m_helper.c
+-@@ -1675,17 +1675,6 @@ static void do_v7m_exception_exit(ARMCPU *cpu)
+-                 v7m_stack_read(cpu, &env->regs[10], frameptr + 0x20, mmu_idx) &&
+-                 v7m_stack_read(cpu, &env->regs[11], frameptr + 0x24, mmu_idx);
+- 
+--			/* After reading registers from the stack */
+--			printf("Frame Pointer (SP):  0x%08x\n", frameptr);
+--printf("R4 = 0x%08x\n", env->regs[4]);
+--printf("R5 = 0x%08x\n", env->regs[5]);
+--printf("R6 = 0x%08x\n", env->regs[6]);
+--printf("R7 = 0x%08x\n", env->regs[7]);
+--printf("R8 = 0x%08x\n", env->regs[8]);
+--printf("R9 = 0x%08x\n", env->regs[9]);
+--printf("R10 = 0x%08x\n", env->regs[10]);
+--printf("R11 = 0x%08x\n", env->regs[11]);
+--
+-             frameptr += 0x28;
+-         }
+- 
+-@@ -1700,19 +1689,6 @@ printf("R11 = 0x%08x\n", env->regs[11]);
+-             v7m_stack_read(cpu, &env->regs[15], frameptr + 0x18, mmu_idx) &&
+-             v7m_stack_read(cpu, &xpsr, frameptr + 0x1c, mmu_idx);
+- 
+--		if (pop_ok) {
+--			printf("Context Switch:\n");
+--			printf("Frame Pointer (SP):  0x%08x\n", frameptr);
+--    printf("R0  = 0x%08x\n", env->regs[0]);
+--    printf("R1  = 0x%08x\n", env->regs[1]);
+--    printf("R2  = 0x%08x\n", env->regs[2]);
+--    printf("R3  = 0x%08x\n", env->regs[3]);
+--    printf("R12 = 0x%08x\n", env->regs[12]);
+--    printf("LR  = 0x%08x\n", env->regs[14]);
+--    printf("PC  = 0x%08x\n", env->regs[15]);
+--    printf("xPSR= 0x%08x\n", xpsr);
+--}
+--
+-         if (!pop_ok) {
+-             /*
+-              * v7m_stack_read() pended a fault, so take it (as a tail
+diff --git a/requirements.txt b/requirements.txt
+index 9141e8c..c428f90 100644
+--- a/requirements.txt
++++ b/requirements.txt
+@@ -25,4 +25,4 @@ python-dotenv>=1.0.0
+ scipy==1.15.3
+ six==1.17.0
+ tomli>=2.0.2,<2.1.0
+-triton-library==1.0.0rc4
++triton-library==1.0.0rc4; platform_machine == 'x86_64'

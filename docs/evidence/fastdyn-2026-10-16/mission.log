@@ -1,0 +1,79 @@
+fastdyn.main|INFO|  [32m****** Fastdyn Framework 0.1.0 *******[0m
+fastdyn.main|INFO|  [32mThe output directory already exists at Path /home/suraa.guest/autonomous-drone-bench/artifacts/fastdyn-validation-03. Deleting it![0m
+fastdyn.main|INFO|  [32mCreating output directory at path: /home/suraa.guest/autonomous-drone-bench/artifacts/fastdyn-validation-03[0m
+FastDyn timing log: /home/suraa.guest/autonomous-drone-bench/artifacts/fastdyn-validation-03/fastdyn_timing.jsonl
+FASTDYN_LOG|INFO|  [32m[timing] fastdyn:fastdyn.fmu_auto_build 0.001s ok[0m
+FASTDYN_LOG|INFO|  [32m[timing] fastdyn:helpers.load_config 0.001s ok[0m
+FASTDYN_LOG|INFO|  [32m[timing] fastdyn:helper.cerebri_rdd2_mission.popen 0.000s ok[0m
+FASTDYN_LOG|INFO|  [32mRDD2 mission runner connected[0m
+FASTDYN_LOG|INFO|  [32m[timing] fastdyn:helpers.start 0.000s ok[0m
+FASTDYN_LOG|INFO|  [32mParsing Config file: /home/suraa.guest/autonomous-drone-bench/artifacts/fastdyn-tropic-built-vector.toml[0m
+RDD2 mission runner connected to FastDyn shared memory /home/suraa.guest/autonomous-drone-bench/artifacts/fastdyn-validation-03/memory/machine0_main_ocram2.bin
+FASTDYN_LOG|INFO|  [32m[timing] fastdyn:fastdyn.parse_config 0.004s ok[0m
+FASTDYN_LOG|INFO|  [32m[timing] fastdyn:machine0.compile_device_routing 0.000s ok[0m
+FASTDYN_LOG|INFO|  [32mReset file-backed memory image: /home/suraa.guest/autonomous-drone-bench/artifacts/fastdyn-validation-03/memory/machine0_main_ocram2.bin[0m
+FASTDYN_LOG|INFO|  [32mReset file-backed memory image: /home/suraa.guest/autonomous-drone-bench/artifacts/fastdyn-validation-03/memory/machine0_dtcm_dtcm.bin[0m
+FASTDYN_LOG|INFO|  [32mReset file-backed memory image: /home/suraa.guest/autonomous-drone-bench/artifacts/fastdyn-validation-03/memory/machine0_itcm_itcm.bin[0m
+FASTDYN_LOG|INFO|  [32mReset file-backed memory image: /home/suraa.guest/autonomous-drone-bench/artifacts/fastdyn-validation-03/memory/machine0_xip_flash_xip_flash.bin[0m
+FASTDYN_LOG|INFO|  [32m[timing] fastdyn:qemu.write_device_config 0.001s ok[0m
+FASTDYN_LOG|INFO|  [32mRunning following qemu command:
+/home/suraa.guest/autonomous-drone-bench/.devenv/state/fastdyn-pinned/qemu/build/qemu-system-arm -machine cortexm,memory-backend=ocram2 -cpu cortex-m7 -kernel /home/suraa.guest/autonomous-drone-bench/src/cerebri_rdd2/build-mr_vmu_tropic-fastdyn/cerebri_rdd2/zephyr/zephyr.elf -qmp unix:/home/suraa.guest/autonomous-drone-bench/artifacts/fastdyn-validation-03/fastdyn-rdd2-ci-qmp.sock,server,nowait -monitor tcp:127.0.0.1:5555,server,nowait -icount shift=6,sleep=off,align=off --semihosting --semihosting-config enable=on,target=native -global armv7m.init-nsvtor=0x70020400 -object memory-backend-file,id=ocram2,mem-path=/home/suraa.guest/autonomous-drone-bench/artifacts/fastdyn-validation-03/memory/machine0_main_ocram2.bin,size=512K,share=on -global cortexm-soc.ram_baseaddr0=0x20200000 -object memory-backend-file,id=dtcm,mem-path=/home/suraa.guest/autonomous-drone-bench/artifacts/fastdyn-validation-03/memory/machine0_dtcm_dtcm.bin,size=256K,share=on -global cortexm-soc.ram_baseaddr1=0x20000000 -global cortexm-soc.ram_backend1=dtcm -object memory-backend-file,id=itcm,mem-path=/home/suraa.guest/autonomous-drone-bench/artifacts/fastdyn-validation-03/memory/machine0_itcm_itcm.bin,size=256K,share=on -global cortexm-soc.ram_baseaddr2=0x00000000 -global cortexm-soc.ram_backend2=itcm -object memory-backend-file,id=xip_flash,mem-path=/home/suraa.guest/autonomous-drone-bench/artifacts/fastdyn-validation-03/memory/machine0_xip_flash_xip_flash.bin,size=4M,share=on -global cortexm-soc.ram_baseaddr3=0x70000000 -global cortexm-soc.ram_backend3=xip_flash --plugin build/libfastdyn.so,dev=/home/suraa.guest/autonomous-drone-bench/artifacts/fastdyn-validation-03/dev_config.json,virtual=/home/suraa.guest/autonomous-drone-bench/artifacts/fastdyn-validation-03/virtuals/virtuals.txt,modifier=/home/suraa.guest/autonomous-drone-bench/artifacts/fastdyn-validation-03/virtuals/modifiers.txt,coverage=0,twintrace=off,twintrace_binary=None,finline=None -nographic[0m
+FASTDYN_LOG|INFO|  [32m[timing] fastdyn:qemu.build_command 0.000s ok[0m
+FASTDYN_LOG|INFO|  [32m[timing] fastdyn:qemu.setup 0.002s ok[0m
+FASTDYN_LOG|INFO|  [32m[timing] fastdyn:machine0.qemu_setup 0.002s ok[0m
+FASTDYN_LOG|INFO|  [32m[timing] fastdyn:qemu.kill_existing 0.011s ok[0m
+FASTDYN_LOG|INFO|  [32m[timing] fastdyn:qemu.build_env 0.000s ok[0m
+FASTDYN_LOG|INFO|  [32m[timing] fastdyn:qemu.popen 0.000s ok[0m
+ERR: ioctl(TUNSETIFF) failed: Operation not permitted
+Current CPU type: cortex-m7-arm-cpu
+[rdd2-mission] t=1.0s alt=0.10m vz=0.00m/s tilt=0.0deg armed=false gps_ready=true origin=true mission_state=1
+[rdd2-mission] t=2.0s alt=0.10m vz=0.04m/s tilt=0.0deg armed=true gps_ready=true origin=true mission_state=1
+[rdd2-mission] t=3.0s alt=0.33m vz=0.40m/s tilt=0.0deg armed=true gps_ready=true origin=true mission_state=1
+[rdd2-mission] t=4.0s alt=0.81m vz=0.53m/s tilt=0.0deg armed=true gps_ready=true origin=true mission_state=1
+[rdd2-mission] t=5.0s alt=1.32m vz=0.41m/s tilt=0.0deg armed=true gps_ready=true origin=true mission_state=1
+[rdd2-mission] t=6.0s alt=1.53m vz=0.05m/s tilt=0.0deg armed=true gps_ready=true origin=true mission_state=1
+[rdd2-mission] t=7.0s alt=1.52m vz=-0.03m/s tilt=0.0deg armed=true gps_ready=true origin=true mission_state=1
+[rdd2-mission] t=8.0s alt=1.50m vz=-0.01m/s tilt=0.0deg armed=true gps_ready=true origin=true mission_state=1
+[rdd2-mission] t=9.0s alt=1.49m vz=-0.00m/s tilt=0.1deg armed=true gps_ready=true origin=true mission_state=2
+[rdd2-mission] t=10.0s alt=1.48m vz=-0.00m/s tilt=0.8deg armed=true gps_ready=true origin=true mission_state=2
+[rdd2-mission] t=11.0s alt=1.48m vz=-0.00m/s tilt=0.4deg armed=true gps_ready=true origin=true mission_state=2
+[rdd2-mission] t=12.0s alt=1.48m vz=-0.00m/s tilt=0.6deg armed=true gps_ready=true origin=true mission_state=2
+[rdd2-mission] t=13.0s alt=1.48m vz=0.00m/s tilt=0.6deg armed=true gps_ready=true origin=true mission_state=2
+[rdd2-mission] t=14.0s alt=1.48m vz=0.00m/s tilt=0.1deg armed=true gps_ready=true origin=true mission_state=2
+[rdd2-mission] t=15.0s alt=1.48m vz=0.00m/s tilt=0.8deg armed=true gps_ready=true origin=true mission_state=2
+[rdd2-mission] t=16.0s alt=1.48m vz=0.00m/s tilt=0.4deg armed=true gps_ready=true origin=true mission_state=2
+[rdd2-mission] t=17.0s alt=1.49m vz=0.00m/s tilt=0.6deg armed=true gps_ready=true origin=true mission_state=2
+[rdd2-mission] t=18.0s alt=1.49m vz=0.00m/s tilt=0.6deg armed=true gps_ready=true origin=true mission_state=2
+[rdd2-mission] t=19.0s alt=1.49m vz=0.00m/s tilt=0.1deg armed=true gps_ready=true origin=true mission_state=2
+[rdd2-mission] t=20.0s alt=1.50m vz=0.00m/s tilt=0.8deg armed=true gps_ready=true origin=true mission_state=2
+[rdd2-mission] t=21.0s alt=1.50m vz=-0.00m/s tilt=0.4deg armed=true gps_ready=true origin=true mission_state=2
+[rdd2-mission] t=22.0s alt=1.50m vz=-0.00m/s tilt=0.6deg armed=true gps_ready=true origin=true mission_state=2
+[rdd2-mission] t=23.0s alt=1.49m vz=-0.00m/s tilt=0.6deg armed=true gps_ready=true origin=true mission_state=2
+[rdd2-mission] t=24.0s alt=1.49m vz=-0.00m/s tilt=0.1deg armed=true gps_ready=true origin=true mission_state=2
+[rdd2-mission] t=25.0s alt=1.49m vz=-0.00m/s tilt=0.8deg armed=true gps_ready=true origin=true mission_state=2
+[rdd2-mission] t=26.0s alt=1.48m vz=-0.00m/s tilt=0.4deg armed=true gps_ready=true origin=true mission_state=2
+[rdd2-mission] t=27.0s alt=1.48m vz=-0.00m/s tilt=0.6deg armed=true gps_ready=true origin=true mission_state=2
+[rdd2-mission] t=28.0s alt=1.48m vz=-0.00m/s tilt=0.6deg armed=true gps_ready=true origin=true mission_state=2
+[rdd2-mission] t=29.0s alt=1.48m vz=-0.00m/s tilt=0.0deg armed=true gps_ready=true origin=true mission_state=2
+[rdd2-mission] t=30.0s alt=1.48m vz=0.00m/s tilt=0.0deg armed=true gps_ready=true origin=true mission_state=2
+[rdd2-mission] t=31.0s alt=1.48m vz=0.00m/s tilt=0.0deg armed=true gps_ready=true origin=true mission_state=2
+[rdd2-mission] t=32.0s alt=1.48m vz=0.00m/s tilt=0.0deg armed=true gps_ready=true origin=true mission_state=2
+[rdd2-mission] t=33.0s alt=1.48m vz=0.00m/s tilt=0.0deg armed=true gps_ready=true origin=true mission_state=2
+[rdd2-mission] t=34.0s alt=1.48m vz=0.00m/s tilt=0.0deg armed=true gps_ready=true origin=true mission_state=2
+[rdd2-mission] t=35.0s alt=1.48m vz=-0.05m/s tilt=0.1deg armed=true gps_ready=true origin=true mission_state=3
+[rdd2-mission] t=36.0s alt=1.34m vz=-0.22m/s tilt=0.1deg armed=true gps_ready=true origin=true mission_state=3
+[rdd2-mission] t=37.0s alt=1.08m vz=-0.27m/s tilt=0.1deg armed=true gps_ready=true origin=true mission_state=3
+[rdd2-mission] t=38.0s alt=0.82m vz=-0.25m/s tilt=0.1deg armed=true gps_ready=true origin=true mission_state=3
+[rdd2-mission] t=39.0s alt=0.57m vz=-0.25m/s tilt=0.2deg armed=true gps_ready=true origin=true mission_state=3
+[rdd2-mission] t=40.0s alt=0.32m vz=-0.25m/s tilt=0.2deg armed=true gps_ready=true origin=true mission_state=3
+[rdd2-mission] t=41.0s alt=0.10m vz=0.00m/s tilt=0.0deg armed=false gps_ready=true origin=true mission_state=3
+[rdd2-mission] t=42.0s alt=0.10m vz=0.00m/s tilt=0.0deg armed=false gps_ready=true origin=true mission_state=3
+[rdd2-mission] t=43.0s alt=0.10m vz=0.00m/s tilt=0.0deg armed=false gps_ready=true origin=true mission_state=3
+[rdd2-mission] t=44.0s alt=0.10m vz=0.00m/s tilt=0.0deg armed=false gps_ready=true origin=true mission_state=3
+RDD2_MISSION_RESULT passed=true simulated_s=44.000 wall_s=229.630 speedup=0.19x max_alt_m=1.54 report=/home/suraa.guest/autonomous-drone-bench/artifacts/fastdyn-validation-03/cerebri_rdd2_mission.json
+FASTDYN_LOG|INFO|  [32m[timing] fastdyn:helper.cerebri_rdd2_mission.exited exit_code=0[0m
+FASTDYN_LOG|INFO|  [32m[timing] fastdyn:qemu.wait 229.766s ok[0m
+FASTDYN_LOG|INFO|  [32m[timing] fastdyn:machine0.qemu_execution 229.778s ok[0m
+FASTDYN_LOG|INFO|  [32m[timing] fastdyn:fastdyn.machine0.run 229.779s ok[0m
+FASTDYN_LOG|INFO|  [32m[timing] fastdyn:helpers.stop 0.000s ok[0m
+FASTDYN_LOG|INFO|  [32m[timing] fastdyn:fastdyn.run.total 229.788s ok[0m
