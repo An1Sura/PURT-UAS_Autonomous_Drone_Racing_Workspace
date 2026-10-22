@@ -1,0 +1,44 @@
+0x0801b74c in ledInit.constprop.0 ()
+#0  0x0801b74c in ledInit.constprop.0 ()
+#1  0x080762cc in main ()
+r0             0x0                 0
+r1             0x808d34e           134796110
+r2             0x0                 0
+r3             0x20002058          536879192
+r4             0x200064f0          536896752
+r5             0x200053f8          536892408
+r6             0x0                 0
+r7             0x0                 0
+r8             0x0                 0
+r9             0x0                 0
+r10            0x0                 0
+r11            0x0                 0
+r12            0x200060ab          536895659
+sp             0x1000ffb0          0x1000ffb0
+lr             0x80762cd           134701773
+pc             0x801b74c           0x801b74c <ledInit.constprop.0>
+xpsr           0x61000000          1627389952
+fpscr          0x80000012          -2147483630
+msp            0x1000ffb0          268500912
+psp            0x0                 0
+primask        0x0                 0
+control        0x4                 4
+basepri        0x0                 0
+faultmask      0x0                 0
+=> 0x801b74c <ledInit.constprop.0>:	stmdb	sp!, {r4, r5, r6, r7, r8, r9, r10, lr}
+   0x801b750 <ledInit.constprop.0+4>:	ldr	r5, [pc, #92]	@ (0x801b7b0 <ledInit.constprop.0+100>)
+   0x801b752 <ledInit.constprop.0+6>:	ldr	r7, [pc, #96]	@ (0x801b7b4 <ledInit.constprop.0+104>)
+   0x801b754 <ledInit.constprop.0+8>:	ldrb.w	r3, [r5, #3275]	@ 0xccb
+   0x801b758 <ledInit.constprop.0+12>:	ldr	r6, [pc, #92]	@ (0x801b7b8 <ledInit.constprop.0+108>)
+   0x801b75a <ledInit.constprop.0+14>:	strb	r3, [r7, #0]
+   0x801b75c <ledInit.constprop.0+16>:	addw	r5, r5, #3272	@ 0xcc8
+   0x801b760 <ledInit.constprop.0+20>:	movs	r4, #0
+   0x801b762 <ledInit.constprop.0+22>:	mov.w	r9, #5
+   0x801b766 <ledInit.constprop.0+26>:	mov.w	r8, #1
+   0x801b76a <ledInit.constprop.0+30>:	ldrb.w	r0, [r5], #1
+   0x801b76e <ledInit.constprop.0+34>:	bl	0x800af5c <IOGetByTag>
+   0x801b772 <ledInit.constprop.0+38>:	movs	r1, #1
+   0x801b774 <ledInit.constprop.0+40>:	str.w	r0, [r6], #4
+   0x801b778 <ledInit.constprop.0+44>:	add.w	r10, r4, r1
+   0x801b77c <ledInit.constprop.0+48>:	cbz	r0, 0x801b7a0 <ledInit.constprop.0+84>
+[Inferior 1 (process 1) detached]

@@ -1,0 +1,11 @@
+0x080761c0 in Reset_Handler ()
+#0  0x080761c0 in Reset_Handler ()
+=> 0x80761c0 <Reset_Handler>:	ldr	r0, [pc, #112]	@ (0x8076234 <LoopForever+2>)
+   0x80761c2 <Reset_Handler+2>:	ldr	r1, [r0, #48]	@ 0x30
+   0x80761c4 <Reset_Handler+4>:	orr.w	r1, r1, #1048576	@ 0x100000
+   0x80761c8 <Reset_Handler+8>:	str	r1, [r0, #48]	@ 0x30
+   0x80761ca <Reset_Handler+10>:	dsb	sy
+   0x80761ce <Reset_Handler+14>:	bl	0x800cf80 <persistentObjectInit>
+   0x80761d2 <Reset_Handler+18>:	bl	0x800dbc8 <checkForBootLoaderRequest>
+   0x80761d6 <Reset_Handler+22>:	movs	r1, #0
+[Inferior 1 (process 1) detached]

@@ -1,0 +1,44 @@
+• Validating lock
+✓ Validating lock in 4.97ms
+• Configuring shell
+• Configuring cachix
+  [35;1mwarning:[0m Substituter '[35;1mhttps://devenv.cachix.org[0m' is already present in the substituters list
+✓ Configuring cachix in 1.98ms
+• Evaluating shell
+  [35;1mwarning:[0m ignoring the client-specified setting 'always-allow-substitutes', because it is a restricted setting and you are not a trusted user
+  [35;1mwarning:[0m ignoring the client-specified setting 'http-connections', because it is a restricted setting and you are not a trusted user
+  [35;1mwarning:[0m ignoring the client-specified setting 'system', because it is a restricted setting and you are not a trusted user
+✓ Evaluating shell in 2.25ms (cached)
+✓ Configuring shell in 5.99ms
+• Loading tasks
+• Evaluating devenv.config.task.config
+✓ Evaluating devenv.config.task.config in 182µs (cached)
+✓ Loading tasks in 877µs
+• Running tasks
+• Running devenv:files:cleanup
+✓ Running devenv:files:cleanup in 4.73ms
+• Running devenv:files
+✓ Running devenv:files in 6.25ms
+• Running devenv:git-hooks:install
+✓ Running devenv:git-hooks:install in 8.18ms
+• Running devenv:enterShell
+✓ Running devenv:enterShell in 4.38ms
+• Running devenv:enterTest
+✓ Running devenv:enterTest in 458ns (no command)
+✓ Running tasks in 24.1ms
+RDD2 firmware: devenv -P rdd2 tasks run rdd2:firmware:build
+RDD2 Modelica: devenv -P rdd2 tasks run rdd2:simulation:modelica:test
+RDD2 SIL test: devenv -P rdd2 tasks run rdd2:simulation:sil:test
+RDD2 BIL test: devenv -P rdd2 tasks run rdd2:simulation:bil:test
+RDD2 guide:    docs/rdd2.md
+CogniPilot workspace (rdd2 profile)
+Tasks: devenv -P rdd2 tasks list
+Guide: README.md#pick-a-profile
+-- Found FastDyn Library: /home/suraa.guest/autonomous-drone-bench/artifacts/fastdyn-pinned/build/libfastdyn.so
+-- Configuring done (0.0s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/suraa.guest/autonomous-drone-bench/artifacts/fastdyn-pinned/boardrunner/boardrunner_sdk/build
+[ 86%] Built target boardrunner_vio
+[ 93%] Building C object CMakeFiles/stm32f405_spi.dir/model/stm32f405_spi.c.o
+[100%] Linking C shared module stm32f405_spi.so
+[100%] Built target stm32f405_spi

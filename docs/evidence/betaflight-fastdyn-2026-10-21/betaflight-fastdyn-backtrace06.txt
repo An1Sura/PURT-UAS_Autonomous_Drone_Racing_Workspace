@@ -1,0 +1,12 @@
+0x080142f0 in validateAndFixGyroConfig ()
+#0  0x080142f0 in validateAndFixGyroConfig ()
+#1  0x08014626 in validateAndFixConfig ()
+#2  0x08014ddc in readEEPROM ()
+#3  0x08076288 in main ()
+=> 0x80142f0 <validateAndFixGyroConfig+300>:	cmp.w	r12, #1000	@ 0x3e8
+   0x80142f4 <validateAndFixGyroConfig+304>:	itt	hi
+   0x80142f6 <validateAndFixGyroConfig+306>:	movhi.w	r12, #0
+   0x80142fa <validateAndFixGyroConfig+310>:	strhhi.w	r12, [r3, #3218]	@ 0xc92
+   0x80142fe <validateAndFixGyroConfig+314>:	b.n	0x8014228 <validateAndFixGyroConfig+100>
+   0x8014300 <validateAndFixGyroConfig+316>:	ldrb.w	r1, [r3, #3241]	@ 0xca9
+[Inferior 1 (process 1) detached]

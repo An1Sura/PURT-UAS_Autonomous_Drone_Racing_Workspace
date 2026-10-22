@@ -2,6 +2,19 @@
 
 **The current Betaflight results are native Linux SITL measurements. FastDyn has not executed those recordings.** CogniPilot now has both a passing FastDyn baseline and a passing **10 × 10 m figure-eight at 2 m altitude**. The sim page labels the new ARM BIL recording separately from the historical native SIL flights.
 
+## Betaflight ARM bring-up — October 21
+
+The official OMNIBUSF4 / STM32F405 firmware now builds and executes ARM code in
+FastDyn. Project-written boot models resolved a repeated clock-configuration
+reset and the initial polled SPI wait. The latest probe stops in
+`sensorsAutodetect`, polling ADC1 status at `0x40012000`. The SPI model is only an
+identity fixture; plant-driven IMU sampling, DMA/interrupts and motor feedback
+are not connected. **No Betaflight FastDyn flight has passed.**
+
+See the [board selection, reproducible commands, limitations and next steps](../fastdyn/betaflight/README.md)
+and [debugger/build evidence](evidence/betaflight-fastdyn-2026-10-21/).
+Existing flight recordings and comparative statistics are unchanged.
+
 ## FastDyn shared-controller figure-eight — October 16
 
 The new [sim-page recording](sim/) uses the existing `shared-sil` Rust runner with `RDD2_SHARED_FASTDYN_MEMORY` selecting the ARM shared-memory transport. It opens QEMU's memory using the firmware ELF symbols instead of launching a Linux firmware process. The generated position controller, trajectory, plant, sensor schedule, stick mapping, accuracy thresholds and landing checks are unchanged. Host-only attitude-gain overrides are rejected for ARM execution; this run uses the compiled firmware gains.

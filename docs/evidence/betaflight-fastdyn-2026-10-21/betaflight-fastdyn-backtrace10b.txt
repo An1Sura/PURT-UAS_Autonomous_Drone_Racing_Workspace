@@ -1,0 +1,7 @@
+0x08053626 in sensorsAutodetect ()
+#0  0x08053626 in sensorsAutodetect ()
+#1  0x08076a2e in main ()
+r2             0x40012000          1073815552
+r3             0x0                 0
+No symbol table is loaded.  Use the "file" command.
+[Inferior 1 (process 1) detached]

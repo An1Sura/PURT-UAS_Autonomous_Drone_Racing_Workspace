@@ -1,0 +1,24 @@
+fastdyn.main|INFO|  [32m****** Fastdyn Framework 0.1.0 *******[0m
+fastdyn.main|WARNING|  [33mThe output directory: /home/suraa.guest/autonomous-drone-bench/artifacts/betaflight-fastdyn-probe10 passed by the user does not exist.[0m
+fastdyn.main|INFO|  [32mCreating output directory at path: /home/suraa.guest/autonomous-drone-bench/artifacts/betaflight-fastdyn-probe10[0m
+FastDyn timing log: /home/suraa.guest/autonomous-drone-bench/artifacts/betaflight-fastdyn-probe10/fastdyn_timing.jsonl
+FASTDYN_LOG|INFO|  [32m[timing] fastdyn:fastdyn.fmu_auto_build 0.000s ok[0m
+FASTDYN_LOG|INFO|  [32m[timing] fastdyn:helpers.load_config 0.000s ok[0m
+FASTDYN_LOG|INFO|  [32mParsing Config file: /home/suraa.guest/autonomous-drone-bench/artifacts/betaflight-fastdyn-omnibusf4.toml[0m
+FASTDYN_LOG|INFO|  [32m[timing] fastdyn:fastdyn.parse_config 0.001s ok[0m
+FASTDYN_LOG|INFO|  [32m[timing] fastdyn:machine0.compile_device_routing 0.000s ok[0m
+FASTDYN_LOG|INFO|  [32mReset file-backed memory image: ./fastdyn_qemu_memory/betaflight_sram.bin[0m
+FASTDYN_LOG|INFO|  [32mReset file-backed memory image: ./fastdyn_qemu_memory/betaflight_flash.bin[0m
+FASTDYN_LOG|INFO|  [32mReset file-backed memory image: ./fastdyn_qemu_memory/betaflight_ccm.bin[0m
+FASTDYN_LOG|INFO|  [32mReset file-backed memory image: ./fastdyn_qemu_memory/betaflight_backup.bin[0m
+FASTDYN_LOG|INFO|  [32m[timing] fastdyn:qemu.write_device_config 0.000s ok[0m
+FASTDYN_LOG|INFO|  [32mRunning following qemu command:
+/home/suraa.guest/autonomous-drone-bench/.devenv/state/fastdyn-pinned/qemu/build/qemu-system-arm -machine cortexm,memory-backend=sram -cpu cortex-m4 -kernel /home/suraa.guest/autonomous-drone-bench/artifacts/betaflight-fastdyn/obj/main/betaflight_STM32F405_OMNIBUSF4.elf -qmp unix:/tmp/adr-betaflight-fastdyn.sock,server,nowait -monitor tcp:127.0.0.1:5557,server,nowait -icount shift=6,sleep=off,align=off -gdb tcp::1234 --semihosting --semihosting-config enable=on,target=native -global armv7m.init-nsvtor=0x08000000 -object memory-backend-file,id=sram,mem-path=./fastdyn_qemu_memory/betaflight_sram.bin,size=128K,share=on -global cortexm-soc.ram_baseaddr0=0x20000000 -object memory-backend-file,id=backup,mem-path=./fastdyn_qemu_memory/betaflight_backup.bin,size=4K,share=on -global cortexm-soc.ram_baseaddr1=0x40024000 -global cortexm-soc.ram_backend1=backup -object memory-backend-file,id=ccm,mem-path=./fastdyn_qemu_memory/betaflight_ccm.bin,size=64K,share=on -global cortexm-soc.ram_baseaddr2=0x10000000 -global cortexm-soc.ram_backend2=ccm -object memory-backend-file,id=flash,mem-path=./fastdyn_qemu_memory/betaflight_flash.bin,size=1M,share=on -global cortexm-soc.ram_baseaddr3=0x08000000 -global cortexm-soc.ram_backend3=flash --plugin build/libfastdyn.so,dev=/home/suraa.guest/autonomous-drone-bench/artifacts/betaflight-fastdyn-probe10/dev_config.json,virtual=/home/suraa.guest/autonomous-drone-bench/artifacts/betaflight-fastdyn-probe10/virtuals/virtuals.txt,modifier=/home/suraa.guest/autonomous-drone-bench/artifacts/betaflight-fastdyn-probe10/virtuals/modifiers.txt,coverage=0,twintrace=None,twintrace_binary=None -nographic[0m
+FASTDYN_LOG|INFO|  [32m[timing] fastdyn:qemu.build_command 0.000s ok[0m
+FASTDYN_LOG|INFO|  [32m[timing] fastdyn:qemu.setup 0.001s ok[0m
+FASTDYN_LOG|INFO|  [32m[timing] fastdyn:machine0.qemu_setup 0.001s ok[0m
+FASTDYN_LOG|INFO|  [32m[timing] fastdyn:qemu.kill_existing 0.011s ok[0m
+FASTDYN_LOG|INFO|  [32m[timing] fastdyn:qemu.build_env 0.000s ok[0m
+FASTDYN_LOG|INFO|  [32m[timing] fastdyn:qemu.popen 0.000s ok[0m
+Current CPU type: cortex-m4-arm-cpu
+qemu-system-arm: terminating on signal 15 from pid 2723 (timeout)

@@ -1,0 +1,17 @@
+0x08070e68 in spiProcessSegmentsPolled ()
+#0  0x08070e68 in spiProcessSegmentsPolled ()
+#1  0x0807034e in spiWriteReg ()
+#2  0x080707d0 in mpu6000SpiDetect ()
+#3  0x0800aeaa in detectSPISensorsAndUpdateDetectionResult.constprop.0 ()
+#4  0x0805011a in gyroInit ()
+#5  0x08053566 in sensorsAutodetect ()
+#6  0x08076a2e in main ()
+=> 0x8070e68 <spiProcessSegmentsPolled+64>:	lsls	r2, r2, #30
+   0x8070e6a <spiProcessSegmentsPolled+66>:	bpl.n	0x8070e66 <spiProcessSegmentsPolled+62>
+   0x8070e6c <spiProcessSegmentsPolled+68>:	strh.w	lr, [r3, #12]
+   0x8070e70 <spiProcessSegmentsPolled+72>:	ldrh	r2, [r3, #8]
+   0x8070e72 <spiProcessSegmentsPolled+74>:	lsls	r2, r2, #31
+   0x8070e74 <spiProcessSegmentsPolled+76>:	bpl.n	0x8070e70 <spiProcessSegmentsPolled+72>
+   0x8070e76 <spiProcessSegmentsPolled+78>:	ldrh.w	lr, [r3, #12]
+   0x8070e7a <spiProcessSegmentsPolled+82>:	cbz	r1, 0x8070e84 <spiProcessSegmentsPolled+92>
+[Inferior 1 (process 1) detached]
