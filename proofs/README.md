@@ -34,3 +34,15 @@ This does **not** extend formal coverage to the new eFMU controller, simulator s
 The existing `figure_config.rs`, `reference.rs`, and `speed_score.rs` patch sections were compared byte-for-byte with the previous reviewed snapshot and are unchanged. The Cerebri snapshot now additionally includes shared-controller feed-forward transport, firmware bindings and native experiment code. Its checksum is updated as a change detector, not as a proof of these additions.
 
 New nominal-trajectory jerk, snap, body-rate and angular-acceleration calculations have independent numerical derivative checks. The Lean theorems do **not** establish equivalence to these generated calculations, closed-loop stability, failsafe correctness, or hardware safety. See [the feed-forward implementation record](../docs/feedforward-update.md).
+
+## October 22 normal-stick and ARM integration review
+
+The five non-Cerebri snapshot files still match their recorded hashes. The
+figure_config.rs, reference.rs and speed_score.rs patch sections were compared
+byte-for-byte with commit eba3c5662b55326b9d0c22e32a37a4d1c2e1276b and are unchanged.
+Reviewed the unchanged analytic x=A sin(q), y=B sin(2q), quintic phase, chain-rule
+derivatives and containment interpretation against ADR/Benchmark.lean.
+The Cerebri snapshot is refreshed for simulator transport, normal-stick tilt lead,
+gain tuning, export and screening changes. None of these additions is covered by
+the Lean specification; this is a change-detector update, not a proof of the new
+controller behavior. The Lean sources, dependency pins and axiom policy are unchanged.
