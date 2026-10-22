@@ -1,9 +1,9 @@
 # Betaflight ARM flight through FastDyn
 
-On October 22, 2026, the patched OMNIBUSF4 ARM firmware completed the shared
-10 × 10 m figure-eight at 2 m altitude: one 40 s reference lap, 83 s full mission,
-0.143348 m RMS / 0.350121 m maximum tracking error. Landing, firmware disarm,
-and all four stopped motors were verified. A preceding 53 s hover test passed.
+The current normal-stick tilt-lead recordings and measured results are in
+[the integration rundown](../../docs/arm-benchmark-integration.md) and
+[the current ARM report](../../docs/results/tilt-lead/fastdyn/betaflight/report.json).
+Earlier onboard feed-forward recordings are historical prototypes.
 
 ## What actually executes
 
@@ -13,8 +13,8 @@ Rumoca plant and generated position controller used by CogniPilot.
 
 The ARM build retains Betaflight's scheduler, attitude/rate controllers, estimator,
 mixer and arming checks. Project changes inject plant IMU samples, MSP receiver
-frames and deterministic time, capture mixer output, and add the existing
-benchmark feed-forward terms. This is **modified benchmark firmware**, not an
+frames and deterministic time, capture mixer output, without changing its PID equations. Offboard omega/K tilt lead enters through
+ordinary roll/pitch commands; no extra feed-forward channels are used. This is **modified benchmark firmware**, not an
 unmodified board firmware flight or a complete peripheral emulation. Physical
 interrupts are disabled after startup; SPI/DMA/EXTI/PWM latency is not measured.
 The boot-only MPU identity and ADC fixtures do not generate flight sensor data.
@@ -52,11 +52,14 @@ paths for `ADR_WORKSPACE`, `BETAFLIGHT_ARM_ELF`, `FASTDYN_QEMU_PATH`,
 `ADR_FLIGHT_OUTPUT`, and a **fresh** `ADR_MEMORY_DIR` for each run. Set
 `FASTDYN_QEMU_MEMORY_DIR` to that same directory and
 `ADR_FLIGHT_SHAPE=figure-eight` (or `hover` for qualification). Run the pinned
-FastDyn venv executable with `fastdyn run -c /absolute/path/to/flight.toml -o
+FastDyn venv executable with `env -u PYTHONPATH -u PYTHONHOME fastdyn run -c /absolute/path/to/flight.toml -o
 /absolute/path/to/new-output`. Keep instruction tracing off; redirect FastDyn's
 working-directory `debug.log` and `io.log` to `/dev/null` to avoid filling disk.
 
-## Evidence and limits
+## Historical prototype evidence (superseded control interface)
+
+The following results predate the normal-stick cutover and must not be mixed with
+the current tuned results. Current source patches restore the onboard controllers.
 
 [Report and actual trajectory](../../docs/results/fastdyn/betaflight-figure-eight/),
 [build/test/run evidence](../../docs/evidence/betaflight-fastdyn-2026-10-22/),

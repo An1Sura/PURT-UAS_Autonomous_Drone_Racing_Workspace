@@ -1,0 +1,28 @@
+{
+  "allowed_rise_s": [
+    0.2,
+    0.4
+  ],
+  "attitude_gain_candidates_per_s": [
+    2,
+    3,
+    4,
+    5,
+    6,
+    8,
+    10,
+    12
+  ],
+  "axes_signs": "roll and pitch, positive and negative",
+  "early_rejection": "skip remaining probes when a candidate fails any required probe; identical rule for both stacks",
+  "maximum_overshoot_fraction": 0.2,
+  "maximum_settling_s": 1.0,
+  "noise": "realistic",
+  "protocol_revision": 2,
+  "reason": "Fresh hover per axis/sign removes prior recovery contamination. Settling uses same 20%-of-step band as overshoot allowance; original stricter protocol retained as failed diagnostics",
+  "seed": 1,
+  "selection": "qualified candidate minimizing summed absolute rise-time deviation; smaller gain wins ties",
+  "settling_band_deg": 1.0,
+  "step_deg": 5,
+  "target_rise_10_90_s": 0.3
+}

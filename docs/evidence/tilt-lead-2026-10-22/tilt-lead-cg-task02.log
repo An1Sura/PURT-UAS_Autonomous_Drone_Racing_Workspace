@@ -1,0 +1,35 @@
+• Validating lock
+✓ Validating lock in 4.79ms
+• Configuring cachix
+  [35;1mwarning:[0m Substituter '[35;1mhttps://devenv.cachix.org[0m' is already present in the substituters list
+✓ Configuring cachix in 5.11ms
+• Configuring shell
+• Evaluating shell
+• Building rdd2-benchmark-fastdyn-betaflight
+✓ Building rdd2-benchmark-fastdyn-betaflight in 21.0ms
+• Building rdd2-benchmark-fastdyn-cognipilot
+✓ Building rdd2-benchmark-fastdyn-cognipilot in 19.7ms
+• Building tasks.json
+  structuredAttrs is enabled
+✓ Building tasks.json in 24.1ms
+• Building cognipilot-workspace
+  Running phase: buildPhase
+✓ Building cognipilot-workspace in 426ms
+• Building cognipilot-workspace-env
+✓ Building cognipilot-workspace-env in 531ms
+✓ Evaluating shell in 3.83s
+✓ Configuring shell in 3.83s
+• Loading tasks
+• Evaluating devenv.config.task.config
+✓ Evaluating devenv.config.task.config in 3.40ms
+✓ Loading tasks in 3.89ms
+• Running tasks
+• Running sources:prepare
+✓ Running sources:prepare in 1.51ms (cached)
+• Running sources:ensure:cerebri_rdd2
+✓ Running sources:ensure:cerebri_rdd2 in 1.49ms (cached)
+• Running rdd2:benchmark:fastdyn:cognipilot
+  ERR: ioctl(TUNSETIFF) failed: Operation not permitted
+✓ Running rdd2:benchmark:fastdyn:cognipilot in 538s
+✓ Running tasks in 538s
+{"sources:ensure:cerebri_rdd2":{"devenv":{"env":{}}},"sources:prepare":{"devenv":{"env":{}}}}

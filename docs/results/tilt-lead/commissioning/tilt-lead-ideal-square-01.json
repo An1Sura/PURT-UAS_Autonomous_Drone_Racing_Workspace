@@ -1,0 +1,79 @@
+{
+  "passed": true,
+  "stack": "ideal",
+  "shape": "square",
+  "simulated_seconds": 83.0,
+  "wall_seconds": 2.962787398,
+  "armed_observed": true,
+  "mode_observed": true,
+  "final_armed": false,
+  "final_motors": [
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "final_position": [
+    -0.000489991369915732,
+    -0.0006874815774875892,
+    0.09836555794781049
+  ],
+  "tracking_rms_m": 0.00804684447714127,
+  "tracking_max_m": 0.014729085198046454,
+  "maximum_tilt_deg": 0.3657637197571472,
+  "tilt_clamp_updates": 0,
+  "peak_tilt_lead_rad": [
+    0.003059158567339182,
+    0.0030591795220971107
+  ],
+  "commanded_rate_ff_peak_rad_s": [
+    0.006118317134678364,
+    0.0061183590441942215
+  ],
+  "commanded_accel_ff_peak_rad_s2": [
+    0.0,
+    0.0,
+    0.0
+  ],
+  "samples": 664000,
+  "firmware_exchanges": 0,
+  "offboard_updates": 8300,
+  "stick_updates": 20751,
+  "grounded_stopped_samples": 54742,
+  "arming_flags": 0,
+  "error": null,
+  "hashes": {
+    "config": "7cabd51fb03125c74e469db9b6f1af6984f7d33afb18bf15a7b23898ad0fc1ab",
+    "firmware": null,
+    "offboard": "b34c9c5d04910186ada93e00a42358c629d8d3498e9df5ca63ed472df99ca4c9",
+    "plant": "3bde4ea6ed428ec9665849c766f3ffb873ee31b7bd08453d4c070ae353d4de0e",
+    "plant_description": "88fba5884c9aceed347921698633133129bbebd9ff60b0c752e68e1600e3fa66",
+    "runner": "a4facd0c0c7e8454e82ea95c058b34503011f86a169e2f1a668a8dc11e5b64e1"
+  },
+  "sensor_profile": {
+    "accel_std_m_s2": 0.0,
+    "attitude_gain_per_s": 2.0,
+    "betaflight_hover_throttle": 0.6885788423153674,
+    "distribution": "12-uniform sum approximation; assumed diagnostic magnitudes, not measured hardware",
+    "execution_backend": "native-sil",
+    "feedforward": "omega",
+    "feedforward_interface": "offboard tilt lead omega/K; six normal RC channels; no onboard feed-forward modifications",
+    "gyro_std_rad_s": 0.0,
+    "hover_calibration_status": "mean commanded PWM fraction over 30–35 s of closed-loop native Betaflight hover at 2 m in the shared plant",
+    "imu_hz": 1600,
+    "level": "none",
+    "master_tick_hz": 8000,
+    "motor_vibration": "deterministic two-blade harmonic at 2*1100*normalized_motor rad/s; fixed per-motor and per-axis phase offsets; amplitude 0.25*IMU noise std scaled by motor command, assumed diagnostic model",
+    "position_feedback": "plant truth",
+    "position_loop_hz": 100,
+    "rc_smoothing": "OFF",
+    "seed": 1,
+    "sensor_and_command_ingress": "BF packets at 8000Hz hold 1600Hz IMU; CG reads latest at 1600Hz (up to 0.5ms stick-delivery quantization)",
+    "stick_schedule_hz": 250,
+    "tuning": null,
+    "tuning_status": "baseline gains; equal-response tuning not yet qualified"
+  },
+  "qualification": "ideal attitude isolation test; no flight firmware executed",
+  "lap_start_s": 25.0,
+  "lap_end_s": 65.0
+}

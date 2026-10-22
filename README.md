@@ -6,9 +6,9 @@ Betaflight is the performance baseline; CogniPilot is the stack we aim to improv
 
 **This repository is the SIL stage before our separate latency tests.** It establishes working autonomous flights, shared physics, command interfaces and recorded baseline behavior. Subsequent latency tests will investigate control, communication and driver timing to guide CogniPilot improvements. The current flight recordings do not isolate those latencies or prove that CogniPilot is already faster. Hardware-in-the-loop (HIL) and physical flights at PURT build on this foundation.
 
-[**Watch the Flight Simulation & Stats page**](https://an1sura.github.io/PURT-UAS_Autonomous_Drone_Racing_Workspace/sim/) · [Open the VM-connected simulation](http://127.0.0.1:8766/sim/) · [PDF-aligned benchmark](docs/shared-position-benchmark.md) · [Repository source map](docs/repository-map.md)
+[**Watch the Flight Simulation & Stats page**](https://an1sura.github.io/PURT-UAS_Autonomous_Drone_Racing_Workspace/sim/) · [Open the VM-connected simulation](http://127.0.0.1:8766/sim/) · [Current benchmark integration](docs/arm-benchmark-integration.md) · [Repository source map](docs/repository-map.md)
 
-**Current milestone (October 13):** both stacks now accept the updated PDF’s shared rate/acceleration feed-forward and fly the **10 × 10 m figure eight at 2 m altitude** with a **40-second reference**. The fixed seed-1 noise-free feed-forward runs measured **0.1425 m Betaflight RMS** and **0.2139 m CogniPilot RMS**, with verified landing/disarm/motor stop. Off/on noise repeats and the rate-only diagnostic are reported separately. Feed-forward helped Betaflight but worsened CogniPilot with its current gains; this is not a fastest-flight or latency claim. [Results and qualification limits](docs/feedforward-update.md).
+**Current milestone (October 22):** both ARM autopilot binaries run through FastDyn/QEMU against the shared Rumoca plant. The updated interface adds rate feed-forward offboard as a normal tilt command; onboard control equations remain upstream. Both stacks selected K = 6/s under the same step-response rule. New ARM recordings and native speed-screening results are published with failed attempts and limitations. [Integration, tasks and qualification](docs/arm-benchmark-integration.md).
 
 ## What this project does
 
@@ -18,16 +18,16 @@ The simulator acts as the drone: it produces sensor readings, receives motor com
 flowchart LR
     T[Shared 10 x 10 m trajectory eFMU] --> C[Shared position-loop eFMU]
     P[Shared Rumoca quadrotor plant] --> C
-    C --> A[Attitude, thrust, rate and acceleration feed-forward]
-    A --> BF[Betaflight ANGLE]
-    A --> CG[CogniPilot ATTITUDE]
+    C --> A[Normal sticks: tilt plus offboard omega/K lead]
+    A --> BF[Betaflight ANGLE ARM in FastDyn/QEMU]
+    A --> CG[CogniPilot ATTITUDE ARM in FastDyn/QEMU]
     BF --> P
     CG --> P
     P --> L[Recorded truth and metrics]
     L --> V[Three.js replay]
 ```
 
-This diagram is the implemented shared-controller SIL architecture. Each flight runs one firmware stack against its own instance of the same plant. Full PDF campaign qualification is still pending. Selecting Betaflight or CogniPilot changes the flight software and its adapter; it does not select an unrelated physics simulator. The adapter translates observations, reference commands and motor outputs between the runner and each stack's own interfaces.
+This diagram is the implemented shared-controller native SIL and ARM BIL architecture. Each flight runs one firmware stack against its own instance of the same plant. Full PDF campaign qualification is still pending. Selecting Betaflight or CogniPilot changes the flight software and its adapter; it does not select an unrelated physics simulator. The adapter translates observations, reference commands and motor outputs between the runner and each stack's own interfaces.
 
 The comparison must hold these conditions constant:
 
@@ -36,7 +36,7 @@ The comparison must hold these conditions constant:
 - Sensor models, update rates, noise, delays and disturbances.
 - Lap start/finish rules, tracking tolerances, failure criteria and scoring windows.
 
-Shared physics is working. The new harness shares reference timing and takeoff/landing. The repeated diagnostic noise matrix is recorded; sensor-delivery quantization, matched gain tuning and hardware calibration remain active work. The physical drones are intended to be identical; the current RDD2 plant is a shared test vehicle, **not yet a measured calibration of those drones**.
+Shared physics is working. The new harness shares reference timing and takeoff/landing. The repeated diagnostic noise matrix is recorded; sensor-delivery quantization and hardware calibration remain active work; matched step-response tuning is now recorded. The physical drones are intended to be identical; the current RDD2 plant is a shared test vehicle, **not yet a measured calibration of those drones**.
 
 ## How SIL supports making CogniPilot faster
 
@@ -56,13 +56,30 @@ The historical search used ≤0.25 m course RMS, ≤0.50 m maximum, complete-cou
 
 | Component | Verified now | Still required by the PDF |
 |---|---|---|
-| Shared course | 10 × 10 m, z = 2 m; 100 Hz generated-C trajectory; 4,001 samples at 40 s and two exact reference repeats | Speed-limit search |
+| Shared course | 10 × 10 m, z = 2 m; 100 Hz generated-C trajectory; 4,001 samples at 40 s and two exact reference repeats | ARM speed confirmation and qualified off/on comparison |
 | Shared position loop | Existing RDD2 log-linear controller wrapped as a separate eFMU; numerical comparison with GuidanceController POSITION passes; jerk/snap and feed-forward checks; measured SIL hover throttle | Expanded estimated-attitude and torque-share diagnostics |
-| Firmware | Real ANGLE/ATTITUDE flights; bounded feed-forward; 60 diagnostic off/on noise runs | Matched response/Kf tuning and hardware sensor/timing parity |
+| Firmware | Native and ARM ANGLE/ATTITUDE flights; normal-stick tilt lead; matched gain tuning | Actual rate-command lead diagnostics and hardware sensor/timing parity |
 | PURT | Approximate envelope and unchanged black-grid / green-boundary display | Surveyed origin, clear volume, obstacle boxes and calibrated MoCap coverage |
 | Source provenance | [Repository map](docs/repository-map.md), base revisions, dependency patches and generated-code hashes | Hardware measurements and hardware-target qualification |
 
-## New commissioning recordings
+## Updated ARM commissioning recordings
+
+Both run one 40 s reference lap and an 83 s mission through FastDyn/QEMU, with
+normal-stick offboard tilt lead and gain 6/s. Both landed, disarmed and stopped all
+motors, with zero tilt clamps.
+
+| Stack | Tracking RMS | Maximum error |
+|---|---:|---:|
+| Betaflight | 0.143412 m | 0.348384 m |
+| CogniPilot | 0.190634 m | 0.491917 m |
+
+Native lead-on speed screening confirmed 26 s for Betaflight and 33 s for
+CogniPilot, each passing 15/15 noise/seed checks. These are tested reference
+settings, not hardware maxima. CogniPilot tracked better with lead disabled at
+33 s, so further lead validation and an off-mode speed search are needed before
+claiming its best performance. [All attempts and limitations](docs/arm-benchmark-integration.md).
+
+## Historical prototype commissioning recordings
 
 | Stack | Shared lap reference | Same-time tracking RMS / maximum | Complete run |
 |---|---|---|---|

@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "id": "purt-10x10-z2-shared-feedforward-v2",
+  "id": "purt-10x10-z2-offboard-tilt-lead-v3",
   "status": "qualification_in_progress",
   "course": {
     "width_m": 10,
@@ -30,19 +30,20 @@
     "translational_correction_fraction": 0.7,
     "feedback": "common plant truth in SIL; calibrated motion capture in physical trials",
     "frame": "world ENU, body FLU, scalar-first Hamilton quaternion body-to-world",
-    "feedforward": "omega_alpha",
+    "feedforward": "omega",
     "feedforward_options": [
       "off",
-      "omega",
-      "omega_alpha"
+      "omega"
     ],
-    "feedforward_reference": "PDF commanded-thrust/desired-axis expression; snap derivative holds feedback correction locally fixed; yaw reference is fixed"
+    "feedforward_reference": "PDF commanded-thrust/desired-axis expression; snap derivative holds feedback correction locally fixed; yaw reference is fixed",
+    "feedforward_interface": "normal tilt commands: reference tilt + omega_ff / tuned attitude gain"
   },
   "stacks": {
     "cognipilot": {
       "mode": "ATTITUDE",
       "maximum_collective_thrust_n": 41.3749272,
-      "native_yaw_full_scale_rad_s": 3.5
+      "native_yaw_full_scale_rad_s": 3.5,
+      "attitude_gain_per_s": 6
     },
     "betaflight": {
       "mode": "ANGLE",
@@ -56,11 +57,12 @@
         0,
         0,
         0
-      ]
+      ],
+      "attitude_gain_per_s": 6
     }
   },
   "qualification": {
-    "native_control_algorithm_changes_allowed": "bounded angular-rate and angular-acceleration feed-forward additions only; feedback unchanged",
+    "native_control_algorithm_changes_allowed": false,
     "gains_tuning": "equal step-response criterion and documented tuning budget",
     "noise_profiles": [
       "none",
@@ -79,6 +81,10 @@
       "one figure eight",
       "native disarm and grounded stopped motors",
       "noise repeats"
-    ]
-  }
+    ],
+    "status": "matched attitude tuning qualified; speed and noise campaign in progress",
+    "attitude_tuning_status": "passed_common_step_rule",
+    "attitude_tuning_evidence": "docs/results/tilt-lead/tuning"
+  },
+  "tuning": null
 }

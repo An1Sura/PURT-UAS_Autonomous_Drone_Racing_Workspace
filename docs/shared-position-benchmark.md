@@ -1,3 +1,5 @@
+> Historical prototype report. The October 22 cutover replaces onboard extra-channel feed-forward with normal-stick offboard tilt lead. See [current integration and qualification](arm-benchmark-integration.md). Numbers below belong to the earlier implementation.
+
 # Shared-controller SIL: current evidence
 
 Updated October 13, 2026. The updated PDF’s rate and acceleration feed-forward is implemented in both native stacks. One shared Rumoca/FMU plant and generated position loop fly a **10 × 10 m figure eight at 2 m altitude**, one **40 s reference lap**, **83 s full run**. This is commissioning evidence, not full PDF qualification or a fastest-lap ranking.

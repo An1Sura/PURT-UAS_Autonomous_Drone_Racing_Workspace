@@ -2,7 +2,19 @@
 
 Both stacks now have ARM FastDyn figure-eight recordings. Betaflight uses patched OMNIBUSF4 firmware with virtual sensor/motor/receiver/time interfaces; CogniPilot uses TROPIC firmware. Historical native Linux SIL flights remain separately labeled.
 
-## Betaflight ARM figure-eight — October 22
+## Current normal-stick integration — October 22
+
+The updated PDF method restores upstream controller equations and applies omega/K
+in the offboard tilt command. Both stacks use gain 6/s selected by the same native
+step-response rule. Simulator I/O hooks remain. See the
+[integration rundown](arm-benchmark-integration.md),
+[Betaflight report](results/tilt-lead/fastdyn/betaflight/report.json),
+[CogniPilot report](results/tilt-lead/fastdyn/cognipilot/report.json), and
+[native speed screening](results/tilt-lead/speed/summary.json).
+These current reports identify the exact executable and shared-library hashes.
+All sections below describe retained historical runs with their original methods.
+
+## Historical Betaflight ARM figure-eight — October 22
 
 One 10 × 10 m lap at 2 m, 40 s reference, 83 s complete mission. Tracking RMS 0.143348 m, maximum 0.350121 m. Landing, disarm and stopped motors verified; 664,000 ARM exchanges. This is binary-in-the-loop with virtual I/O, not SPI/DMA timing or physical hardware latency. The earlier ADC boot blocker was resolved; later scheduler clock continuity and configuration activation fixes enabled the flight.
 

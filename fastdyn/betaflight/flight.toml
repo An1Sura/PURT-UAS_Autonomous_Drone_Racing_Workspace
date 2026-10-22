@@ -87,7 +87,7 @@ enabled = true
 scroll = "boardrunner/boardrunner_sdk/build/stm32f405_spi.so"
 
 [Run.processes.betaflight_mission]
-command = ["${ADR_WORKSPACE}/src/cerebri_rdd2/target/release/xtask", "shared-sil", "${ADR_WORKSPACE}/artifacts/fastdyn-figure-eight-02/flight/config.json", "${ADR_WORKSPACE}/src/modelica_models/artifacts/vehicles/rdd2/plant/Vehicles_Rdd2_Plant", "${ADR_WORKSPACE}/artifacts/shared-sil/ff-final-generated/libshared_loop.so", "${BETAFLIGHT_ARM_ELF}", "betaflight", "${ADR_FLIGHT_OUTPUT}", "${ADR_FLIGHT_SHAPE:-hover}", "1", "none"]
+command = ["${ADR_WORKSPACE}/src/cerebri_rdd2/target/release/xtask", "shared-sil", "${RDD2_SHARED_CONFIG}", "${RDD2_SHARED_PLANT}", "${RDD2_SHARED_LIBRARY}", "${BETAFLIGHT_ARM_ELF}", "betaflight", "${ADR_FLIGHT_OUTPUT}", "${ADR_FLIGHT_SHAPE:-figure-eight}", "${ADR_SEED:-1}", "${ADR_NOISE:-none}"]
 terminate_run_on_exit = true
 [Run.processes.betaflight_mission.env]
 RDD2_BETAFLIGHT_FASTDYN_MEMORY = "${ADR_MEMORY_DIR}/machine0_main_sram.bin"

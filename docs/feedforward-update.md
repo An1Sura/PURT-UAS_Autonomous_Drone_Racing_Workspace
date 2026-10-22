@@ -1,3 +1,5 @@
+> Historical prototype report. The October 22 cutover replaces onboard extra-channel feed-forward with normal-stick offboard tilt lead. See [current integration and qualification](arm-benchmark-integration.md). Numbers below belong to the earlier implementation.
+
 # Shared feed-forward SIL update
 
 Updated October 13, 2026. This implements the updated PDF’s shared rotation-rate and angular-acceleration inputs for Betaflight ANGLE and CogniPilot ATTITUDE. These are native firmware flights with one generated offboard PositionLoop and the same full-dynamics Rumoca/FMI plant. They are commissioning measurements, not proof that either stack is fastest or that the complete PDF qualification is finished.

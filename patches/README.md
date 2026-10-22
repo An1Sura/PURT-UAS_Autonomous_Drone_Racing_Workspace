@@ -1,3 +1,9 @@
+## October 22 normal-stick cutover
+
+Current patches remove the earlier onboard rate/acceleration feed-forward hooks.
+The runner sends omega/K as ordinary tilt lead; only simulator I/O and existing
+gain parameters are changed onboard. See [integration and qualification](../docs/arm-benchmark-integration.md).
+
 # Editable dependency patches
 
 This workspace ignores `src/` because each dependency is its own Git repository.

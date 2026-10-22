@@ -1,0 +1,11 @@
+{
+  "ordered_quadrants": [
+    "1,1",
+    "1,-1",
+    "-1,1",
+    "-1,-1"
+  ],
+  "returned_to_center": true,
+  "extra_lap": false,
+  "passed": true
+}

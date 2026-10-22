@@ -1,0 +1,101 @@
+{
+  "method": "same gain grid and four signed 5-degree step probes; realistic noise seed 1",
+  "stacks": {
+    "betaflight": {
+      "selected_gain_per_s": 6,
+      "probes": [
+        {
+          "axis": 0,
+          "overshoot_fraction": 0.18907909803536382,
+          "rise_10_90_s": 0.317499999999999,
+          "settling_1_deg_s": 0.2600000000000021,
+          "sign": 1
+        },
+        {
+          "axis": 0,
+          "overshoot_fraction": 0.1994311073661934,
+          "rise_10_90_s": 0.3099999999999987,
+          "settling_1_deg_s": 0.24937500000000112,
+          "sign": -1
+        },
+        {
+          "axis": 1,
+          "overshoot_fraction": 0.1962876724679974,
+          "rise_10_90_s": 0.31187500000000057,
+          "settling_1_deg_s": 0.25437500000000013,
+          "sign": 1
+        },
+        {
+          "axis": 1,
+          "overshoot_fraction": 0.194742717343241,
+          "rise_10_90_s": 0.3143749999999983,
+          "settling_1_deg_s": 0.25750000000000084,
+          "sign": -1
+        }
+      ],
+      "qualified_candidates": [
+        5,
+        6
+      ],
+      "attempted_gains": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        8,
+        10,
+        12
+      ],
+      "qualification": "native firmware tuning; ARM mapping uses this gain after rebuild"
+    },
+    "cognipilot": {
+      "selected_gain_per_s": 6,
+      "probes": [
+        {
+          "axis": 0,
+          "overshoot_fraction": 0,
+          "rise_10_90_s": 0.2637500000000017,
+          "settling_1_deg_s": 0.2462500000000004,
+          "sign": 1
+        },
+        {
+          "axis": 0,
+          "overshoot_fraction": 0,
+          "rise_10_90_s": 0.26250000000000284,
+          "settling_1_deg_s": 0.2462500000000004,
+          "sign": -1
+        },
+        {
+          "axis": 1,
+          "overshoot_fraction": 0,
+          "rise_10_90_s": 0.2637500000000017,
+          "settling_1_deg_s": 0.24687499999999984,
+          "sign": 1
+        },
+        {
+          "axis": 1,
+          "overshoot_fraction": 0,
+          "rise_10_90_s": 0.26187499999999986,
+          "settling_1_deg_s": 0.2462500000000004,
+          "sign": -1
+        }
+      ],
+      "qualified_candidates": [
+        5,
+        6
+      ],
+      "attempted_gains": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        8,
+        10,
+        12
+      ],
+      "qualification": "native firmware tuning; ARM mapping uses this gain after rebuild"
+    }
+  }
+}

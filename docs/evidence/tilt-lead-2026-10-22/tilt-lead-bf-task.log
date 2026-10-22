@@ -1,0 +1,25 @@
+• Validating lock
+✓ Validating lock in 5.41ms
+• Configuring cachix
+  [35;1mwarning:[0m Substituter '[35;1mhttps://devenv.cachix.org[0m' is already present in the substituters list
+✓ Configuring cachix in 2.65ms
+• Configuring shell
+• Evaluating shell
+  [35;1mwarning:[0m ignoring the client-specified setting 'always-allow-substitutes', because it is a restricted setting and you are not a trusted user
+  [35;1mwarning:[0m ignoring the client-specified setting 'http-connections', because it is a restricted setting and you are not a trusted user
+  [35;1mwarning:[0m ignoring the client-specified setting 'system', because it is a restricted setting and you are not a trusted user
+✓ Evaluating shell in 3.91ms (cached)
+✓ Configuring shell in 4.60ms
+• Loading tasks
+• Evaluating devenv.config.task.config
+✓ Evaluating devenv.config.task.config in 224µs (cached)
+✓ Loading tasks in 908µs
+• Running tasks
+• Running sources:prepare
+✓ Running sources:prepare in 1.60ms (cached)
+• Running sources:ensure:cerebri_rdd2
+✓ Running sources:ensure:cerebri_rdd2 in 1.66ms (cached)
+• Running rdd2:benchmark:fastdyn:betaflight
+✓ Running rdd2:benchmark:fastdyn:betaflight in 120s
+✓ Running tasks in 120s
+{"sources:ensure:cerebri_rdd2":{"devenv":{"env":{}}},"sources:prepare":{"devenv":{"env":{}}}}

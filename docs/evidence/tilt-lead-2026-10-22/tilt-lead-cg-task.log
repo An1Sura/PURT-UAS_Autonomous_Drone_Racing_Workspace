@@ -1,0 +1,92 @@
+• Validating lock
+✓ Validating lock in 4.41ms
+• Configuring cachix
+  [35;1mwarning:[0m Substituter '[35;1mhttps://devenv.cachix.org[0m' is already present in the substituters list
+✓ Configuring cachix in 5.40ms
+• Configuring shell
+• Evaluating shell
+• Building rdd2-benchmark-fastdyn-betaflight
+✓ Building rdd2-benchmark-fastdyn-betaflight in 24.2ms
+• Building rdd2-benchmark-fastdyn-cognipilot
+✓ Building rdd2-benchmark-fastdyn-cognipilot in 20.3ms
+• Building tasks.json
+  structuredAttrs is enabled
+✓ Building tasks.json in 25.7ms
+• Building cognipilot-workspace
+  Running phase: buildPhase
+✓ Building cognipilot-workspace in 419ms
+• Building cognipilot-workspace-env
+✓ Building cognipilot-workspace-env in 524ms
+✓ Evaluating shell in 3.89s
+✓ Configuring shell in 3.89s
+• Loading tasks
+• Evaluating devenv.config.task.config
+✓ Evaluating devenv.config.task.config in 3.58ms
+✓ Loading tasks in 4.03ms
+• Running tasks
+• Running sources:prepare
+✓ Running sources:prepare in 3.16ms (cached)
+• Running sources:ensure:cerebri_rdd2
+✓ Running sources:ensure:cerebri_rdd2 in 1.69ms (cached)
+• Running rdd2:benchmark:fastdyn:cognipilot
+  Traceback (most recent call last):
+    File "/nix/store/0f4r4brfnax79wlnyc3xnylfqpsy25zx-python3-3.13.13-env/lib/python3.13/site-packages/numpy/_core/__init__.py", line 24, in <module>
+      from . import multiarray
+    File "/nix/store/0f4r4brfnax79wlnyc3xnylfqpsy25zx-python3-3.13.13-env/lib/python3.13/site-packages/numpy/_core/multiarray.py", line 11, in <module>
+      from . import _multiarray_umath, overrides
+    File "/nix/store/0f4r4brfnax79wlnyc3xnylfqpsy25zx-python3-3.13.13-env/lib/python3.13/site-packages/numpy/_core/overrides.py", line 6, in <module>
+      from numpy._core._multiarray_umath import (
+  ModuleNotFoundError: No module named 'numpy._core._multiarray_umath'
+  
+  The above exception was the direct cause of the following exception:
+  
+  Traceback (most recent call last):
+    File "/home/suraa.guest/autonomous-drone-bench/.devenv/state/fastdyn-pinned/venv/bin/fastdyn", line 3, in <module>
+      from fastdyn.main import cli
+    File "/home/suraa.guest/autonomous-drone-bench/artifacts/fastdyn-pinned/src/fastdyn/main.py", line 18, in <module>
+      from .verifier import context_minimizer as cm   #Minimizes the context
+      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    File "/home/suraa.guest/autonomous-drone-bench/artifacts/fastdyn-pinned/src/fastdyn/verifier/context_minimizer.py", line 12, in <module>
+      from scipy.stats import entropy as calculate_entropy
+    File "/home/suraa.guest/autonomous-drone-bench/.devenv/state/fastdyn-pinned/venv/lib/python3.12/site-packages/scipy/__init__.py", line 47, in <module>
+      from numpy import __version__ as __numpy_version__
+    File "/nix/store/0f4r4brfnax79wlnyc3xnylfqpsy25zx-python3-3.13.13-env/lib/python3.13/site-packages/numpy/__init__.py", line 112, in <module>
+      from numpy.__config__ import show_config
+    File "/nix/store/0f4r4brfnax79wlnyc3xnylfqpsy25zx-python3-3.13.13-env/lib/python3.13/site-packages/numpy/__config__.py", line 4, in <module>
+      from numpy._core._multiarray_umath import (
+    File "/nix/store/0f4r4brfnax79wlnyc3xnylfqpsy25zx-python3-3.13.13-env/lib/python3.13/site-packages/numpy/_core/__init__.py", line 85, in <module>
+      raise ImportError(msg) from exc
+  ImportError: 
+  
+  IMPORTANT: PLEASE READ THIS FOR ADVICE ON HOW TO SOLVE THIS ISSUE!
+  
+  Importing the numpy C-extensions failed. This error can happen for
+  many reasons, often due to issues with your setup or how NumPy was
+  installed.
+  The following compiled module files exist, but seem incompatible
+  with with either python 'cpython-312' or the platform 'linux':
+  
+    * _multiarray_umath.cpython-313-aarch64-linux-gnu.so
+  
+  We have compiled some common reasons and troubleshooting tips at:
+  
+      https://numpy.org/devdocs/user/troubleshooting-importerror.html
+  
+  Please note and check the following:
+  
+    * The Python version is: Python 3.12 from "/home/suraa.guest/autonomous-drone-bench/.devenv/state/fastdyn-pinned/venv/bin/python"
+    * The NumPy version is: "2.4.4"
+  
+  and make sure that they are the versions you expect.
+  
+  Please carefully study the information and documentation linked above.
+  This is unlikely to be a NumPy issue but will be caused by a bad install
+  or environment on your machine.
+  
+  Original error was: No module named 'numpy._core._multiarray_umath'
+  
+✖ execute command in 80.0ms (failed)
+✖ Running rdd2:benchmark:fastdyn:cognipilot in 80.0ms (failed)
+✖ Running tasks in 86.0ms (failed)
+  [31m×[0m Some tasks failed
+
