@@ -22,10 +22,14 @@ try {
  $('flight-results').textContent='Actual native firmware flights using the same plant and timed reference. All variants are shown, including losses; these are commissioning results, not a fastest-speed claim.';
  const first=document.querySelector('[data-stack="cognipilot"]:not([hidden])');if(first)first.click();
  try {
-  const r=await fetchJson('../results/fastdyn/figure-eight/replay.json'),p=r.report;
-  $('fastdyn-status').textContent=(r.passed?'Passed':'FAILED attempt')+' · recorded '+new Date(r.recorded_at_unix_s*1000).toISOString().slice(0,10)+' · one 10 × 10 m lap at 2 m · no-noise commissioning run';
-  for(const [label,value] of [['Execution','CogniPilot TROPIC ARM ELF → FastDyn / QEMU'],['Lap target / full simulated flight',r.config.lap_time_s+' / '+number(p.simulated_seconds,2)+' s'],['Tracking RMS / maximum',number(p.tracking_rms_m)+' / '+number(p.tracking_max_m)+' m'],['Firmware exchanges',p.firmware_exchanges.toLocaleString()],['Landing / disarm / stopped motors',p.grounded_stopped_samples>=4000&&!p.final_armed?'Verified':'NOT verified'],['Emulator wall time',number(p.wall_seconds,1)+' s (not drone lap time)']]) {const tr=document.createElement('tr');for(const text of [label,value]){const td=document.createElement('td');td.textContent=text;tr.append(td)}$('fastdyn-stats').append(tr)}
-  $('fastdyn').hidden=false;$('fastdyn').onclick=()=>{$('variant').disabled=true;$('flight').src='flight-view.html?stack=cognipilot&backend=fastdyn';$('flight').title='CogniPilot FastDyn ARM figure-eight recording';$('flight').style.height='850px';$('status').textContent='CogniPilot · FastDyn ARM BIL · rate + acceleration feed-forward · '+(r.passed?'passed; landing/disarm verified':'FAILED attempt; actual recording');};$('fastdyn').click();
+  for(const [name,folder,id] of [['cognipilot','figure-eight','fastdyn'],['betaflight','betaflight-figure-eight','fastdyn-betaflight']]) {
+  const r=await fetchJson('../results/fastdyn/'+folder+'/replay.json'),p=r.report;
+  const landed=p.grounded_stopped_samples>=4000&&!p.final_armed&&p.final_motors.every(x=>x===0)&&p.final_position[2]<0.11;
+  for(const [label,value] of [['Stack / recorded',name+' / '+new Date(r.recorded_at_unix_s*1000).toISOString().slice(0,10)],['Lap target / full simulated flight',r.config.lap_time_s+' / '+number(p.simulated_seconds,2)+' s'],['Tracking RMS / maximum',number(p.tracking_rms_m)+' / '+number(p.tracking_max_m)+' m'],['Firmware exchanges',p.firmware_exchanges.toLocaleString()],['Landing / disarm / stopped motors',landed?'Verified':'NOT verified'],['Emulator wall time',number(p.wall_seconds,1)+' s (not drone lap time)']]) {const tr=document.createElement('tr');for(const text of [label,value]){const td=document.createElement('td');td.textContent=text;tr.append(td)}$('fastdyn-stats').append(tr)}
+  $(id).hidden=false;$(id).onclick=()=>{$('variant').disabled=true;$('flight').src='flight-view.html?stack='+name+'&backend=fastdyn';$('flight').title=name+' FastDyn ARM figure-eight recording';$('flight').style.height='850px';$('status').textContent=name+' · FastDyn ARM BIL · '+(r.passed&&landed?'passed; landing/disarm verified':'FAILED attempt; actual recording')+' · recorded '+new Date(r.recorded_at_unix_s*1000).toISOString().slice(0,10);};
+  }
+  $('fastdyn-status').textContent='Both ARM recordings · one 10 × 10 m lap at 2 m · 40 s reference · no-noise commissioning runs';
+  $('fastdyn-betaflight').click();
  } catch(error){$('fastdyn-status').textContent='FastDyn recording unavailable: '+error.message;}
 
  const campaign=await fetchJson('../results/shared-sil/feedforward/campaign-summary.json');

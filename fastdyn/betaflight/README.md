@@ -1,112 +1,74 @@
-# Betaflight OMNIBUSF4 FastDyn bring-up
+# Betaflight ARM flight through FastDyn
 
-Status: **experimental boot probe, not a flight backend**. The existing Betaflight
-flight recordings remain Linux SITL recordings. No new FastDyn Betaflight flight,
-lap time, tracking error, landing, or hardware latency result is established here.
+On October 22, 2026, the patched OMNIBUSF4 ARM firmware completed the shared
+10 × 10 m figure-eight at 2 m altitude: one 40 s reference lap, 83 s full mission,
+0.143348 m RMS / 0.350121 m maximum tracking error. Landing, firmware disarm,
+and all four stopped motors were verified. A preceding 53 s hover test passed.
 
-## Sources and board
+## What actually executes
 
-* Betaflight: `744f95fa31542c4c906f18072348a366ab11b6b7`.
-* Official board-config repository: `96910e90881573589b2a6c41f7392b7afad63973`.
-* Target: [AIRB/OMNIBUSF4](https://github.com/betaflight/config/blob/96910e90881573589b2a6c41f7392b7afad63973/configs/AIRB/OMNIBUSF4/config.h),
-  STM32F405, Cortex-M4. This is the selected emulation target, not an identification
-  of the team's physical Betaflight board. The Tropic CogniPilot target is different.
-* FastDyn: `94c85f3e47be410e8d760b7f8207eb1580d7cd4c`.
-* Arslan8/QEMU: `99b54836ded8dc3271eba52deee7453efc0a13b9`.
-* Compiler actually used: Arm GNU 15.2.1; the Make compiler-version requirement
-  was explicitly overridden. This differs from the upstream default toolchain.
+Betaflight ARM ELF → FastDyn/QEMU Cortex-M4 → shared-memory virtual sensor,
+receiver, motor and clock interface → existing Rust shared-sil runner → same
+Rumoca plant and generated position controller used by CogniPilot.
 
-The two peripheral models in this directory are project-written additions, not
-upstream Betaflight drivers or a complete upstream FastDyn OMNIBUSF4 model.
-The ARM firmware source was not modified for these probes.
+The ARM build retains Betaflight's scheduler, attitude/rate controllers, estimator,
+mixer and arming checks. Project changes inject plant IMU samples, MSP receiver
+frames and deterministic time, capture mixer output, and add the existing
+benchmark feed-forward terms. This is **modified benchmark firmware**, not an
+unmodified board firmware flight or a complete peripheral emulation. Physical
+interrupts are disabled after startup; SPI/DMA/EXTI/PWM latency is not measured.
+The boot-only MPU identity and ADC fixtures do not generate flight sensor data.
+Accelerometer quantization is 2048 counts/g (native SITL uses 256). Different
+board targets and firmware schedules remain comparison limitations.
 
-## Verified progress (October 21, 2026)
+## Pinned sources
 
-1. Board-specific ELF and HEX built. ELF SHA-256:
-   `e38bcad0b514f1851077c2a1f4a69d6089293a77c5e522a7a106be7a1144f559`.
-2. FastDyn/QEMU executes the actual ARM firmware, with debugger backtraces.
-3. Initial firmware repeatedly entered `Reset_Handler`. RTC backup storage and
-   RCC clock-status behavior were missing. `stm32f405_boot.c` moves execution
-   past this loop to `mpu6000SpiDetect` (probe 09).
-4. The polled SPI fixture moves execution past the SPI-ready wait (probe 10).
-5. Current blocker: `sensorsAutodetect` polls ADC1 status at `0x40012000`, bit 2,
-   which remains zero. ADC conversion completion is not modeled.
-6. Standalone assertions pass for oscillator enable/ready behavior, clock
-   selection, backup-register retention/subword accesses, and SPI identity
-   transactions, chip select, and receive-ready clearing.
+- Betaflight: `744f95fa31542c4c906f18072348a366ab11b6b7` plus [ARM patch](../../patches/betaflight-fastdyn.patch).
+- Official Betaflight config: `96910e90881573589b2a6c41f7392b7afad63973`, `configs/AIRB/OMNIBUSF4/config.h` (STM32F405). This does not identify the team's physical board.
+- FastDyn: `94c85f3e47be410e8d760b7f8207eb1580d7cd4c`.
+- QEMU: `99b54836ded8dc3271eba52deee7453efc0a13b9`.
+- Compiler: Arm GNU 15.2.1, overriding upstream's compiler version requirement.
+- Rust integration: [Cerebri patch](../../patches/cerebri-rdd2-benchmark.patch); `betaflight_fastdyn.rs` provides the ARM transport.
 
-Evidence: [logs, debugger traces, source revisions and firmware checksums](../../docs/evidence/betaflight-fastdyn-2026-10-21/).
-The diagnostic runs are bounded and end by timeout; timeout is not flight success.
+## Reproduce
 
-## Model limitations
-
-`stm32f405_boot.c` uses immediate oscillator-ready transitions and infers a warm
-reset from the repeated CCM-enable write in this firmware's reset sequence.
-It is a boot approximation, not a complete reset controller. Flash control is
-minimal; the executable flash bank is writable file-backed memory, without
-accurate erase/program timing or protection semantics.
-
-`stm32f405_spi.c` is explicitly a **boot-only identity fixture**: SPI1 reports an
-MPU6000 WHO_AM_I and product revision. It does not provide plant-driven inertial
-samples, sample timing, DMA, or interrupts. SPI2/3 represent absent devices.
-No motor/PWM/DShot model, receiver stream, or autonomous command interface has
-been connected. It must not produce benchmark results or replace the website's
-recordings in its present state.
-
-## Reproduce using the existing VM
-
-Use the repository's Devenv `rdd2` shell for build tools. The current clean
-Betaflight dependency worktree is `artifacts/betaflight-fastdyn`; the existing
-FastDyn dependency worktree is `artifacts/fastdyn-pinned`.
-
-Build the board firmware inside its source directory:
+Use the existing `rdd2` Devenv shell. Apply the ARM patch to a clean pinned
+Betaflight checkout (do not layer the native SITL patch onto it), then build:
 
 ```sh
-make CONFIG=OMNIBUSF4 \
-  CONFIG_DIR="$HOME/autonomous-drone-bench/src/betaflight/src/config" \
-  ARM_SDK_PREFIX=arm-none-eabi- GCC_REQUIRED_VERSION=15.2.1 -j2
+make CONFIG=OMNIBUSF4 CONFIG_DIR=/absolute/path/to/betaflight/config \
+  ARM_SDK_PREFIX=arm-none-eabi- GCC_REQUIRED_VERSION=15.2.1 \
+  EXTRA_FLAGS="-DADR_FASTDYN -DUSE_MSP_CLI_COMMAND" -j2
 ```
 
-Copy the two model C files to FastDyn's `boardrunner/boardrunner_sdk/model/`,
-then use its existing configured CMake build:
+Apply the Cerebri patch to its pinned clean checkout and build with
+`cargo build --release -p cerebri-rdd2-xtask`. Copy the two model C files into
+FastDyn's `boardrunner/boardrunner_sdk/model/`, then build their CMake targets
+`stm32f405_boot` and `stm32f405_spi`.
 
-```sh
-cmake -S boardrunner/boardrunner_sdk -B boardrunner/boardrunner_sdk/build
-cmake --build boardrunner/boardrunner_sdk/build \
-  --target stm32f405_boot stm32f405_spi -j2
-```
+The [flight config](flight.toml) records the exact existing workspace plant,
+controller and mission inputs. From the pinned FastDyn checkout, set absolute
+paths for `ADR_WORKSPACE`, `BETAFLIGHT_ARM_ELF`, `FASTDYN_QEMU_PATH`,
+`ADR_FLIGHT_OUTPUT`, and a **fresh** `ADR_MEMORY_DIR` for each run. Set
+`FASTDYN_QEMU_MEMORY_DIR` to that same directory and
+`ADR_FLIGHT_SHAPE=figure-eight` (or `hover` for qualification). Run the pinned
+FastDyn venv executable with `fastdyn run -c /absolute/path/to/flight.toml -o
+/absolute/path/to/new-output`. Keep instruction tracing off; redirect FastDyn's
+working-directory `debug.log` and `io.log` to `/dev/null` to avoid filling disk.
 
-From the workspace root, build the standalone tests and pass both plugin paths:
+## Evidence and limits
 
-```sh
-cc fastdyn/betaflight/test_boot_models.c -ldl -o /tmp/test_betaflight_boot_models
-/tmp/test_betaflight_boot_models \
-  artifacts/fastdyn-pinned/boardrunner/boardrunner_sdk/build/stm32f405_boot.so \
-  artifacts/fastdyn-pinned/boardrunner/boardrunner_sdk/build/stm32f405_spi.so
-```
+[Report and actual trajectory](../../docs/results/fastdyn/betaflight-figure-eight/),
+[build/test/run evidence](../../docs/evidence/betaflight-fastdyn-2026-10-22/),
+and [older unsuccessful boot probes](../../docs/evidence/betaflight-fastdyn-2026-10-21/).
+The report identifies exact firmware, runner, plant and controller SHA-256 values.
+664,000 acknowledged ARM exchanges cover 83 simulated seconds. Wall time was
+150.127 s; this is emulator execution cost, not drone lap time or hardware latency.
+The four ordered trajectory quadrants and return to center were checked from
+recorded samples. The replay is downsampled to 20 Hz and retains the final sample.
+Full 100 Hz trajectory is published; the binary actuator trace is retained locally
+and on the VM with its checksum in evidence.
 
-Run FastDyn from its source root, supplying absolute paths to the QEMU binary,
-firmware ELF, config and output directory. Use the existing pinned FastDyn venv.
-
-```sh
-export FASTDYN_QEMU_PATH=/absolute/path/to/qemu-system-arm
-export BETAFLIGHT_ARM_ELF=/absolute/path/to/betaflight_STM32F405_OMNIBUSF4.elf
-timeout -k 5 55 /absolute/path/to/venv/bin/fastdyn run \
-  -c /absolute/path/to/omnibusf4.toml -o /absolute/path/to/new-probe
-```
-
-The config disables QEMU instruction tracing. FastDyn additionally writes
-`debug.log` and `io.log` in its working directory: both were redirected to
-`/dev/null` for these probes, after preserving useful diagnostic evidence.
-The VM has under 1 GB free; unrestricted tracing previously filled it.
-GDB is enabled for diagnosis on port 1234; disable it when not debugging.
-
-## Remaining work before using this for a flight
-
-Implement and validate ADC startup, real plant-driven MPU6000 sampling and
-SPI/DMA/EXTI scheduling, receiver/autonomous command injection, and timer/DMA
-motor command extraction. Then connect the existing common Rumoca plant and
-10 x 10 m figure-eight at 2 m altitude. Require actual armed flight, one lap,
-tracking measurements, and firmware disarm plus stopped motors at landing.
-Only publish a FastDyn Betaflight replay after those checks pass. Emulated
-instruction time alone cannot establish real-board latency.
+This is a no-noise, plant-truth-position commissioning run using the existing
+native hover-throttle calibration. It does not establish maximum racing speed,
+sensor parity, real MoCap coverage, or readiness to flash/fly physical hardware.

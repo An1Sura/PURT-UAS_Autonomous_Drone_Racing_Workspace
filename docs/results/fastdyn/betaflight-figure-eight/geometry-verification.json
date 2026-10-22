@@ -1,0 +1,20 @@
+{
+  "ordered_quadrants": [
+    "1,1",
+    "1,-1",
+    "-1,1",
+    "-1,-1"
+  ],
+  "returned_to_center": true,
+  "extra_lap": false,
+  "minimum_xy_m": [
+    -4.879413786628662,
+    -4.9901851924644
+  ],
+  "maximum_xy_m": [
+    4.941070135481368,
+    5.031071641260833
+  ],
+  "trajectory_sha256": "38766a66f6053bc13b93d79ea3a68369a8afa9ac5380bbdec6f7cddcc2682ee6",
+  "passed": true
+}

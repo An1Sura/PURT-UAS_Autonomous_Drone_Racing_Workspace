@@ -1,0 +1,93 @@
+# ARM shared-plant flight using the project virtual-I/O firmware adapter.
+[Machine]
+platform = "STM32F405"
+load_svd = false
+qemu_path = "${FASTDYN_QEMU_PATH}"
+monitor_port = 5557
+qmp_socket = "/tmp/adr-betaflight-fastdyn.sock"
+enable_gdb = true
+stop_on_start = false
+launch_gdb = false
+icount = { shift = 6, sleep = false, align = false }
+coverage = false
+print_command = true
+log_options = "none"
+reset_memory_files = true
+[Memory.main]
+id = "sram"
+memory_file = "./fastdyn_qemu_memory/betaflight_sram.bin"
+base_address = "0x20000000"
+memory_size = "128K"
+backend = "file"
+memory_type = "SRAM"
+
+share = true
+[[Memory.flash]]
+id = "flash"
+memory_file = "./fastdyn_qemu_memory/betaflight_flash.bin"
+index = 1
+base_address = "0x08000000"
+memory_size = "1M"
+backend = "file"
+memory_type = "SRAM"
+
+share = true
+[[Memory.ccm]]
+id = "ccm"
+memory_file = "./fastdyn_qemu_memory/betaflight_ccm.bin"
+index = 2
+base_address = "0x10000000"
+memory_size = "64K"
+backend = "file"
+memory_type = "SRAM"
+
+share = true
+[[Memory.backup]]
+id = "backup"
+memory_file = "./fastdyn_qemu_memory/betaflight_backup.bin"
+index = 3
+base_address = "0x40024000"
+memory_size = "4K"
+backend = "file"
+memory_type = "SRAM"
+
+share = true
+[CPU]
+[[CPU.cpu0]]
+arch = "arm"
+machine = "cortexm"
+cpu = "cortex-m4"
+plugin_library = "build/libfastdyn.so"
+binary = "${BETAFLIGHT_ARM_ELF}"
+symbol_file = "${BETAFLIGHT_ARM_ELF}"
+init_nsvtor = "0x08000000"
+coverage = false
+introspect = false
+optifuzz = false
+[Device.Models.elder]
+
+[Device.stm32f405_boot]
+ranges = [["0x40023800", "0x40023900"], ["0x40002800", "0x40002900"], ["0x40007000", "0x40007020"], ["0x40023c00", "0x40023c20"], ["0x40012000", "0x40012400"]]
+irq = [[1, 150]]
+description = "Boot-only RCC, RTC backup, PWR and flash control registers"
+read_priority = "elder"
+[[Device.stm32f405_boot.handlers]]
+model = "elder"
+enabled = true
+scroll = "boardrunner/boardrunner_sdk/build/stm32f405_boot.so"
+
+[Device.stm32f405_spi]
+ranges = [["0x40020000", "0x40020c00"], ["0x40013000", "0x40013040"], ["0x40003800", "0x40003840"], ["0x40003c00", "0x40003c40"]]
+irq = [[1, 150]]
+description = "Boot-only polled SPI MPU6000 identity fixture; no flight data"
+read_priority = "elder"
+[[Device.stm32f405_spi.handlers]]
+model = "elder"
+enabled = true
+scroll = "boardrunner/boardrunner_sdk/build/stm32f405_spi.so"
+
+[Run.processes.betaflight_mission]
+command = ["${ADR_WORKSPACE}/src/cerebri_rdd2/target/release/xtask", "shared-sil", "${ADR_WORKSPACE}/artifacts/fastdyn-figure-eight-02/flight/config.json", "${ADR_WORKSPACE}/src/modelica_models/artifacts/vehicles/rdd2/plant/Vehicles_Rdd2_Plant", "${ADR_WORKSPACE}/artifacts/shared-sil/ff-final-generated/libshared_loop.so", "${BETAFLIGHT_ARM_ELF}", "betaflight", "${ADR_FLIGHT_OUTPUT}", "${ADR_FLIGHT_SHAPE:-hover}", "1", "none"]
+terminate_run_on_exit = true
+[Run.processes.betaflight_mission.env]
+RDD2_BETAFLIGHT_FASTDYN_MEMORY = "${ADR_MEMORY_DIR}/machine0_main_sram.bin"

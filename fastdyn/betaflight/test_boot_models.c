@@ -36,6 +36,12 @@ int main(int argc, char **argv)
     bw(bs,0x40002855,0xab,1);
     assert(br(bs,0x40002854,4)==0x1234ab78);
     assert(br(bs,0x40002855,1)==0xab);
+    bw(bs,0x40012008,1u<<22,4);
+    assert(br(bs,0x40012000,4)&4);
+    assert(!(br(bs,0x40012008,4)&(1u<<22)));
+    bw(bs,0x40012000,~4u,4);
+    assert(!(br(bs,0x40012000,4)&4));
+    assert(br(bs,0x4001203c,4)==1500);
     assert(sr(ss,0x40013008,2)==2);
     sw(ss,0x40020018,1u<<20,4); /* assert MPU CS */
     sw(ss,0x4001300c,0xf5,2); /* read WHO_AM_I */
@@ -53,6 +59,12 @@ int main(int argc, char **argv)
     sw(ss,0x40020018,1u<<4,4);
     sw(ss,0x4001300c,0xff,2);
     assert(sr(ss,0x4001300c,2)==0xff);
+    sw(ss,0x4002001a,1u<<4,2); /* actual firmware halfword CS reset */
+    sw(ss,0x4001300c,0xf5,2);
+    (void)sr(ss,0x4001300c,2);
+    sw(ss,0x4001300c,0xff,2);
+    assert(sr(ss,0x4001300c,2)==0x68);
+    sw(ss,0x40020018,1u<<4,2);
     puts("PASS: boot register and polled SPI identity behavior; not a flight or timing test");
     return 0;
 }

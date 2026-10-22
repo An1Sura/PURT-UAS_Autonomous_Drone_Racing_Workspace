@@ -67,7 +67,7 @@ optifuzz = false
 [Device.Models.elder]
 
 [Device.stm32f405_boot]
-ranges = [["0x40023800", "0x40023900"], ["0x40002800", "0x40002900"], ["0x40007000", "0x40007020"], ["0x40023c00", "0x40023c20"]]
+ranges = [["0x40023800", "0x40023900"], ["0x40002800", "0x40002900"], ["0x40007000", "0x40007020"], ["0x40023c00", "0x40023c20"], ["0x40012000", "0x40012400"]]
 irq = [[1, 150]]
 description = "Boot-only RCC, RTC backup, PWR and flash control registers"
 read_priority = "elder"

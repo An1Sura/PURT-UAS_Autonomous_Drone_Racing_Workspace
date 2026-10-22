@@ -1,19 +1,12 @@
-# Where the flight simulations run — audited October 16, 2026
+# Flight simulation provenance — updated October 22, 2026
 
-**The current Betaflight results are native Linux SITL measurements. FastDyn has not executed those recordings.** CogniPilot now has both a passing FastDyn baseline and a passing **10 × 10 m figure-eight at 2 m altitude**. The sim page labels the new ARM BIL recording separately from the historical native SIL flights.
+Both stacks now have ARM FastDyn figure-eight recordings. Betaflight uses patched OMNIBUSF4 firmware with virtual sensor/motor/receiver/time interfaces; CogniPilot uses TROPIC firmware. Historical native Linux SIL flights remain separately labeled.
 
-## Betaflight ARM bring-up — October 21
+## Betaflight ARM figure-eight — October 22
 
-The official OMNIBUSF4 / STM32F405 firmware now builds and executes ARM code in
-FastDyn. Project-written boot models resolved a repeated clock-configuration
-reset and the initial polled SPI wait. The latest probe stops in
-`sensorsAutodetect`, polling ADC1 status at `0x40012000`. The SPI model is only an
-identity fixture; plant-driven IMU sampling, DMA/interrupts and motor feedback
-are not connected. **No Betaflight FastDyn flight has passed.**
+One 10 × 10 m lap at 2 m, 40 s reference, 83 s complete mission. Tracking RMS 0.143348 m, maximum 0.350121 m. Landing, disarm and stopped motors verified; 664,000 ARM exchanges. This is binary-in-the-loop with virtual I/O, not SPI/DMA timing or physical hardware latency. The earlier ADC boot blocker was resolved; later scheduler clock continuity and configuration activation fixes enabled the flight.
 
-See the [board selection, reproducible commands, limitations and next steps](../fastdyn/betaflight/README.md)
-and [debugger/build evidence](evidence/betaflight-fastdyn-2026-10-21/).
-Existing flight recordings and comparative statistics are unchanged.
+See [source pins, patches and reproduction](../fastdyn/betaflight/README.md), [raw report](results/fastdyn/betaflight-figure-eight/report.json) and [run evidence](evidence/betaflight-fastdyn-2026-10-22/). Below is the retained October 16 history, not the current Betaflight status.
 
 ## FastDyn shared-controller figure-eight — October 16
 

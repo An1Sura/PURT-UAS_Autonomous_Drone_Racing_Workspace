@@ -8,6 +8,7 @@
 #include <device.h>
 
 static uint32_t rcc[0x100/4], rtc[0x100/4], pwr[8], flash[8];
+static uint32_t adc[0x400/4];
 static unsigned boot_sequences;
 
 static uint32_t *word(uint64_t a)
@@ -16,6 +17,7 @@ static uint32_t *word(uint64_t a)
     if (a >= 0x40002800 && a < 0x40002900) return &rtc[(a-0x40002800)/4];
     if (a >= 0x40007000 && a < 0x40007020) return &pwr[(a-0x40007000)/4];
     if (a >= 0x40023c00 && a < 0x40023c20) return &flash[(a-0x40023c00)/4];
+    if (a >= 0x40012000 && a < 0x40012400) return &adc[(a-0x40012000)/4];
     return 0;
 }
 
@@ -24,6 +26,9 @@ void *stm32f405_boot_init(ConfigSection *config)
     (void)config;
     memset(rcc, 0, sizeof(rcc)); memset(rtc, 0, sizeof(rtc));
     memset(pwr, 0, sizeof(pwr)); memset(flash, 0, sizeof(flash));
+    memset(adc, 0, sizeof(adc));
+    /* Fixed diagnostic VREF/temperature ADC codes, not measured board data. */
+    adc[0x3c/4] = 1500; adc[0x40/4] = 1000;
     rcc[0] = 0x83; rcc[1] = 0x24003010;
     boot_sequences = 0;
     return rcc;
@@ -58,5 +63,10 @@ void stm32f405_boot_write(void *state, uint64_t addr, uint64_t value, unsigned s
     }
     if (addr == 0x40023874 && (v & (1u<<24))) v &= 0x00ffffffu;
     if (addr == 0x40023c0c) v = *p & ~v; /* FLASH status W1C */
+    if (addr == 0x40012000) v = *p & v; /* ADC status cleared by writing zero */
+    if (addr == 0x40012008 && (v & (1u<<22))) {
+        adc[0] |= 1u<<2; /* injected conversion complete; no latency fidelity */
+        v &= ~(1u<<22);
+    }
     *p = v;
 }

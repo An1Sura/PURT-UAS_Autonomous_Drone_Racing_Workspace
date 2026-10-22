@@ -101,3 +101,7 @@ The VM uses the isolated `artifacts/shared-loop/betaflight-stock` checkout to pr
 After the ordinary native plant/Zephyr build and shared-loop generation, invoke `xtask shared-sil CONFIG PLANT_DIRECTORY GENERATED_LIBRARY BINARY STACK FRESH_OUTPUT_DIRECTORY figure-eight`. Native Cargo remains available; Devenv tasks `rdd2:benchmark:shared-sil:betaflight` and `rdd2:benchmark:shared-sil:cognipilot` coordinate the canonical source paths. Use the isolated BF path explicitly in the existing VM.
 
 See [tested commands, results and remaining gates](../docs/shared-position-benchmark.md). Reverse-application checks passed for all three new patches.
+
+## Betaflight ARM FastDyn
+
+`betaflight-fastdyn.patch` applies to a separate clean Betaflight checkout at the same pinned SHA. It is an alternative to the native SITL patch, not an additional layer. See `fastdyn/betaflight/README.md` for build and virtual-I/O limitations. The Cerebri patch includes both transports.

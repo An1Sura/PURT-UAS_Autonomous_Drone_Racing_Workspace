@@ -39,6 +39,7 @@ void stm32f405_spi_write(void *s, uint64_t a, uint64_t v, unsigned size)
     (void)s; (void)size;
     if (a >= 0x40020000 && a < 0x40020c00) {
         unsigned bank = (a-0x40020000)/0x400, off = ((a-0x40020000)%0x400)/4;
+        v <<= (a & 3)*8;
         gpio[bank][off] = v;
         if (off == 6) {
             gpio[bank][5] = (gpio[bank][5] | (v & 0xffff)) & ~(v >> 16);
