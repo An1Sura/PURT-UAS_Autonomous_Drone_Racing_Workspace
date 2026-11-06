@@ -1056,7 +1056,6 @@ let
           export RDD2_SHARED_PLANT=${source "modelica_models"}/artifacts/vehicles/rdd2/plant/Vehicles_Rdd2_Plant
           export RDD2_SHARED_LIBRARY=${root}/artifacts/tilt-lead-generated/libshared_loop.so
           export RDD2_FASTDYN_BUILD_DIR="$PWD/build-mr_vmu_tropic-fastdyn/cerebri_rdd2"
-          export BETAFLIGHT_ARM_ELF=${root}/artifacts/betaflight-fastdyn/obj/main/betaflight_STM32F405_OMNIBUSF4.elf
           export FASTDYN_QEMU_PATH=${root}/.devenv/state/fastdyn-pinned/qemu/build/qemu-system-arm
           export FASTDYN_MONITOR_ELF=${root}/.devenv/state/fastdyn-pinned/qemu/ws/monitor.elf
           export ADR_FLIGHT_OUTPUT="${root}/artifacts/tilt-lead-cognipilot-$(date +%s%N)/flight"

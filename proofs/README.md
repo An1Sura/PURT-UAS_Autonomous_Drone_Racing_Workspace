@@ -50,3 +50,7 @@ controller behavior. The Lean sources, dependency pins and axiom policy are unch
 ## November 5 NXP transport review
 
 Only the new-file patch section for `xtask/src/betaflight_fastdyn.rs` changed: the fixed 128 KB mailbox limit became a checked offset-plus-mailbox bound against the actual memory file, supporting RT1064 DTCM. All other patch sections remain byte-identical, including trajectory mathematics and controller interfaces. The snapshot hash is refreshed as a change detector; this does not add a formal proof of ARM transport or hardware timing. Transport tests and flight regression are separate empirical evidence.
+
+## November 6 ARM sweep review
+
+Compared the complete dependency patch with commit `59aec860f9e9c43b0722605c95c167b8fbdb59c8`. Only `xtask/src/speed_sweep.rs` changed: optional FastDyn invocation, absolute output paths and backend identification. All other patch sections, including trajectory and controller mathematics, are byte-identical. The snapshot hash is refreshed after this comparison. The Lean specification and axiom policy are unchanged; no proof of the new supervisor, firmware or landing behavior is implied. Native runner tests and actual flight reports provide separate empirical checks.

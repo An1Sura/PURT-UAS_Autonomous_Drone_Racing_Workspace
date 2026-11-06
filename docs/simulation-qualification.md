@@ -41,3 +41,7 @@ Current sweep uses the unchanged 10 × 10 m figure-eight at 2 m, the same genera
 ## November 6 integration audit
 
 The inherited ArduPilot FastDyn demo contained register/function overrides of arming checks. `ARMING_CHECK=1` alone did not restore those checks. The checked-hook configuration removes the identified arming, INS-calibration, barometer and compass-validity overrides. Attempts 09–10 use the restored checks; earlier attempts are diagnostic only. Actual firmware debug information identified a 1 MHz timer ABI, 8 kHz raw IMU FIFO sampling, and barometer frontend fields. Correcting those interfaces allowed EKF tilt/yaw alignment and GPS fusion. Attempt 10 accepted normal simulated calibration but refused arming because logging and terrain storage remain unavailable. No ArduPilot flight is qualified.
+
+### Current speed finding
+
+The 33 s Betaflight TROPIC candidate passed 13/15 confirmations. Harsh-noise seeds 2 and 3 failed landing/disarm despite meeting course tracking limits. Seed 2 never contacted the ground (recorded minimum landing-phase altitude 0.174 m), ending at 0.610 m armed with nonzero motor outputs. Oscillating yaw and opposing motor commands increase during descent; this observation does not yet identify the cause. The unchanged campaign continues at slower candidates. Do not report 33 s as a confirmed reliable speed.
