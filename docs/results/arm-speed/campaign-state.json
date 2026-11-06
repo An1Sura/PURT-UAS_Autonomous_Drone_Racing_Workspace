@@ -1,5 +1,5 @@
 {
-  "recorded_at": "2026-11-06T19:42:28.222Z",
+  "recorded_at": "2026-11-06T20:33:49.842Z",
   "qualification": "Published snapshot, not live VM status",
   "betaflight": {
     "status": "completed_no_qualified_candidate",
@@ -13,15 +13,27 @@
   },
   "cognipilot": {
     "status": "running",
-    "current_flight": "coarse-40",
-    "note": "Current flight continues; campaign coordinator waits between flights for the approved protocol diagnostic"
+    "note": "39-second run passed; 35-second run incomplete due to shared-memory response timeout, not a demonstrated tracking limit. ARM qualification remains pending."
   },
   "protocol_study": {
-    "status": "waiting_for_current_cognipilot_flight",
+    "status": "diagnostic_passed_confirmation_pending",
     "reference_lap_s": 35,
     "noise": "harsh",
     "seed": 2,
     "protocol": "ONESHOT125",
-    "runner_sha256": "8781a14f7ec763a4b2248213af41d2e9da1823c32d919c4f655ce5a4ac2448ad"
+    "runner_sha256": "8781a14f7ec763a4b2248213af41d2e9da1823c32d919c4f655ce5a4ac2448ad",
+    "tracking_rms_m": 0.2557110108807046,
+    "final_armed": false
+  },
+  "scope": {
+    "active": [
+      "cognipilot",
+      "betaflight"
+    ],
+    "deferred": [
+      "ardupilot",
+      "px4"
+    ],
+    "ardupilot_waiting_job": "canceled at user request"
   }
 }

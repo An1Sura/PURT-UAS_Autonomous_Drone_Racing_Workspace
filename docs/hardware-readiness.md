@@ -42,7 +42,7 @@ CogniPilot rebuilt successfully through `devenv -P rdd2 tasks run rdd2:firmware:
 
 ## Receiver identification and integration issue
 
-The photo identifies **FrSky Archer Plus R6 Lite / R6L**, a receiver mounted on the drone, not the handheld transmitter. Its labels show SBUS IN/OUT and FBUS/S.Port. The [FrSky product description](https://www.frsky-rc.biz/ws/frsky-archer-plus-r6-lite-sr6-lite.html) lists SBUS and FBUS; it does not establish a CRSF output.
+The photo identifies **FrSky Archer Plus R6 Lite / R6L**, a receiver, not the handheld transmitter; installation is unverified and the user reports no receiver currently installed. Its labels show SBUS IN/OUT and FBUS/S.Port. The [FrSky product description](https://www.frsky-rc.biz/ws/frsky-archer-plus-r6-lite-sr6-lite.html) lists SBUS and FBUS; it does not establish a CRSF output.
 
 The existing CogniPilot CRSF configuration is therefore not a verified match. A reviewed SBUS option would need all of:
 
@@ -52,7 +52,7 @@ The existing CogniPilot CRSF configuration is therefore not a verified match. A 
 4. Handle frame-lost/failsafe indications. The inspected driver defines both flags but does not invalidate the application's channels for failsafe; frame-lost handling logs status and still parses channels. Test valid/lost/recovered frames and stale-input timeout before flight.
 5. Verify channel order, center/endpoints, ATTITUDE/ANGLE selection, arm and kill with props removed.
 
-A CRSF-capable receiver shared by both drones is the alternative consistent with the current CogniPilot build. The photo does not authorize assuming the team has one. Receiver choice and transmitter model must be resolved before a final radio profile is generated.
+A CRSF-capable receiver shared by both drones is the alternative consistent with the current CogniPilot build. The photo does not authorize assuming the team has one. The user identifies the transmitter as RadioMaster TX16S MkII (Mode 2). Its RF module variant, receiver binding mode, installation and wiring must be resolved before a final radio profile is generated.
 
 ## Flash workflow, prepared but not executed
 
@@ -92,3 +92,7 @@ Before freezing the comparison, agree on non-inferiority margins; 1.1× error an
 - Receiver/communications work: identify the handheld transmitter and trainer input; decide SBUS adaptation versus common CRSF receivers; verify wiring/polarity/endpoints and override behavior.
 - Driver/timing work: use the actual ICM45686 build configuration above, not an assumed ICM42688. Measure acquisition-to-motor latency and jitter separately from emulated time.
 - Reviewer checkpoint: review the compliance table and receiver mismatch before calling this ready for autonomous flight. No message has been sent to the team automatically.
+
+## November 6 scope and handoff update
+
+Current work focuses on CogniPilot and Betaflight on TROPIC. See [the PC virtual-pilot handoff](tropic-pc-pilot-handoff.md) for new flight results, hardware setup steps and conference completion gates. ArduPilot/PX4 historical evidence is retained outside the active scope.

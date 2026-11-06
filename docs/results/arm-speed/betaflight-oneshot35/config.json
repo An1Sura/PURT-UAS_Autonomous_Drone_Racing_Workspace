@@ -1,0 +1,100 @@
+{
+  "schema_version": 1,
+  "id": "purt-10x10-z2-offboard-tilt-lead-v3",
+  "status": "qualification_in_progress",
+  "course": {
+    "width_m": 10,
+    "height_m": 10,
+    "altitude_m": 2,
+    "scale": 1,
+    "center_enu_m": [
+      0,
+      0
+    ],
+    "yaw_rad": 0,
+    "laps": 1,
+    "lap_time_s": 35,
+    "phase_law": "minimum_jerk_each_lap",
+    "timing_status": "35-second failed-baseline diagnostic; not a confirmed fastest setting"
+  },
+  "environment": "purt-environment.json",
+  "vehicle_radius_m": 0.4,
+  "tracking_margin_m": 0.15,
+  "controller": {
+    "trajectory_model": "Benchmarks.Trajectory",
+    "position_model": "Benchmarks.PositionLoop",
+    "sample_rate_hz": 100,
+    "stick_rate_hz": 250,
+    "tilt_limit_deg": 35,
+    "yaw_rate_limit_deg_s": 200,
+    "translational_correction_fraction": 0.7,
+    "feedback": "common plant truth in SIL; calibrated motion capture in physical trials",
+    "frame": "world ENU, body FLU, scalar-first Hamilton quaternion body-to-world",
+    "feedforward": "omega",
+    "feedforward_options": [
+      "off",
+      "omega"
+    ],
+    "feedforward_reference": "PDF commanded-thrust/desired-axis expression; snap derivative holds feedback correction locally fixed; yaw reference is fixed",
+    "feedforward_interface": "normal tilt commands: reference tilt + omega_ff / tuned attitude gain"
+  },
+  "stacks": {
+    "cognipilot": {
+      "mode": "ATTITUDE",
+      "maximum_collective_thrust_n": 41.3749272,
+      "native_yaw_full_scale_rad_s": 3.5,
+      "attitude_gain_per_s": 6
+    },
+    "betaflight": {
+      "mode": "ANGLE",
+      "angle_limit_deg": 35,
+      "hover_throttle": 0.6885788423153674,
+      "hover_throttle_status": "mean commanded PWM fraction over 30–35 s of closed-loop native Betaflight hover at 2 m in the shared plant",
+      "rc_smoothing": "OFF",
+      "rc_smoothing_status": "fixed for commissioning",
+      "angle_feedforward": 0,
+      "d_max": [
+        0,
+        0,
+        0
+      ],
+      "attitude_gain_per_s": 6,
+      "motor_protocol": "ONESHOT125",
+      "pid_process_denom": 1
+    }
+  },
+  "qualification": {
+    "native_control_algorithm_changes_allowed": false,
+    "gains_tuning": "equal step-response criterion and documented tuning budget",
+    "noise_profiles": [
+      "none",
+      "realistic",
+      "harsh"
+    ],
+    "seeds_per_profile_min": 5,
+    "performance_margins_status": "must agree before campaign; PDF numbers are examples",
+    "requires": [
+      "packet lockstep gate",
+      "generated-code oracle check",
+      "ideal-attitude common-plant check",
+      "hover",
+      "0.5 m step",
+      "square",
+      "one figure eight",
+      "native disarm and grounded stopped motors",
+      "noise repeats"
+    ],
+    "status": "matched attitude tuning qualified; speed and noise campaign in progress",
+    "attitude_tuning_status": "native_gain_rule_passed_ARM_requalification_pending",
+    "attitude_tuning_evidence": "docs/results/tilt-lead/tuning"
+  },
+  "tuning": null,
+  "experiment": {
+    "purpose": "Test protocol-imposed PID scheduling against a retained failed landing, using unchanged gains, plant and 35-second reference",
+    "baseline": "confirm-35-harsh-2",
+    "noise": "harsh",
+    "seed": 2,
+    "expected_stock_validation": "8 kHz gyro / OneShot125 500 us motor restriction; requested denominator 1 is normally raised to 4 by stock validation",
+    "qualification": "Actual resulting period and motor-update count must be read back; no physical protocol timing claim"
+  }
+}

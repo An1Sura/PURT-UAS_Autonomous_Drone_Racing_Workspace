@@ -46,3 +46,5 @@ try {
 
 
 $('arm-speed-bf').onclick=()=>{ $('variant').disabled=true; $('flight').src='flight-view.html?stack=betaflight&backend=arm-speed-bf'; $('flight').title='Betaflight TROPIC 33-second exploratory ARM flight'; $('flight').style.height='850px'; $('status').textContent='Betaflight TROPIC RT1064 · completed 33 s reference / 76 s full flight · realistic noise seed 1 · exploratory speed candidate; tuning qualification pending'; };
+
+for (const [id,stack,folder,lap] of [["cg39","cognipilot","cognipilot-39s",39],["bf35","betaflight","betaflight-oneshot35",35]]) document.getElementById(id).onclick=()=>{document.getElementById("variant").disabled=true;document.getElementById("flight").src="flight-view.html?stack="+stack+"&backend="+folder;document.getElementById("flight").title=stack+" TROPIC diagnostic";document.getElementById("flight").style.height="850px";document.getElementById("status").textContent=stack+" · "+lap+" s reference · single completed diagnostic with landing; not a qualified fastest setting. See setup guide for noise and timing differences.";};
