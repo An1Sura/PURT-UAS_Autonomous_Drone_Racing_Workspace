@@ -1,0 +1,6 @@
+{
+  "source_run": "arm-speed-bf-omega-20261106/confirm-33-harsh-2",
+  "original_trajectory_sha256": "0a62e8aed82219f556f575db73e90e2cb8765dcf19a2b2ce1f9f0174fa6fa770",
+  "sampling": "Every fifth 100 Hz sample plus original final sample; no interpolation",
+  "qualification": "Failed landing; firmware remained armed; not a successful flight"
+}
