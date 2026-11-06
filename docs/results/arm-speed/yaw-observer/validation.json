@@ -1,0 +1,35 @@
+{
+  "qualification": "Read-only diagnostic sampling of part of one no-noise flight; not a full-rate trace or hardware timing measurement",
+  "flight_id": "confirm-40-none-3",
+  "firmware_sha256": "c9530644680b907053022efa349bd0564701dd09ead526c862ac76d71755423f",
+  "flight_trajectory_sha256": "01787b4f673172243880e10509a57539390db265d950bfb6b6d8e3d543105aba",
+  "unobserved_repeat_id": "confirm-40-none-1",
+  "unobserved_repeat_trajectory_sha256": "01787b4f673172243880e10509a57539390db265d950bfb6b6d8e3d543105aba",
+  "raw_observer_csv_sha256": "ddb90ce92f225e4e678cb5ae0fd2614f898724a480452610abe5e3b61ae0210b",
+  "observer_source_sha256": "0e8c7a9dab7aaca478af76aa0378626874d3348234d6e23333eb3524bf5f8d8a",
+  "samples": 14909,
+  "first_sim_time_s": 57.6525,
+  "last_sim_time_s": 82.99975,
+  "exact_trajectory_timestamp_matches": 199,
+  "maximum_motor_difference": 4.996337787943617e-10,
+  "motor_mapping": "trajectory[m0,m1,m2,m3] = firmware[m1,m0,m2,m3]",
+  "observer_exit_code": 1,
+  "exit_explanation": "Firmware terminated before the final handshake was sampled; the last observed sample is 0.25 ms before the 83 s end. Flight itself passed. This is a partial diagnostic trace.",
+  "layout": {
+    "dtcm_base": "0x20000000",
+    "shared": "0x2001cd00",
+    "pidData": "0x200249d4",
+    "gyro": "0x20024f14",
+    "setpointRate": "0x2000e7d4",
+    "gyroADCf_offset": 28,
+    "pidAxisData_size": 24,
+    "output_offset": 216
+  },
+  "layout_evidence": "Exact ELF symbol addresses from arm-none-eabi-nm; field layouts from the compiled target sources fastdyn_adr.c, pid.h, gyro.h. Motor values cross-checked against the independent recorded trajectory.",
+  "limitations": [
+    "Irregular sampling; reject in-progress or changed request/response handshakes",
+    "May affect emulator wall time; no claim of measured driver or hardware loop latency",
+    "Only yaw PID/gyro/RC setpoint observed; does not close all-axis onboard rate-command qualification",
+    "Matching trajectory hashes demonstrate no flight-trajectory change in this witnessed repeat, not universal observer noninterference"
+  ]
+}

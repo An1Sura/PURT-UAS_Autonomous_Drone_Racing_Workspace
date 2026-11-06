@@ -26,6 +26,17 @@ After the adapter's permutation and the firmware mixer's sign, a positive yaw PI
 
 The Rumoca plant computes rotor thrust from squared rotor speed. Algebraically, the mean of squared speeds equals squared mean speed plus speed variance. Therefore a large yaw differential can affect total thrust even when the average motor command falls. The logged commands are not instantaneous rotor speeds: the plant includes motor lag. Do not calculate actual thrust from command squares and present it as a measurement.
 
+
+## Read-only ARM telemetry now validated
+
+A native C observer reads the current Betaflight binary’s shared DTCM file without writing guest memory or pausing QEMU. Addresses come from this exact ELF’s symbols; layouts come from its adapter, PID and gyro headers. Samples are accepted only when the completed request/response handshake stays unchanged across the read.
+
+On `confirm-40-none-3`, it captured 14,909 irregular samples from 57.6525 to 82.99975 simulated seconds, including actual filtered yaw gyro, RC yaw-rate setpoint, yaw PID components and motor commands. At 199 timestamps shared with the flight CSV, motor commands agree after the documented permutation to within 5.0e-10. The entire flight trajectory is byte-identical to `confirm-40-none-1`, which ran without this observer. This is evidence for this witnessed repeat, not proof that observation can never affect timing.
+
+The observer missed the final 0.25 ms and reports exit code 1; the flight itself passed. Its data are explicitly partial diagnostics, not a complete flight recording. The corresponding harsh-noise seed-2 capture is waiting for that campaign cell. No new landing root cause is claimed yet.
+
+[Validation and hashes](results/arm-speed/yaw-observer/validation.json) · [All 14,909 raw samples, gzip CSV](results/arm-speed/yaw-observer/baseline-tail.csv.gz) · observer source: `tools/observe-betaflight-arm.c`. These memory offsets are valid only for the pinned ELF. This does not measure physical loop speed, latency or jitter, or close the PDF’s all-axis rate-command requirement.
+
 ## Required next checks
 
 1. Record actual gyro inputs, yaw setpoint, yaw PID components, filtered rates and rotor speeds on the exact ARM target.

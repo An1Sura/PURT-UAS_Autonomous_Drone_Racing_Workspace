@@ -8,7 +8,7 @@ Existing engineering gates remain RMS <0.35 m, maximum error <0.75 m, zero tilt-
 
 | PDF requirement | Existing evidence | Remaining qualification |
 |---|---|---|
-| 1.1 Deterministic exchange | Native repeat traces and sequence checks; ARM lockstep recordings | Repeat the selected current ARM configurations and report trace equality/spread |
+| 1.1 Deterministic exchange | Native repeat traces and sequence checks; current BF 40 s no-noise seeds 1 and 3 have identical trajectory hashes, including one read-only observation run | Repeat the selected current ARM configurations and report trace equality/spread |
 | 1.2 Seeded noise/vibration | Shared noise generator; none/realistic/harsh levels | ARM confirmations; sensor delivery/quantization differences remain disclosed |
 | 1.3–1.4 Stick mapping | Shared six-channel commands, 250 Hz schedule, 35° tilt; configured Betaflight smoothing off | Current ARM sign/steady-tilt and exact yaw-scale parity qualification |
 | 1.5 Lead rate-command check | Algebraic/numerical identity and tilt-lead logs | Actual onboard rate-command comparison on each axis; the algebra test is insufficient |
@@ -18,7 +18,7 @@ Existing engineering gates remain RMS <0.35 m, maximum error <0.75 m, zero tilt-
 | Same-rule attitude tuning | Native four-sign/axis step campaign selected gain 6/s | Requalify current ARM firmware; NXP inherited gain is not a new tuning measurement |
 | Stage 3 baseline sequence | Current ARM figure-eight/landing; NXP hover and position step | Both modes and complete current-target hover/step/square qualification |
 | Stage 3 speed/repeats | Native speed campaign; new FastDyn ARM campaign underway | On/off searches, three noise levels and five seeds per selected cell; preserve every failure |
-| Stage 4 position/actuator scores | Position RMS/max, clamp counts, final motor/disarm state, full trajectories and actuator traces | Altitude/overshoot summaries, estimator-vs-truth error, attitude tracking and actual rate-command decomposition |
+| Stage 4 position/actuator scores | Position RMS/max, altitude summaries, clamp counts, motor/disarm state, trajectories and actuator traces; partial actual ARM yaw PID/gyro telemetry validated against motor records | Altitude/overshoot summaries, estimator-vs-truth error, attitude tracking and actual rate-command decomposition |
 | Conference timing claims | Simulator execution and exchange counts only | Physical loop latency, driver overhead and hardware jitter require measured hardware; QEMU runtime cannot substitute |
 
 The PDF's five-repeat requirement and equal tuning rule apply to both stacks. Its non-inferiority ratios are examples, not approved thresholds. No superiority claim is justified until prerequisite gates, parity limits and scientific margins are settled.
