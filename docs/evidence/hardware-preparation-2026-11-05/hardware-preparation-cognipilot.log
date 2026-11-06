@@ -1,0 +1,59 @@
+• Validating lock
+✓ Validating lock in 8.14ms
+• Configuring cachix
+  [35;1mwarning:[0m Substituter '[35;1mhttps://devenv.cachix.org[0m' is already present in the substituters list
+✓ Configuring cachix in 3.02ms
+• Configuring shell
+• Evaluating shell
+  [35;1mwarning:[0m ignoring the client-specified setting 'always-allow-substitutes', because it is a restricted setting and you are not a trusted user
+  [35;1mwarning:[0m ignoring the client-specified setting 'http-connections', because it is a restricted setting and you are not a trusted user
+  [35;1mwarning:[0m ignoring the client-specified setting 'system', because it is a restricted setting and you are not a trusted user
+✓ Evaluating shell in 6.43ms (cached)
+✓ Configuring shell in 8.00ms
+• Loading tasks
+• Evaluating devenv.config.task.config
+✓ Evaluating devenv.config.task.config in 471µs (cached)
+✓ Loading tasks in 1.64ms
+• Running tasks
+• Running sources:prepare
+• Running results:prepare
+✓ Running sources:prepare in 2.94ms (cached)
+• Running sources:ensure:cerebri_modules
+• Running sources:ensure:cerebri_rdd2
+• Running sources:ensure:csyn
+• Running sources:ensure:zros
+• Running sources:ensure:rumoca
+✓ Running results:prepare in 3.71ms (cached)
+• Running sources:ensure:modelica_models
+• Running sources:ensure:synapse_fbs
+✓ Running sources:ensure:cerebri_rdd2 in 4.07ms (cached)
+✓ Running sources:ensure:csyn in 4.24ms (cached)
+✓ Running sources:ensure:cerebri_modules in 6.39ms (cached)
+✓ Running sources:ensure:modelica_models in 5.89ms (cached)
+✓ Running sources:ensure:zros in 6.40ms (cached)
+• Running rdd2:workspace:ready
+✓ Running sources:ensure:rumoca in 6.30ms (cached)
+• Running rumoca:compiler
+✓ Running sources:ensure:synapse_fbs in 8.71ms (cached)
+• Running synapse-fbs:build
+  warning: Git tree '/home/suraa.guest/autonomous-drone-bench/src/rumoca' is dirty
+✓ Running rumoca:compiler in 174ms
+      Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.09s
+       Running `target/cargo/debug/xtask build --release-name local`
+✓ Running rdd2:workspace:ready in 475ms (cached)
+✓ Running synapse-fbs:build in 1.02s
+• Running rdd2:firmware:build
+  warning: Git tree '/home/suraa.guest/autonomous-drone-bench/src/cerebri_rdd2' is dirty
+  Loading Zephyr module(s) (Zephyr base (cached)): sysbuild_default
+  Loading Zephyr default modules (Zephyr base (cached)).
+  MCUBoot bootloader key file: /home/suraa.guest/autonomous-drone-bench/.devenv/state/west/rdd2/bootloader/mcuboot/root-ec-p256.pem
+  CMake Warning at CMakeLists.txt:370 (message):
+    WARNING: Using default MCUboot signing key file, this file is for debug use
+    only and is not secure!
+  
+  
+  Calculated maximum number of sectors: 496
+  Loading Zephyr default modules (Zephyr base (cached)).
+✓ Running rdd2:firmware:build in 29.7s
+✓ Running tasks in 30.7s
+{"rdd2:workspace:ready":{"devenv":{"env":{}}},"results:prepare":{"devenv":{"env":{}}},"sources:ensure:cerebri_modules":{"devenv":{"env":{}}},"sources:ensure:cerebri_rdd2":{"devenv":{"env":{}}},"sources:ensure:csyn":{"devenv":{"env":{}}},"sources:ensure:modelica_models":{"devenv":{"env":{}}},"sources:ensure:rumoca":{"devenv":{"env":{}}},"sources:ensure:synapse_fbs":{"devenv":{"env":{}}},"sources:ensure:zros":{"devenv":{"env":{}}},"sources:prepare":{"devenv":{"env":{}}}}

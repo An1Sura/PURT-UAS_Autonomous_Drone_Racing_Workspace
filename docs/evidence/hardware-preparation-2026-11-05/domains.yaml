@@ -1,0 +1,10 @@
+default: cerebri_rdd2
+build_dir: /home/suraa.guest/autonomous-drone-bench/src/cerebri_rdd2/build-mr_vmu_tropic
+domains:
+  - name: cerebri_rdd2
+    build_dir: /home/suraa.guest/autonomous-drone-bench/src/cerebri_rdd2/build-mr_vmu_tropic/cerebri_rdd2
+  - name: mcuboot
+    build_dir: /home/suraa.guest/autonomous-drone-bench/src/cerebri_rdd2/build-mr_vmu_tropic/mcuboot
+flash_order:
+  - mcuboot
+  - cerebri_rdd2

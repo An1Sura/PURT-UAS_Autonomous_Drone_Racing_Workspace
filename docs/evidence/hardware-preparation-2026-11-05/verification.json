@@ -1,0 +1,18 @@
+{
+  "status": "hardware_builds_prepared_not_flight_qualified",
+  "pdf_sha256": "8ac9f0a93ef2836ce95be2ebd73ad7c646f2c8a72066d756d3473b733f239744",
+  "board": "mr_vmu_tropic/mimxrt1064",
+  "processor": "Cortex-M7",
+  "physical_board_revision": null,
+  "physical_transmitter_model": null,
+  "receiver_photo": "FrSky Archer Plus R6 Lite / R6L",
+  "cognipilot_receiver_protocol": "CRSF",
+  "receiver_compatibility_verified": false,
+  "cognipilot_fastdyn": false,
+  "cognipilot_lockstep": false,
+  "cognipilot_imu_driver": "ICM45686",
+  "cognipilot_spi_dma": false,
+  "hashes_verified": 13,
+  "flash_performed": false,
+  "full_pdf_campaign_complete": false
+}

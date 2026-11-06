@@ -1,0 +1,36 @@
+# Available runners configured by board.cmake.
+runners:
+- jlink
+- linkserver
+- pyocd
+
+# Default flash runner if --runner is not given.
+flash-runner: jlink
+
+# Default debug runner if --runner is not given.
+debug-runner: jlink
+
+# Common runner configuration values.
+config:
+  board_dir: /home/suraa.guest/autonomous-drone-bench/.devenv/state/west/rdd2/modules/lib/zephyr_boards/boards/nxp/mr_vmu_tropic
+  # Build outputs:
+  elf_file: zephyr.elf
+  hex_file: zephyr.signed.hex
+  bin_file: zephyr.signed.bin
+  # Host tools:
+  gdb: /nix/store/55z3ik8jhg5wgprbv127pmcpa42bmjfb-zephyr-sdk-arm-1.0.1/gnu/arm-zephyr-eabi/bin/arm-zephyr-eabi-gdb-py
+  openocd: /nix/store/fiin23sis06f1l4ah6a42cc0fd95b9xs-openocd-0.12.0/bin/openocd
+  openocd_search:
+    - /nix/store/55z3ik8jhg5wgprbv127pmcpa42bmjfb-zephyr-sdk-arm-1.0.1/hosttools/sysroots/aarch64-pokysdk-linux/usr/share/openocd/scripts
+
+# Runner specific arguments
+args:
+  jlink:
+    - --dt-flash=y
+    - --device=MIMXRT1064
+  linkserver:
+    - --dt-flash=y
+    - --device=MIMXRT1064xxxxA:EVK-MIMXRT1064
+  pyocd:
+    - --dt-flash=y
+    - --target=mimxrt1064
