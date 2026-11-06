@@ -1,0 +1,27 @@
+{
+  "recorded_at": "2026-11-06T19:42:28.222Z",
+  "qualification": "Published snapshot, not live VM status",
+  "betaflight": {
+    "status": "completed_no_qualified_candidate",
+    "completed_attempts": 66,
+    "passed_attempts": 58,
+    "selected_lap_s": null,
+    "error": "no candidate passes all confirmation runs",
+    "backend": "FastDyn/QEMU ARM",
+    "protocol": "PWM",
+    "runner_sha256": "7c9ade8116c66f1e6e0dad59fdf57bc461a1e9efecd7691c3eee599788e81693"
+  },
+  "cognipilot": {
+    "status": "running",
+    "current_flight": "coarse-40",
+    "note": "Current flight continues; campaign coordinator waits between flights for the approved protocol diagnostic"
+  },
+  "protocol_study": {
+    "status": "waiting_for_current_cognipilot_flight",
+    "reference_lap_s": 35,
+    "noise": "harsh",
+    "seed": 2,
+    "protocol": "ONESHOT125",
+    "runner_sha256": "8781a14f7ec763a4b2248213af41d2e9da1823c32d919c4f655ce5a4ac2448ad"
+  }
+}

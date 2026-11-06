@@ -4,6 +4,10 @@ try {
  const response = await fetch('../results/arm-speed/betaflight-attempts.json', {cache:'no-store'});
  if (!response.ok) throw Error('HTTP '+response.status);
  const attempts = await response.json();
+ const stateResponse=await fetch('../results/arm-speed/campaign-state.json',{cache:'no-store'});
+ if(!stateResponse.ok)throw Error('Campaign snapshot unavailable');
+ const snapshot=await stateResponse.json();
+ if(snapshot.betaflight.completed_attempts!==attempts.length)throw Error('Campaign snapshot/report counts differ');
  const groups = new Map();
  for (const a of attempts) {
   const r=a.report, lap=a.config.course.lap_time_s, noise=r.sensor_profile.level;
@@ -26,5 +30,6 @@ try {
   return runs.length===15&&cells.size===15&&complete&&runs.every(a=>a.passed===true);
  }).map(([lap])=>lap).sort((a,b)=>a-b);
  const rejected=[...confirmations].filter(([lap,runs])=>runs.some(a=>a.passed!==true)).map(([lap])=>lap);
- status.textContent=(rejected.length?'Rejected by confirmation: '+rejected.join(', ')+' s. ':'')+attempts.length+' completed attempts in this published snapshot. '+(confirmed.length?confirmed[0]+' s passed all 15 noise/seed confirmations; ARM tuning prerequisites remain open. ':'Speed confirmation is in progress. ')+'CogniPilot’s new ARM speed sweep is queued separately. Failed attempts are retained.';
+ const finding=confirmed.length?confirmed[0]+' s passed all 15 noise/seed confirmations; ARM tuning prerequisites remain open. ':snapshot.betaflight.status==='completed_no_qualified_candidate'?'The PWM campaign finished with no qualified candidate. ':'No candidate is confirmed in this snapshot. ';
+ status.textContent=(rejected.length?'Rejected by confirmation: '+rejected.join(', ')+' s. ':'')+attempts.length+' completed attempts. '+finding+'CogniPilot snapshot: '+snapshot.cognipilot.status+'. Recorded '+snapshot.recorded_at+'; this page is not a live VM monitor. Failed attempts are retained.';
 } catch(error) {status.textContent='Speed reports unavailable: '+error.message+'. No substitute results are shown.';}

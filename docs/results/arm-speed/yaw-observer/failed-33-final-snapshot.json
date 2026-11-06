@@ -1,0 +1,60 @@
+{
+  "qualification": "Retained post-termination memory snapshot, not an in-flight time series or physical timing measurement",
+  "flight_id": "confirm-33-harsh-2",
+  "firmware_sha256": "c9530644680b907053022efa349bd0564701dd09ead526c862ac76d71755423f",
+  "dtcm_sha256": "5d7be378c59675e2d1c320dcbb7b4478d61864f1e25ab226ccfb901313bbbd26",
+  "stage": 4,
+  "sequence": 608000,
+  "sim_time_s": 76,
+  "filtered_body_gyro_deg_s": [
+    -0.17807398736476898,
+    0.055832985788583755,
+    6.668398857116699
+  ],
+  "rc_setpoint_deg_s": [
+    0,
+    0,
+    0
+  ],
+  "pid": {
+    "roll": {
+      "P": 0.6607983112335205,
+      "I": 0.07759516686201096,
+      "D": 0.5032669901847839,
+      "F": 0,
+      "S": 0,
+      "Sum": 1.241660475730896
+    },
+    "pitch": {
+      "P": -0.4207216203212738,
+      "I": -0.40934649109840393,
+      "D": -0.5366938710212708,
+      "F": 0,
+      "S": 0,
+      "Sum": -1.3667619228363037
+    },
+    "yaw": {
+      "P": -20.472394943237305,
+      "I": -320,
+      "D": 0,
+      "F": -0.7300261855125427,
+      "S": 0,
+      "Sum": -341.202392578125
+    }
+  },
+  "simulated_scheduling": {
+    "gyro_sample_rate_hz": 8000,
+    "gyro_target_loop_us": 2000,
+    "gyro_sample_loop_us": 125,
+    "target_pid_loop_us": 2000,
+    "motor_updates": 38000,
+    "motor_updates_per_sim_second": 500,
+    "qualification": "Configured periods and simulated counter totals; not physical execution speed or jitter"
+  },
+  "raw_little_endian_hex": {
+    "pidData": "142a293f37ea9e3d1bd6003f0000000000000000bbee9e3fd368d7bedd95d1bec56409bf00000000000000000ef2aebf77c7a3c10000a0c300000000ffe23abf00000000e899aac3",
+    "gyroADCf": "075936be21b1643d8663d540",
+    "setpointRate": "000000000000000000000000"
+  },
+  "limitation": "adrFastdynRun shutdown clears output motors and changes stage, but does not update PID/gyro state. Read motor end state from the independent flight report, not this post-termination output buffer. This snapshot does not establish the origin of integral growth."
+}

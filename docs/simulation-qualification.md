@@ -44,7 +44,7 @@ The inherited ArduPilot FastDyn demo contained register/function overrides of ar
 
 ### Current speed finding
 
-The 33 s Betaflight TROPIC candidate passed 13/15 confirmations. Harsh-noise seeds 2 and 3 failed landing/disarm despite meeting course tracking limits. Seed 2 never contacted the ground (recorded minimum landing-phase altitude 0.174 m), ending at 0.610 m armed with nonzero motor outputs. Oscillating yaw and opposing motor commands increase during descent; this observation does not yet identify the cause. The 34 s candidate also finished at 13/15, with harsh-noise seeds 2 and 5 failing. The 35 s candidate finished at 14/15, with harsh-noise seed 2 failing landing. The unchanged campaign continues at 40 s; no tested candidate is yet confirmed. Do not report 33 s as a confirmed reliable speed.
+The 33 s Betaflight TROPIC candidate passed 13/15 confirmations. Harsh-noise seeds 2 and 3 failed landing/disarm despite meeting course tracking limits. Seed 2 never contacted the ground (recorded minimum landing-phase altitude 0.174 m), ending at 0.610 m armed with nonzero motor outputs. Oscillating yaw and opposing motor commands increase during descent; this observation does not yet identify the cause. The 34 s candidate also finished at 13/15, with harsh-noise seeds 2 and 5 failing. The 35 s candidate finished at 14/15, with harsh-noise seed 2 failing landing. The 40 s candidate also finished at 14/15, with harsh-noise seed 3 failing landing. The PWM campaign ended after 66 attempts (58 passes) with no qualified candidate. A separately isolated protocol diagnostic is pending; it must not be reported as a fix before it runs. Do not report 33 s as a confirmed reliable speed.
 
 ### Fresh-setup blocker
 

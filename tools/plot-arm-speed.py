@@ -19,7 +19,7 @@ fig, axes=plt.subplots(1,2,figsize=(13,5.4))
 fig.subplots_adjust(left=.07,right=.98,bottom=.22,top=.76,wspace=.30)
 fig.suptitle('Faster tracking does not guarantee a completed flight',x=.07,ha='left',y=.97,fontsize=19,weight='bold')
 fig.text(.07,.88,'Betaflight · TROPIC RT1064 / Cortex-M7 · FastDyn/QEMU + shared Rumoca plant',fontsize=11)
-fig.text(.07,.83,'10 × 10 m at 2 m · inherited K = 6/s · Passes: 33 s 13/15 · 34 s 13/15 · 35 s 14/15 · none qualifies',fontsize=11,color='#b9c5d4')
+fig.text(.07,.83,'10 × 10 m at 2 m · inherited K = 6/s · Passes: 33 s 13/15 · 34 s 13/15 · 35 s 14/15 · 40 s 14/15',fontsize=11,color='#b9c5d4')
 a=axes[0]
 x=[r['config']['course']['lap_time_s'] for r in screen];y=[r['report']['tracking_max_m'] for r in screen]
 a.plot(x,y,color='#ff922b',marker='o',label='Realistic-noise screening, seed 1')
@@ -33,7 +33,7 @@ for rows,label,color,style in [(successful,'Passed: realistic noise, seed 1','#f
 a.axhline(.13,color='#b9c5d4',ls=':',lw=1,label='Ground-verification height threshold')
 a.set(xlabel='Simulated time, takeoff through landing (s)',ylabel='Recorded altitude (m)',title='33 s: one failed run stays airborne',xlim=(60,76),ylim=(0,2.4))
 a.grid(alpha=.15);a.legend(fontsize=8,loc='upper right',facecolor='#10151d',edgecolor='#617086',labelcolor='#edf2f7')
-fig.text(.07,.10,'33, 34 and 35 s candidates failed landing confirmations. The unchanged campaign is testing 40 s next.',fontsize=10)
+fig.text(.07,.10,'PWM campaign: 66 attempts, 58 passes. All four candidates failed landing confirmation; none qualifies.',fontsize=10)
 fig.text(.07,.05,'Exploratory ARM evidence · current-target tuning remains open · no hardware latency or superiority claim · November 6, 2026',fontsize=9,color='#b9c5d4')
 fig.savefig(folder/'speed-and-landing.svg')
 fig.savefig('/private/tmp/adr-speed-and-landing.png',dpi=160)

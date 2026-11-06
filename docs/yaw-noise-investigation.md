@@ -33,9 +33,28 @@ A native C observer reads the current Betaflight binary’s shared DTCM file wit
 
 On `confirm-40-none-3`, it captured 14,909 irregular samples from 57.6525 to 82.99975 simulated seconds, including actual filtered yaw gyro, RC yaw-rate setpoint, yaw PID components and motor commands. At 199 timestamps shared with the flight CSV, motor commands agree after the documented permutation to within 5.0e-10. The entire flight trajectory is byte-identical to `confirm-40-none-1`, which ran without this observer. This is evidence for this witnessed repeat, not proof that observation can never affect timing.
 
-The observer missed the final 0.25 ms and reports exit code 1; the flight itself passed. Its data are explicitly partial diagnostics, not a complete flight recording. The corresponding harsh-noise seed-2 capture is waiting for that campaign cell. No new landing root cause is claimed yet.
+The observer missed the final 0.25 ms and reports exit code 1; the flight itself passed. Its data are explicitly partial diagnostics, not a complete flight recording. The 40 s harsh-noise seed-2 capture also completed: 49,099 partial diagnostic samples, with 616 exact motor-timestamp matches (maximum difference below 5e-10). That flight passed; its course peak absolute yaw integral was 7.409, and descent peak was 2.895, far below the retained shorter-run failed snapshots. These are observed peaks, not guaranteed continuous-time maxima. The passing trace does not establish why other cases fail. [Raw capture](results/arm-speed/yaw-observer/harsh-40.csv.gz) · [Validation and phase statistics](results/arm-speed/yaw-observer/harsh-40-validation.json).
 
 [Validation and hashes](results/arm-speed/yaw-observer/validation.json) · [All 14,909 raw samples, gzip CSV](results/arm-speed/yaw-observer/baseline-tail.csv.gz) · observer source: `tools/observe-betaflight-arm.c`. These memory offsets are valid only for the pinned ELF. This does not measure physical loop speed, latency or jitter, or close the PDF’s all-axis rate-command requirement.
+
+## Retained failed-run PID state
+
+The exact-binary DTCM snapshots from harsh-noise seed 2 show the following retained controller state. These are post-termination snapshots: the shutdown path does not change PID/gyro fields, but it **does zero the shared output motors**, so motor end-state evidence must come from the original flight reports.
+
+| Failed reference | Simulated end | Yaw P | Yaw I | Yaw F | Yaw sum |
+|---|---:|---:|---:|---:|---:|
+| 33 s | 76 s | −20.472 | −320.000 | −0.730 | −341.202 |
+| 35 s | 78 s | 56.456 | 226.924 | 1.118 | 284.497 |
+
+Yaw D and S are zero in both snapshots. The 33 s yaw integral reaches the configured 320 limit; a large integral contribution also remains in the 35 s failure. This is consistent with persistent opposing motor commands and motivates a yaw damping/integrator investigation. It does not prove why the integral grows or justify simply removing it. Roll and pitch PID sums in these snapshots have magnitudes below 1.7.
+
+[33 s raw values/bytes and memory hash](results/arm-speed/yaw-observer/failed-33-final-snapshot.json) · [35 s raw values/bytes and memory hash](results/arm-speed/yaw-observer/failed-35-final-snapshot.json). `tools/summarize-bf-snapshot.mjs` rejects incorrect size, magic, stage or inconsistent final sequence/time.
+
+## Protocol-imposed loop rate
+
+Both failed-run snapshots report an 8,000 Hz gyro sample rate, a 125 µs gyro sample period, and a 2,000 µs configured PID period. The 33 s flight recorded 38,000 motor updates in 76 simulated seconds; the 35 s flight recorded 39,000 in 78 seconds. Both equal 500 motor updates per simulated second. The 8 kHz exchange schedule is therefore not the PID/motor-loop rate.
+
+The adapter selects `motor_pwm_protocol = PWM`. In the pinned Betaflight source, `src/main/config/config.c` limits this protocol using `BRUSHLESS_MOTORS_PWM_RATE`; normal validation raises `pid_process_denom` to satisfy that restriction. A separate OneShot125 diagnostic requests denominator 1 and allows stock validation to raise it as needed. This retains analog endpoint units and controller equations. DShot is rejected by the new configuration parser because its endpoint encoding is different. The protocol diagnostic is not yet a result and does not replace the PWM baseline. Actual scheduling must be read back after it runs.
 
 ## Required next checks
 

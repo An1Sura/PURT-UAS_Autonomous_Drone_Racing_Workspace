@@ -1,0 +1,60 @@
+{
+  "qualification": "Retained post-termination memory snapshot, not an in-flight time series or physical timing measurement",
+  "flight_id": "confirm-35-harsh-2",
+  "firmware_sha256": "c9530644680b907053022efa349bd0564701dd09ead526c862ac76d71755423f",
+  "dtcm_sha256": "f468e23bdab2a4db09959812cb451b578deb9f9ecddc70ddb37022fb6a4718d4",
+  "stage": 4,
+  "sequence": 624000,
+  "sim_time_s": 78,
+  "filtered_body_gyro_deg_s": [
+    -0.013816799968481064,
+    -0.7351322174072266,
+    -32.643890380859375
+  ],
+  "rc_setpoint_deg_s": [
+    0,
+    0,
+    0
+  ],
+  "pid": {
+    "roll": {
+      "P": 0.9084838032722473,
+      "I": -0.15543363988399506,
+      "D": 0.9083361625671387,
+      "F": 0,
+      "S": 0,
+      "Sum": 1.661386251449585
+    },
+    "pitch": {
+      "P": 1.0275380611419678,
+      "I": -0.2103606015443802,
+      "D": 0.4618619382381439,
+      "F": 0,
+      "S": 0,
+      "Sum": 1.2790393829345703
+    },
+    "yaw": {
+      "P": 56.455867767333984,
+      "I": 226.92364501953125,
+      "D": 0,
+      "F": 1.1178325414657593,
+      "S": 0,
+      "Sum": 284.4973449707031
+    }
+  },
+  "simulated_scheduling": {
+    "gyro_sample_rate_hz": 8000,
+    "gyro_target_loop_us": 2000,
+    "gyro_sample_loop_us": 125,
+    "target_pid_loop_us": 2000,
+    "motor_updates": 39000,
+    "motor_updates_per_sim_second": 500,
+    "qualification": "Configured periods and simulated counter totals; not physical execution speed or jitter"
+  },
+  "raw_little_endian_hex": {
+    "pidData": "6592683fff291fbeb888683f00000000000000004ea8d43f5e86833fc56857be2b79ec3e000000000000000090b7a33fcfd2614274ec62430000000023158f3f00000000a93f8e43",
+    "gyroADCf": "dc5f62bca0313cbf589302c2",
+    "setpointRate": "000000000000000000000000"
+  },
+  "limitation": "adrFastdynRun shutdown clears output motors and changes stage, but does not update PID/gyro state. Read motor end state from the independent flight report, not this post-termination output buffer. This snapshot does not establish the origin of integral growth."
+}

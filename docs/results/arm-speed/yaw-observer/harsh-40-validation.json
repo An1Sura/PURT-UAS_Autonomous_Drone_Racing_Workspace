@@ -1,0 +1,84 @@
+{
+  "qualification": "Irregular read-only diagnostic samples; not a full-rate recorder or physical timing measurement",
+  "flight_id": "confirm-40-harsh-2",
+  "flight_passed": true,
+  "firmware_sha256": "c9530644680b907053022efa349bd0564701dd09ead526c862ac76d71755423f",
+  "raw_csv_sha256": "8dfd4c7c30f30e752e075007f6d645bb2e06b3cc0805f52fa4f27347ebf50d30",
+  "flight_trajectory_sha256": "0b8dd995dc9d20a7fcbf6f715c393eea39649e5c562cf4dbd3e2d9954d2b670f",
+  "samples": 49099,
+  "window_s": [
+    0.00525,
+    82.99975
+  ],
+  "exact_trajectory_timestamp_matches": 616,
+  "max_motor_difference": 4.994812341507782e-10,
+  "observer_exit_code": 1,
+  "exit_explanation": "Last handshake missed by 0.25 ms. Observation started at 0.00525 s; flight itself passed. Partial diagnostic capture.",
+  "phase_statistics": [
+    {
+      "name": "startup-hover",
+      "window_s": [
+        0,
+        25
+      ],
+      "observed_samples": 14503,
+      "gyro_yaw_peak_deg_s": 1.48184621,
+      "yaw_integral_peak": -1.90642571,
+      "yaw_integral_peak_time_s": 19.5635,
+      "yaw_sum_peak": -2.79893351
+    },
+    {
+      "name": "course",
+      "window_s": [
+        25,
+        65
+      ],
+      "observed_samples": 23898,
+      "gyro_yaw_peak_deg_s": 2.16859221,
+      "yaw_integral_peak": 7.40850353,
+      "yaw_integral_peak_time_s": 37.976,
+      "yaw_sum_peak": 8.50609207
+    },
+    {
+      "name": "settle",
+      "window_s": [
+        65,
+        70
+      ],
+      "observed_samples": 2932,
+      "gyro_yaw_peak_deg_s": -1.29704368,
+      "yaw_integral_peak": -1.87787259,
+      "yaw_integral_peak_time_s": 65.40075,
+      "yaw_sum_peak": -2.53756428
+    },
+    {
+      "name": "descent",
+      "window_s": [
+        70,
+        78
+      ],
+      "observed_samples": 4732,
+      "gyro_yaw_peak_deg_s": 1.43048537,
+      "yaw_integral_peak": 2.89504027,
+      "yaw_integral_peak_time_s": 76.208875,
+      "yaw_sum_peak": 3.82307148
+    },
+    {
+      "name": "post-descent",
+      "window_s": [
+        78,
+        83
+      ],
+      "observed_samples": 3034,
+      "gyro_yaw_peak_deg_s": 1.0774802,
+      "yaw_integral_peak": 0,
+      "yaw_integral_peak_time_s": 82.99975,
+      "yaw_sum_peak": -1.24943423
+    }
+  ],
+  "limitations": [
+    "Observed peaks may miss between-sample peaks",
+    "Passing 40 s trace cannot establish the cause of failures at shorter reference durations",
+    "No claim of improved hardware latency, jitter or physical loop performance"
+  ]
+}

@@ -4754,10 +4754,9 @@ index 0000000..9b24791
 +unsigned shared_abi_version(void) { return 2; }
 diff --git a/xtask/src/shared_sil.rs b/xtask/src/shared_sil.rs
 new file mode 100644
-index 0000000..8d44934
 --- /dev/null
 +++ b/xtask/src/shared_sil.rs
-@@ -0,0 +1,1202 @@
+@@ -0,0 +1,1233 @@
 +//! Real firmware, one generated position loop, one timed course, one FMI plant.
 +use crate::{
 +    benchmark::{FlightStackAdapter, PilotCommand, SensorFrame, SyntheticGnss},
@@ -4977,6 +4976,24 @@ index 0000000..8d44934
 +    _child: Option<ChildGuard>,
 +    arm: Option<crate::betaflight_fastdyn::ArmTransport>,
 +}
++fn bf_motor_cli(cfg: &Value) -> Result<String> {
++    let profile = &cfg["stacks"]["betaflight"];
++    let protocol = if profile["motor_protocol"].is_null() { "PWM" } else {
++        profile["motor_protocol"].as_str().context("motor protocol must be a string")?
++    };
++    // Both use the existing analog 1000..2000 output normalization. DShot
++    // has different endpoints and is deliberately not accepted here.
++    ensure!(matches!(protocol, "PWM" | "ONESHOT125"), "unsupported virtual motor protocol");
++    let mut command = format!("set motor_pwm_protocol = {protocol}\n");
++    if !profile["pid_process_denom"].is_null() {
++        let denom = profile["pid_process_denom"].as_u64().context("integer PID denominator required")?;
++        ensure!((1..=16).contains(&denom), "PID denominator outside 1..16");
++        command.push_str(&format!("set pid_process_denom = {denom}\n"));
++    }
++    // Normal Betaflight configuration validation still applies protocol limits.
++    Ok(command)
++}
++
 +impl Bf {
 +    fn open(binary: &Path, out: &Path, cfg: &Value) -> Result<Self> {
 +        let socket = UdpSocket::bind("127.0.0.1:9002")
@@ -5010,7 +5027,9 @@ index 0000000..8d44934
 +        }
 +        if let Some(memory) = std::env::var_os("RDD2_BETAFLIGHT_FASTDYN_MEMORY") {
 +            config = config.replace("set mag_hardware = NONE\n", ""); // Magnetometer is absent in this board build.
-+            config.push_str("feature -RX_SERIAL\nfeature -RX_PPM\nfeature -RX_PARALLEL_PWM\nfeature RX_MSP\nfeature -OSD\nset motor_pwm_protocol = PWM\nset baro_hardware = NONE\nset blackbox_device = NONE\n");
++            config.push_str("feature -RX_SERIAL\nfeature -RX_PPM\nfeature -RX_PARALLEL_PWM\nfeature RX_MSP\nfeature -OSD\n");
++            config.push_str(&bf_motor_cli(cfg)?);
++            config.push_str("set baro_hardware = NONE\nset blackbox_device = NONE\n");
 +            fs::write(out.join("config.txt"), &config)?;
 +            let arm=crate::betaflight_fastdyn::ArmTransport::open(Path::new(&memory),binary,&config)?;
 +            return Ok(Self { socket:None, _child:None, arm:Some(arm) });
@@ -5656,6 +5675,17 @@ index 0000000..8d44934
 +}
 +#[cfg(test)]
 +mod tests {
++    #[test]
++    fn virtual_motor_protocol_keeps_analog_units_and_valid_denominator() {
++        assert_eq!(super::bf_motor_cli(&serde_json::json!({})).unwrap(), "set motor_pwm_protocol = PWM\n");
++        assert!(super::bf_motor_cli(&serde_json::json!({"stacks":{"betaflight":{"motor_protocol":"DSHOT600"}}})).is_err());
++        assert!(super::bf_motor_cli(&serde_json::json!({"stacks":{"betaflight":{"motor_protocol":125}}})).is_err());
++        for denominator in [0,17] {
++            assert!(super::bf_motor_cli(&serde_json::json!({"stacks":{"betaflight":{"pid_process_denom":denominator}}})).is_err());
++        }
++        let command=super::bf_motor_cli(&serde_json::json!({"stacks":{"betaflight":{"motor_protocol":"ONESHOT125","pid_process_denom":1}}})).unwrap();
++        assert!(command.contains("ONESHOT125") && command.contains("pid_process_denom = 1"));
++    }
 +    use super::*;
 +    #[test]
 +    fn tilt_lead_preserves_rate_identity_and_disengages() {

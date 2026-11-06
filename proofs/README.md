@@ -54,3 +54,13 @@ Only the new-file patch section for `xtask/src/betaflight_fastdyn.rs` changed: t
 ## November 6 ARM sweep review
 
 Compared the complete dependency patch with commit `59aec860f9e9c43b0722605c95c167b8fbdb59c8`. Only `xtask/src/speed_sweep.rs` changed: optional FastDyn invocation, absolute output paths and backend identification. All other patch sections, including trajectory and controller mathematics, are byte-identical. The snapshot hash is refreshed after this comparison. The Lean specification and axiom policy are unchanged; no proof of the new supervisor, firmware or landing behavior is implied. Native runner tests and actual flight reports provide separate empirical checks.
+
+## November 6 protocol-diagnostic source review
+
+The benchmark patch checksum was refreshed after reviewing three changes in
+`shared_sil.rs`: an optional analog motor-protocol/denominator parser, its CLI
+insertion with the original PWM default preserved, and input-validation tests.
+The trajectory, geometry, controller algebra and proof statements are unchanged.
+This is not a formal proof of the new firmware scheduling behavior or of flight
+performance; those require the separately queued experiment and readback.
+
