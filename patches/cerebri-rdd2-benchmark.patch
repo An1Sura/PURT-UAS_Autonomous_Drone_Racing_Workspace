@@ -1553,10 +1553,9 @@ index 0000000..b94b49c
 +}
 diff --git a/xtask/src/betaflight_fastdyn.rs b/xtask/src/betaflight_fastdyn.rs
 new file mode 100644
-index 0000000..ad9f569
 --- /dev/null
 +++ b/xtask/src/betaflight_fastdyn.rs
-@@ -0,0 +1,101 @@
+@@ -0,0 +1,102 @@
 +//! ARM firmware transport for the existing Betaflight benchmark packet ABI.
 +//! The firmware uses simulated I/O; this is not a peripheral latency benchmark.
 +use anyhow::{Context, Result, ensure};
@@ -1592,11 +1591,12 @@ index 0000000..ad9f569
 +        let bytes=fs::read(binary)?; let elf=object::File::parse(bytes.as_slice())?;
 +        let symbol=elf.symbol_by_name("adr_fastdyn_shared").context("missing ARM benchmark transport symbol")?;
 +        let offset=symbol.address().checked_sub(0x20000000).context("mailbox must be in SRAM")? as usize;
-+        ensure!(offset%64==0 && offset+4888<=128*1024,"invalid SRAM mailbox layout");
++        ensure!(offset%64==0 && offset.checked_add(4888).is_some(),"invalid SRAM mailbox layout");
++        let required_len = offset + 4888;
 +        let deadline=Instant::now()+Duration::from_secs(60);
 +        let file=loop {
 +            if let Ok(file)=fs::OpenOptions::new().read(true).write(true).open(memory) {
-+                if file.metadata()?.len()>=128*1024 { break file; }
++                if file.metadata()?.len() >= required_len as u64 { break file; }
 +            }
 +            ensure!(Instant::now()<deadline,"QEMU SRAM file not ready");
 +            thread::sleep(Duration::from_millis(2));

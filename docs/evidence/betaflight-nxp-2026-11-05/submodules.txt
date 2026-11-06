@@ -1,0 +1,13 @@
+-b805fa40c49f8fc2d860a51607fc2d57ae1b1987 lib/modules/APM32F4
+-18fedc41de5549203fbfba2df1bccca90e132d4b lib/modules/GD32H7
+-bfb39f1c987ed1c6e49de19655d2c299a4aee462 lib/modules/STM32C5
+-33f8f2a9af71575c09bac1138b8a84a25c9c11db lib/modules/STM32H5
+-1fc803683e03b0ce78e64523441d31acd0db2829 lib/modules/STM32N6
+-b809dc835e7a6d6c2f055b7232676194dff59256 lib/modules/X32M7
+ 601ed35467e0ac38819df17cd7c918de19f62d58 lib/modules/dronecan/libcanard (heads/master)
+-bdc4dc5e9e01fbd35b4e68478ecf3d83c6c94ef8 lib/modules/esp-idf
+ 6b4243f0e54b42ddb1e65df7a3a5e8c99d15ec1f lib/modules/mavlink (6b4243f)
+ 3664324bd1240a92e05a31301f6636a7a19f01d2 lib/modules/mcux-devices-rt (3664324)
+-ee68c78d0afae2b69c03ae1a72bf5cc267a2d94c lib/modules/pico-sdk
+ 86ad6e56c1700e85f1c5678607a762cfe3aa2f47 lib/modules/tinyusb (86ad6e5)
++43f9df5ee4adf747603b4ade0daddeab2c4b100c src/config (43f9df5)

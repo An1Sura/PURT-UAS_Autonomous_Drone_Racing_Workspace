@@ -1,0 +1,39 @@
+• Validating lock
+✓ Validating lock in 6.26ms
+• Configuring cachix
+  [35;1mwarning:[0m Substituter '[35;1mhttps://devenv.cachix.org[0m' is already present in the substituters list
+✓ Configuring cachix in 3.51ms
+• Configuring shell
+• Evaluating shell
+• Downloading https://cache.nixos.org/nix-cache-info
+✓ Downloading https://cache.nixos.org/nix-cache-info in 1.43s
+• Downloading https://devenv.cachix.org/nix-cache-info
+✓ Downloading https://devenv.cachix.org/nix-cache-info in 188ms
+• Downloading https://cachix.cachix.org/nix-cache-info
+✓ Downloading https://cachix.cachix.org/nix-cache-info in 362ms
+• Building rdd2-benchmark-fastdyn-betaflight-nxp
+✓ Building rdd2-benchmark-fastdyn-betaflight-nxp in 25.7ms
+• Building tasks.json
+  structuredAttrs is enabled
+✓ Building tasks.json in 27.2ms
+• Building cognipilot-workspace
+  Running phase: buildPhase
+✓ Building cognipilot-workspace in 430ms
+• Building cognipilot-workspace-env
+✓ Building cognipilot-workspace-env in 494ms
+✓ Evaluating shell in 7.76s
+✓ Configuring shell in 7.77s
+• Loading tasks
+• Evaluating devenv.config.task.config
+✓ Evaluating devenv.config.task.config in 4.68ms
+✓ Loading tasks in 5.36ms
+• Running tasks
+• Running sources:prepare
+✓ Running sources:prepare in 1.53ms (cached)
+• Running sources:ensure:cerebri_rdd2
+✓ Running sources:ensure:cerebri_rdd2 in 1.84ms (cached)
+• Running rdd2:benchmark:fastdyn:betaflight-nxp
+  ERR: ioctl(TUNSETIFF) failed: Operation not permitted
+✓ Running rdd2:benchmark:fastdyn:betaflight-nxp in 105s
+✓ Running tasks in 105s
+{"sources:ensure:cerebri_rdd2":{"devenv":{"env":{}}},"sources:prepare":{"devenv":{"env":{}}}}

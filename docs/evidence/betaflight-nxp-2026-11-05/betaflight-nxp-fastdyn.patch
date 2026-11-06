@@ -1,0 +1,423 @@
+diff --git a/mk/source.mk b/mk/source.mk
+index 9cdf299..460bb18 100644
+--- a/mk/source.mk
++++ b/mk/source.mk
+@@ -575,6 +575,10 @@ SIZE_OPTIMISED_SRC += \
+             cms/cms_menu_vtx_msp.c
+ 
+ # check if target.mk supplied
++ifneq ($(findstring -DADR_FASTDYN,$(EXTRA_FLAGS)),)
++COMMON_SRC += drivers/fastdyn_adr.c
++endif
++
+ SRC := $(STARTUP_SRC) $(MCU_COMMON_SRC) $(TARGET_SRC) $(VARIANT_SRC)
+ 
+ # Files that should not be optimized, useful for debugging IMPRECISE cpu faults.
+diff --git a/src/main/drivers/accgyro/accgyro_virtual.c b/src/main/drivers/accgyro/accgyro_virtual.c
+index f5e7878..3818ca0 100644
+--- a/src/main/drivers/accgyro/accgyro_virtual.c
++++ b/src/main/drivers/accgyro/accgyro_virtual.c
+@@ -22,6 +22,9 @@
+ #include <stdint.h>
+ 
+ #include "platform.h"
++#ifdef ADR_FASTDYN
++#include "drivers/fastdyn_adr.h"
++#endif
+ 
+ #if ENABLE_SIMULATOR_MULTITHREAD
+ #include <stdio.h>
+@@ -66,6 +69,9 @@ void virtualGyroSet(gyroDev_t *gyro, int16_t x, int16_t y, int16_t z)
+ 
+ STATIC_UNIT_TESTED bool virtualGyroRead(gyroDev_t *gyro)
+ {
++#ifdef ADR_FASTDYN
++    adrFastdynGyro(gyro->gyroADCRaw); return true;
++#endif
+     gyroDevLock(gyro);
+     if (gyro->dataReady == false) {
+         gyroDevUnLock(gyro);
+@@ -93,7 +99,7 @@ bool virtualGyroDetect(gyroDev_t *gyro)
+     gyro->initFn = virtualGyroInit;
+     gyro->readFn = virtualGyroRead;
+     gyro->temperatureFn = virtualGyroReadTemperature;
+-#if ENABLE_SIMULATOR
++#if ENABLE_SIMULATOR || defined(ADR_FASTDYN)
+     gyro->scale = GYRO_SCALE_2000DPS;
+ #else
+     gyro->scale = 1.0f;
+@@ -110,6 +116,9 @@ accDev_t *virtualAccDev;
+ static void virtualAccInit(accDev_t *acc)
+ {
+     virtualAccDev = acc;
++#ifdef ADR_FASTDYN
++    acc->acc_1G = 2048;
++#endif
+ #if ENABLE_SIMULATOR_MULTITHREAD
+     if (pthread_mutex_init(&acc->lock, NULL) != 0) {
+         printf("Create acc lock error!\n");
+@@ -132,6 +141,9 @@ void virtualAccSet(accDev_t *acc, int16_t x, int16_t y, int16_t z)
+ 
+ static bool virtualAccRead(accDev_t *acc)
+ {
++#ifdef ADR_FASTDYN
++    adrFastdynAcc(acc->ADCRaw); return true;
++#endif
+     accDevLock(acc);
+     if (acc->dataReady == false) {
+         accDevUnLock(acc);
+diff --git a/src/main/drivers/motor.c b/src/main/drivers/motor.c
+index 85a8c37..c8df376 100644
+--- a/src/main/drivers/motor.c
++++ b/src/main/drivers/motor.c
+@@ -25,6 +25,10 @@
+ #include <string.h>
+ 
+ #include "platform.h"
++#ifdef ADR_FASTDYN
++#include "drivers/fastdyn_adr.h"
++#endif
++
+ 
+ #ifdef USE_MOTOR
+ 
+@@ -78,6 +82,9 @@ void motorShutdown(void)
+ 
+ void motorWriteAll(float *values)
+ {
++#ifdef ADR_FASTDYN
++    if (adrFastdynActive) { adrFastdynMotors(values); return; }
++#endif
+ #ifdef USE_PWM_OUTPUT
+     if (motorDevice.enabled) {
+ #ifdef USE_DSHOT_BITBANG
+diff --git a/src/main/main.c b/src/main/main.c
+index 9e026d2..347a7f5 100644
+--- a/src/main/main.c
++++ b/src/main/main.c
+@@ -22,6 +22,10 @@
+ #include <stdint.h>
+ 
+ #include "platform.h"
++#ifdef ADR_FASTDYN
++#include "drivers/fastdyn_adr.h"
++#endif
++
+ 
+ #include "drivers/light_led.h"
+ #include "drivers/time.h"
+@@ -86,6 +90,9 @@ int main(int argc, char * argv[])
+     multicoreExecuteBlocking(initPhase2);
+ #else
+     initPhase1();
++#ifdef ADR_FASTDYN
++    adrFastdynConfigure();
++#endif
+     initPhase2();
+ #endif
+ 
+@@ -138,6 +145,9 @@ int main(int argc, char * argv[])
+     }
+ #endif
+ 
++    #ifdef ADR_FASTDYN
++    adrFastdynRun();
++    #endif
+     // Launch the scheduler
+     run();
+ 
+diff --git a/src/main/scheduler/scheduler.c b/src/main/scheduler/scheduler.c
+index b8974f8..327e093 100644
+--- a/src/main/scheduler/scheduler.c
++++ b/src/main/scheduler/scheduler.c
+@@ -562,6 +562,9 @@ FAST_CODE void scheduler(void)
+                 schedLoopStartCycles -= schedLoopStartDeltaDownCycles;
+             }
+ #if !defined(UNIT_TEST)
++#ifdef ADR_FASTDYN
++            if (schedLoopRemainingCycles > 0) return;
++#endif
+             while (schedLoopRemainingCycles > 0) {
+                 nowCycles = getCycleCounter();
+                 schedLoopRemainingCycles = cmpTimeCycles(nextTargetCycles, nowCycles);
+diff --git a/src/main/sensors/acceleration_init.c b/src/main/sensors/acceleration_init.c
+index 827c968..7c18b76 100644
+--- a/src/main/sensors/acceleration_init.c
++++ b/src/main/sensors/acceleration_init.c
+@@ -137,6 +137,9 @@ extern bool AccInflightCalibrationActive;
+ static bool accDetect(accDev_t *dev, accelerationSensor_e accHardwareToUse)
+ {
+     accelerationSensor_e accHardware = ACC_NONE;
++#ifdef ADR_FASTDYN
++    accHardwareToUse = ACC_VIRTUAL;
++#endif
+ 
+ retry:
+ 
+@@ -413,6 +416,9 @@ bool accInit(uint16_t accSampleRateHz)
+     const sensorAlignment_t* customAlignment = &gyroDeviceConfig(firstEnabledGyro())->customAlignment;
+ 
+     acc.dev.accAlign = alignment;
++#ifdef ADR_FASTDYN
++    acc.dev.accAlign = CW180_DEG;
++#endif
+     buildRotationMatrixFromAngles(&acc.dev.rotationMatrix, customAlignment);
+ 
+     if (!accDetect(&acc.dev, accelerometerConfig()->acc_hardware)) {
+diff --git a/src/main/sensors/gyro_init.c b/src/main/sensors/gyro_init.c
+index 3b02e43..c0d7687 100644
+--- a/src/main/sensors/gyro_init.c
++++ b/src/main/sensors/gyro_init.c
+@@ -294,6 +294,9 @@ void gyroInitSensor(gyroSensor_t *gyroSensor, const gyroDeviceConfig_t *config)
+ {
+     gyroSensor->gyroDev.gyro_high_fsr = gyroConfig()->gyro_high_fsr;
+     gyroSensor->gyroDev.gyroAlign = config->alignment;
++#ifdef ADR_FASTDYN
++    gyroSensor->gyroDev.gyroAlign = CW180_DEG;
++#endif
+     buildRotationMatrixFromAngles(&gyroSensor->gyroDev.rotationMatrix, &config->customAlignment);
+     gyroSensor->gyroDev.mpuIntExtiTag = config->extiTag;
+     gyroSensor->gyroDev.hardware_lpf = gyroConfig()->gyro_hardware_lpf;
+@@ -360,6 +363,9 @@ void gyroInitSensor(gyroSensor_t *gyroSensor, const gyroDeviceConfig_t *config)
+ STATIC_UNIT_TESTED gyroHardware_e gyroDetect(gyroDev_t *dev)
+ {
+     gyroHardware_e gyroHardware = GYRO_DEFAULT;
++#ifdef ADR_FASTDYN
++    gyroHardware = GYRO_VIRTUAL;
++#endif
+ 
+     switch (gyroHardware) {
+     case GYRO_DEFAULT:
+diff --git a/src/platform/NXP/system.c b/src/platform/NXP/system.c
+index 62b1a5a..f61d00b 100644
+--- a/src/platform/NXP/system.c
++++ b/src/platform/NXP/system.c
+@@ -30,6 +30,10 @@
+ #include <string.h>
+ 
+ #include "platform.h"
++#ifdef ADR_FASTDYN
++#include "drivers/fastdyn_adr.h"
++static uint32_t adrBootUs;
++#endif
+ 
+ #include "common/maths.h"
+ #include "common/time.h"
+@@ -257,6 +261,9 @@ FAST_CODE static inline sysTickReading_t sysTickSample(void)
+ // Microseconds since boot, wrapping at 2^32, which is what cmpTimeUs() assumes.
+ FAST_CODE timeUs_t micros(void)
+ {
++#ifdef ADR_FASTDYN
++    return adrFastdynActive ? adrFastdynTimeUs : ++adrBootUs;
++#endif
+     const sysTickReading_t now = sysTickSample();
+ 
+     return (timeUs_t)(((now.ms + now.pending) * 1000u) + (SYSTICK_CLOCKS_IN(now.val) / usTicks));
+@@ -264,6 +271,9 @@ FAST_CODE timeUs_t micros(void)
+ 
+ FAST_CODE timeUs_t microsISR(void)
+ {
++#ifdef ADR_FASTDYN
++    return adrFastdynActive ? adrFastdynTimeUs : ++adrBootUs;
++#endif
+     const sysTickReading_t now = sysTickSampleISR();
+ 
+     return (timeUs_t)(((now.ms + now.pending) * 1000u) + (SYSTICK_CLOCKS_IN(now.val) / usTicks));
+@@ -271,11 +281,17 @@ FAST_CODE timeUs_t microsISR(void)
+ 
+ FAST_CODE timeMs_t millis(void)
+ {
++#ifdef ADR_FASTDYN
++    return micros() / 1000;
++#endif
+     return (timeMs_t)sysTickUptime;
+ }
+ 
+ void delayMicroseconds(uint32_t us)
+ {
++#ifdef ADR_FASTDYN
++    adrBootUs += us; return;
++#endif
+     const uint32_t start = GPT2->CNT;
+ 
+     // GPT2 rather than SysTick, as init paths call this with interrupts masked.
+@@ -302,6 +318,9 @@ void cycleCounterInit(void)
+ // Core clocks since boot, from the millisecond count and the down counter.
+ FAST_CODE uint32_t getCycleCounter(void)
+ {
++#ifdef ADR_FASTDYN
++    return adrFastdynActive ? adrFastdynCycles : adrBootUs * usTicks;
++#endif
+     const sysTickReading_t now = sysTickSample();
+ 
+     return ((now.ms + now.pending) * cyclesPerMs) + SYSTICK_CLOCKS_IN(now.val);
+@@ -365,9 +384,13 @@ void systemInit(void)
+ 
+     // In this order: gptInit() gives the delays a clock, cycleCounterInit()
+     // works out the reload, and sysTickInit() checks its rate on GPT2.
++    #ifndef ADR_FASTDYN
+     gptInit();
++#endif
+     cycleCounterInit();
++#ifndef ADR_FASTDYN
+     sysTickInit();
++#endif
+ }
+ 
+ void systemReset(void)
+diff --git a/src/platform/NXP/target/common/target_nxp.h b/src/platform/NXP/target/common/target_nxp.h
+index d7c665a..bc37818 100644
+--- a/src/platform/NXP/target/common/target_nxp.h
++++ b/src/platform/NXP/target/common/target_nxp.h
+@@ -99,13 +99,20 @@
+ #define USE_ADC
+ 
+ // Core temperature from TEMPMON (10xx) or TMPSNS (11xx); there is no band gap channel.
++#ifndef ADR_FASTDYN
+ #define USE_ADC_INTERNAL
++#endif
+ 
+ #define USE_VCP
+ 
+ // Config in the last boot flash sectors, written through the boot ROM FlexSPI NOR API in
+ // 256 byte pages of 4096 byte sectors. The ROM reads its source a word at a time.
++#ifdef ADR_FASTDYN
++#define CONFIG_IN_RAM
++#define EEPROM_SIZE 8192
++#else
+ #define CONFIG_IN_FLASH
++#endif
+ #define FLASH_CONFIG_STREAMER_BUFFER_SIZE   256
+ #define FLASH_CONFIG_BUFFER_TYPE            uint32_t
+ 
+diff --git a/src/main/drivers/fastdyn_adr.c b/src/main/drivers/fastdyn_adr.c
+new file mode 100644
+index 0000000..5259980
+--- /dev/null
++++ b/src/main/drivers/fastdyn_adr.c
+@@ -0,0 +1,108 @@
++/* SPDX-License-Identifier: GPL-3.0-or-later
++ * Deterministic ARM BIL transport. Simulated IO, not hardware latency testing.
++ */
++#include <stdbool.h>
++#include <stdint.h>
++#include <string.h>
++#include <math.h>
++#include "platform.h"
++#include "drivers/fastdyn_adr.h"
++#include "drivers/time.h"
++#include "drivers/system.h"
++#include "config/feature.h"
++#include "config/config.h"
++#include "cli/cli.h"
++#include "fc/runtime_config.h"
++#include "flight/imu.h"
++#include "sensors/acceleration.h"
++#include "rx/rx.h"
++#include "rx/msp.h"
++#include "scheduler/scheduler.h"
++
++typedef struct { double values[18]; uint32_t sequence, freshRc; uint16_t channels[16]; } AdrInput;
++typedef struct { uint32_t version,sequence; float motors[4]; uint32_t armed,armingFlags,angle; float rpy[3]; uint64_t timeUs; uint32_t motorUpdates,reserved; } AdrOutput;
++typedef struct { uint32_t magic,stage,request,response,terminate,reserved[3]; AdrInput input; AdrOutput output; char config[4096]; char log[512]; } AdrShared;
++_Static_assert(sizeof(AdrInput)==184,"input ABI");
++_Static_assert(sizeof(AdrOutput)==64,"output ABI");
++_Static_assert(__builtin_offsetof(AdrShared,config)==280,"config ABI");
++volatile AdrShared adr_fastdyn_shared __attribute__((aligned(64),used));
++bool adrFastdynActive;
++uint32_t adrFastdynTimeUs, adrFastdynCycles;
++static AdrInput current;
++static float motors[4];
++static uint32_t updates;
++
++void adrFastdynConfigure(void)
++{
++    adr_fastdyn_shared.magic=0x42464431;
++    __DMB(); adr_fastdyn_shared.stage=1;
++    while(adr_fastdyn_shared.stage!=2) { __NOP(); }
++    char line[160]; unsigned n=0;
++    for(unsigned i=0;i<sizeof(adr_fastdyn_shared.config);i++) {
++        char c=adr_fastdyn_shared.config[i];
++        if(c=='\n' || c==0) {
++            line[n]=0;
++            if(n) {
++                char result[512]={0};
++                int len=cliExecuteCommand(line,result,sizeof(result)-1);
++                if(len<0 || strstr(result,"ERROR") || strstr(result,"INVALID") || strstr(result,"Unknown command")) {
++                    memcpy((void *)adr_fastdyn_shared.log,result,sizeof(result));
++                    __DMB(); adr_fastdyn_shared.stage=255;
++                    for(;;) { __NOP(); }
++                }
++            }
++            n=0; if(c==0) break;
++        } else if(n+1<sizeof(line)) line[n++]=c;
++        else { adr_fastdyn_shared.stage=254; for(;;) { __NOP(); } }
++    }
++    writeEEPROM();
++    if (!readEEPROM()) { adr_fastdyn_shared.stage=252; for(;;) { __NOP(); } }
++}
++static int16_t sensor(double v) { return (int16_t)fmax(-32767.0,fmin(32767.0,v)); }
++void adrFastdynGyro(int16_t *d)
++{
++    /* Undo this board's CW180 mounting; gyro processing applies it again. */
++    d[0]=sensor(-current.values[1]*16.4*180.0/M_PI);
++    d[1]=sensor(current.values[2]*16.4*180.0/M_PI);
++    d[2]=sensor(current.values[3]*16.4*180.0/M_PI);
++}
++void adrFastdynAcc(int16_t *d)
++{
++    d[0]=sensor(current.values[4]*2048.0/9.80665);
++    d[1]=sensor(current.values[5]*2048.0/9.80665);
++    d[2]=sensor(-current.values[6]*2048.0/9.80665);
++}
++void adrFastdynMotors(const float *values)
++{
++    for(unsigned i=0;i<4;i++) motors[i]=fmaxf(0,fminf(1,(values[i]-1000.0f)/1000.0f));
++    updates++;
++}
++void adrFastdynRun(void)
++{
++    uint32_t boot=micros(), bootCycles=getCycleCounter(), last=0;
++    adrFastdynCycles=bootCycles;
++    adrFastdynTimeUs=boot;
++    adrFastdynActive=true;
++    accStartCalibration();
++    /* Runtime IO and time are host-driven. No physical interrupts are benchmarked. */
++    __disable_irq();
++    __DMB(); adr_fastdyn_shared.stage=3;
++    for(;;) {
++        while(adr_fastdyn_shared.request==last && !adr_fastdyn_shared.terminate) { __NOP(); }
++        if(adr_fastdyn_shared.terminate) { for(unsigned i=0;i<4;i++) adr_fastdyn_shared.output.motors[i]=0; adr_fastdyn_shared.stage=4; for(;;) { __NOP(); } }
++        __DMB(); memcpy(&current,(const void *)&adr_fastdyn_shared.input,sizeof(current));
++        uint32_t seq=adr_fastdyn_shared.request;
++        if(seq!=last+1 || current.sequence!=seq || !isfinite(current.values[0]) || llround(current.values[0]*1e6)!=(int64_t)seq*125) {
++            adr_fastdyn_shared.stage=253; for(;;) { __NOP(); }
++        }
++        adrFastdynTimeUs=boot+seq*125;
++        adrFastdynCycles=bootCycles+clockMicrosToCycles(seq*125);
++        if(current.freshRc) rxMspFrameReceive(current.channels,16);
++        for(unsigned i=0;i<128;i++) scheduler();
++        AdrOutput out={.version=1,.sequence=seq,.armed=ARMING_FLAG(ARMED),.armingFlags=getArmingDisableFlags(),.angle=FLIGHT_MODE(ANGLE_MODE),.timeUs=(uint64_t)seq*125,.motorUpdates=updates};
++        memcpy(out.motors,motors,sizeof(motors));
++        for(unsigned i=0;i<3;i++) out.rpy[i]=attitude.raw[i]*0.1f;
++        memcpy((void *)&adr_fastdyn_shared.output,&out,sizeof(out));
++        __DMB(); adr_fastdyn_shared.response=seq; last=seq;
++    }
++}
+diff --git a/src/main/drivers/fastdyn_adr.h b/src/main/drivers/fastdyn_adr.h
+new file mode 100644
+index 0000000..24fd54a
+--- /dev/null
++++ b/src/main/drivers/fastdyn_adr.h
+@@ -0,0 +1,11 @@
++/* SPDX-License-Identifier: GPL-3.0-or-later */
++#pragma once
++#include <stdbool.h>
++#include <stdint.h>
++extern bool adrFastdynActive;
++extern uint32_t adrFastdynTimeUs, adrFastdynCycles;
++void adrFastdynConfigure(void);
++void adrFastdynRun(void);
++void adrFastdynMotors(const float *values);
++void adrFastdynGyro(int16_t *data);
++void adrFastdynAcc(int16_t *data);

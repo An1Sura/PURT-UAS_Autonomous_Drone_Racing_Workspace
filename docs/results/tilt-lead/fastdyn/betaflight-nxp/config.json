@@ -1,0 +1,90 @@
+{
+  "controller": {
+    "feedback": "common plant truth in SIL; calibrated motion capture in physical trials",
+    "feedforward": "omega",
+    "feedforward_interface": "normal tilt commands: reference tilt + omega_ff / tuned attitude gain",
+    "feedforward_options": [
+      "off",
+      "omega"
+    ],
+    "feedforward_reference": "PDF commanded-thrust/desired-axis expression; snap derivative holds feedback correction locally fixed; yaw reference is fixed",
+    "frame": "world ENU, body FLU, scalar-first Hamilton quaternion body-to-world",
+    "position_model": "Benchmarks.PositionLoop",
+    "sample_rate_hz": 100,
+    "stick_rate_hz": 250,
+    "tilt_limit_deg": 35,
+    "trajectory_model": "Benchmarks.Trajectory",
+    "translational_correction_fraction": 0.7,
+    "yaw_rate_limit_deg_s": 200
+  },
+  "course": {
+    "altitude_m": 2,
+    "center_enu_m": [
+      0,
+      0
+    ],
+    "height_m": 10,
+    "lap_time_s": 40,
+    "laps": 1,
+    "phase_law": "minimum_jerk_each_lap",
+    "scale": 1,
+    "timing_status": "40-second commissioning reference; measured outcomes are reported separately, not a fastest-speed claim",
+    "width_m": 10,
+    "yaw_rad": 0
+  },
+  "environment": "purt-environment.json",
+  "id": "purt-10x10-z2-offboard-tilt-lead-v3",
+  "qualification": {
+    "attitude_tuning_evidence": "docs/results/tilt-lead/tuning",
+    "attitude_tuning_status": "passed_common_step_rule",
+    "gains_tuning": "equal step-response criterion and documented tuning budget",
+    "native_control_algorithm_changes_allowed": false,
+    "noise_profiles": [
+      "none",
+      "realistic",
+      "harsh"
+    ],
+    "performance_margins_status": "must agree before campaign; PDF numbers are examples",
+    "requires": [
+      "packet lockstep gate",
+      "generated-code oracle check",
+      "ideal-attitude common-plant check",
+      "hover",
+      "0.5 m step",
+      "square",
+      "one figure eight",
+      "native disarm and grounded stopped motors",
+      "noise repeats"
+    ],
+    "seeds_per_profile_min": 5,
+    "status": "matched attitude tuning qualified; speed and noise campaign in progress"
+  },
+  "schema_version": 1,
+  "stacks": {
+    "betaflight": {
+      "angle_feedforward": 0,
+      "angle_limit_deg": 35,
+      "attitude_gain_per_s": 6,
+      "d_max": [
+        0,
+        0,
+        0
+      ],
+      "hover_throttle": 0.6885788423153674,
+      "hover_throttle_status": "mean commanded PWM fraction over 30–35 s of closed-loop native Betaflight hover at 2 m in the shared plant",
+      "mode": "ANGLE",
+      "rc_smoothing": "OFF",
+      "rc_smoothing_status": "fixed for commissioning"
+    },
+    "cognipilot": {
+      "attitude_gain_per_s": 6,
+      "maximum_collective_thrust_n": 41.3749272,
+      "mode": "ATTITUDE",
+      "native_yaw_full_scale_rad_s": 3.5
+    }
+  },
+  "status": "qualification_in_progress",
+  "tracking_margin_m": 0.15,
+  "tuning": null,
+  "vehicle_radius_m": 0.4
+}

@@ -984,6 +984,26 @@ let
             -c ${root}/fastdyn/betaflight/flight.toml -o "$ADR_FLIGHT_OUTPUT/.."
         '';
 
+      "rdd2:benchmark:fastdyn:betaflight-nxp" =
+        task "cerebri_rdd2" "Run Betaflight TROPIC RT1064 ARM firmware on the shared plant with normal-stick tilt lead." ''
+          export ADR_WORKSPACE=${root}
+          export RDD2_WORKSPACE_ROOT=${root}
+          export CEREBRI_RDD2_ROOT=${source "cerebri_rdd2"}
+          export RDD2_SHARED_CONFIG=${root}/docs/config/shared-position-benchmark.json
+          export RDD2_SHARED_PLANT=${source "modelica_models"}/artifacts/vehicles/rdd2/plant/Vehicles_Rdd2_Plant
+          export RDD2_SHARED_LIBRARY=${root}/artifacts/tilt-lead-generated/libshared_loop.so
+          export RDD2_FASTDYN_BUILD_DIR="${root}/src/betaflight-nxp/obj/main"
+          export BETAFLIGHT_NXP_ELF=${root}/src/betaflight-nxp/obj/main/betaflight_MIMXRT1064_MR_VMU_TROPIC.elf
+          export FASTDYN_QEMU_PATH=${root}/.devenv/state/fastdyn-pinned/qemu/build/qemu-system-arm
+          export FASTDYN_MONITOR_ELF=${root}/.devenv/state/fastdyn-pinned/qemu/ws/monitor.elf
+          export ADR_FLIGHT_OUTPUT="${root}/artifacts/nxp-betaflight-$(date +%s%N)/flight"
+          export ADR_MEMORY_DIR="$ADR_FLIGHT_OUTPUT/../ram"
+          export FASTDYN_QEMU_MEMORY_DIR="$ADR_MEMORY_DIR"
+          cd ${root}/artifacts/fastdyn-pinned
+          env -u PYTHONPATH -u PYTHONHOME ${root}/.devenv/state/fastdyn-pinned/venv/bin/fastdyn run \
+            -c ${root}/fastdyn/betaflight-nxp/flight.toml -o "$ADR_FLIGHT_OUTPUT/.."
+        '';
+
       "rdd2:benchmark:fastdyn:cognipilot" =
         task "cerebri_rdd2" "Run cognipilot ARM firmware on the shared plant with normal-stick tilt lead." ''
           export ADR_WORKSPACE=${root}

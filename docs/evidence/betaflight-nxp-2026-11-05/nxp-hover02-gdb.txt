@@ -1,0 +1,6 @@
+0x00018a0c in validateAndfixMotorOutputReordering ()
+#0  0x00018a0c in validateAndfixMotorOutputReordering ()
+Backtrace stopped: previous frame identical to this frame (corrupt stack?)
+0x2001bd40 <adr_fastdyn_shared>:	0x00000000	0x00000000	0x00000000	0x00000000
+0x2001bd50 <adr_fastdyn_shared+16>:	0x00000000	0x00000000	0x00000000	0x00000000
+[Inferior 1 (process 1) detached]

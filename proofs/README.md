@@ -46,3 +46,7 @@ The Cerebri snapshot is refreshed for simulator transport, normal-stick tilt lea
 gain tuning, export and screening changes. None of these additions is covered by
 the Lean specification; this is a change-detector update, not a proof of the new
 controller behavior. The Lean sources, dependency pins and axiom policy are unchanged.
+
+## November 5 NXP transport review
+
+Only the new-file patch section for `xtask/src/betaflight_fastdyn.rs` changed: the fixed 128 KB mailbox limit became a checked offset-plus-mailbox bound against the actual memory file, supporting RT1064 DTCM. All other patch sections remain byte-identical, including trajectory mathematics and controller interfaces. The snapshot hash is refreshed as a change detector; this does not add a formal proof of ARM transport or hardware timing. Transport tests and flight regression are separate empirical evidence.

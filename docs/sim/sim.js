@@ -22,14 +22,14 @@ try {
  $('flight-results').textContent='Historical prototype: these native recordings used the earlier onboard feed-forward implementation. They are retained as evidence, not results for the updated tilt-lead method.';
  const first=document.querySelector('[data-stack="cognipilot"]:not([hidden])');if(first)first.click();
  try {
-  for(const [name,folder,id] of [['cognipilot','cognipilot','fastdyn'],['betaflight','betaflight','fastdyn-betaflight']]) {
+  for(const [name,folder,id] of [['cognipilot','cognipilot','fastdyn'],['betaflight','betaflight','fastdyn-betaflight'],['betaflight','betaflight-nxp','fastdyn-nxp']]) {
   const r=await fetchJson('../results/tilt-lead/fastdyn/'+folder+'/replay.json'),p=r.report;
   const landed=p.grounded_stopped_samples>=4000&&!p.final_armed&&p.final_motors.every(x=>x===0)&&p.final_position[2]<0.11;
-  for(const [label,value] of [['Stack / recorded',name+' / '+new Date(r.recorded_at_unix_s*1000).toISOString().slice(0,10)],['Lap target / full simulated flight',r.config.lap_time_s+' / '+number(p.simulated_seconds,2)+' s'],['Tracking RMS / maximum',number(p.tracking_rms_m)+' / '+number(p.tracking_max_m)+' m'],['Tilt-clamp updates',String(p.tilt_clamp_updates)],['Firmware exchanges',p.firmware_exchanges.toLocaleString()],['Landing / disarm / stopped motors',landed?'Verified':'NOT verified'],['Emulator wall time',number(p.wall_seconds,1)+' s (not drone lap time)']]) {const tr=document.createElement('tr');for(const text of [label,value]){const td=document.createElement('td');td.textContent=text;tr.append(td)}$('fastdyn-stats').append(tr)}
-  $(id).hidden=false;$(id).onclick=()=>{$('variant').disabled=true;$('flight').src='flight-view.html?stack='+name+'&backend=fastdyn';$('flight').title=name+' FastDyn ARM figure-eight recording';$('flight').style.height='850px';$('status').textContent=name+' · FastDyn ARM BIL · '+(r.passed&&landed?'passed; landing/disarm verified':'FAILED attempt; actual recording')+' · recorded '+new Date(r.recorded_at_unix_s*1000).toISOString().slice(0,10);};
+  for(const [label,value] of [['Stack / recorded',(folder==='betaflight-nxp'?'Betaflight TROPIC RT1064':name==='betaflight'?'Betaflight STM32F405':'CogniPilot TROPIC RT1064')+' / '+new Date(r.recorded_at_unix_s*1000).toISOString().slice(0,10)],['Lap target / full simulated flight',r.config.lap_time_s+' / '+number(p.simulated_seconds,2)+' s'],['Tracking RMS / maximum',number(p.tracking_rms_m)+' / '+number(p.tracking_max_m)+' m'],['Tilt-clamp updates',String(p.tilt_clamp_updates)],['Firmware exchanges',p.firmware_exchanges.toLocaleString()],['Landing / disarm / stopped motors',landed?'Verified':'NOT verified'],['Emulator wall time',number(p.wall_seconds,1)+' s (not drone lap time)']]) {const tr=document.createElement('tr');for(const text of [label,value]){const td=document.createElement('td');td.textContent=text;tr.append(td)}$('fastdyn-stats').append(tr)}
+  $(id).hidden=false;$(id).onclick=()=>{$('variant').disabled=true;$('flight').src='flight-view.html?stack='+name+'&backend='+(folder==='betaflight-nxp'?'fastdyn-nxp':'fastdyn');$('flight').title=name+' FastDyn ARM figure-eight recording';$('flight').style.height='850px';$('status').textContent=name+' · FastDyn ARM BIL · '+(r.passed&&landed?'passed; landing/disarm verified':'FAILED attempt; actual recording')+' · recorded '+new Date(r.recorded_at_unix_s*1000).toISOString().slice(0,10);};
   }
-  $('fastdyn-status').textContent='Both ARM recordings · one 10 × 10 m lap at 2 m · 40 s reference · no-noise commissioning runs';
-  $('fastdyn-betaflight').click();
+  $('fastdyn-status').textContent='ARM recordings (distinct firmware targets) · one 10 × 10 m lap at 2 m · 40 s reference · no-noise commissioning runs';
+  $('fastdyn-nxp').click();
  } catch(error){$('fastdyn-status').textContent='FastDyn recording unavailable: '+error.message;}
 
  try { const result=await fetchJson('../results/tilt-lead/speed/summary.json');

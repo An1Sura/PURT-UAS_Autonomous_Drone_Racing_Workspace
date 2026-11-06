@@ -1,0 +1,23 @@
+{
+  "quadrant_sequence": [
+    "++",
+    "+-",
+    "-+",
+    "--"
+  ],
+  "course_window_s": [
+    25,
+    65
+  ],
+  "end_distance_to_center_m": 0.008865351621315435,
+  "one_figure_eight_quadrant_order": true,
+  "x_range_m": [
+    -5.039893249471462,
+    5.003008156784412
+  ],
+  "y_range_m": [
+    -5.105841631647121,
+    5.0108187430542985
+  ],
+  "final_sample_retained": true
+}

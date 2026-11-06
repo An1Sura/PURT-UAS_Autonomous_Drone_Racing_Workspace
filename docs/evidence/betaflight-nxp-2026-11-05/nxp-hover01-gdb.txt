@@ -1,0 +1,10 @@
+0x00027a9a in ledToggle ()
+#0  0x00027a9a in ledToggle ()
+#1  0x000192ce in systemFaultAction ()
+#2  <signal handler called>
+#3  0x000178de in memset ()
+#4  0x70047688 in configWriteWord ()
+Backtrace stopped: previous frame identical to this frame (corrupt stack?)
+0x2001ad40 <adr_fastdyn_shared>:	0x00000000	0x00000000	0x00000000	0x00000000
+0x2001ad50 <adr_fastdyn_shared+16>:	0x00000000	0x00000000	0x00000000	0x00000000
+[Inferior 1 (process 1) detached]

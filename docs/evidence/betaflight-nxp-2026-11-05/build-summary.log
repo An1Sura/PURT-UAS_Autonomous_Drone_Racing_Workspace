@@ -1,0 +1,15 @@
+%% (optimised) ./src/main/rx/expresslrs_telemetry.c 
+%% (optimised) ./src/main/drivers/fastdyn_adr.c 
+Linking MIMXRT1064_MR_VMU_TROPIC 
+Memory region         Used Size  Region Size  %age Used
+FLASH_CONFIG_BLOCK:         512 B         4 KB     12.50%
+       FLASH_IVT:          48 B         4 KB      1.17%
+           FLASH:      539228 B      4080 KB     12.91%
+    FLASH_CONFIG:           0 B         8 KB      0.00%
+            ITCM:      203240 B       256 KB     77.53%
+            DTCM:      157184 B       256 KB     59.96%
+          OCRAM2:           0 B       512 KB      0.00%
+check_placement: ITCM used 198.5 KB, free 57.5 KB; DTCM used 161.5 KB, free 94.5 KB; OCRAM used 0.0 KB, free 512.0 KB
+   text	   data	    bss	    dec	    hex	filename
+ 516324	  23400	 132608	 672332	  a424c	./obj/main/betaflight_MIMXRT1064_MR_VMU_TROPIC.elf
+Creating HEX ./obj/betaflight_2026.12.0_MIMXRT1064_MR_VMU_TROPIC.hex 

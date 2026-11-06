@@ -1,0 +1,9 @@
+0x70049344 in adcInternalIsBusy ()
+#0  0x70049344 in adcInternalIsBusy ()
+#1  0x7000735c in adcInternalInit ()
+#2  0x0000ca6a in sensorsAutodetect ()
+#3  0x70007888 in initPhase3 ()
+#4  0x00009bc0 in main ()
+0x2001cd40 <adr_fastdyn_shared>:	0x42464431	0x00000002	0x00000000	0x00000000
+0x2001cd50 <adr_fastdyn_shared+16>:	0x00000000	0x00000000	0x00000000	0x00000000
+[Inferior 1 (process 1) detached]
