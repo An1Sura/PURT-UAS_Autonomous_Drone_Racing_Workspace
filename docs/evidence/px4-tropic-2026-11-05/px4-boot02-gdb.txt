@@ -1,0 +1,40 @@
+start () at armv7-m/arm_vectors.c:65
+65	  asm volatile ("mov lr, #0\n\t"
+Breakpoint 1 at 0x7005eb40: file armv7-m/arm_hardfault.c, line 74.
+Breakpoint 2 at 0x70060908: file misc/assert.c, line 835.
+
+Breakpoint 2, _assert (filename=filename@entry=0x0 <modifyreg8>, linenum=linenum@entry=0, msg=msg@entry=0x701d2075 "panic", regs=regs@entry=0x0 <modifyreg8>) at misc/assert.c:835
+835	{
+#0  _assert (filename=filename@entry=0x0 <modifyreg8>, linenum=linenum@entry=0, msg=msg@entry=0x701d2075 "panic", regs=regs@entry=0x0 <modifyreg8>) at misc/assert.c:835
+#1  0x7005eee0 in __assert (filename=filename@entry=0x0 <modifyreg8>, linenum=linenum@entry=0, msg=msg@entry=0x701d2075 "panic") at assert/lib_assert.c:38
+#2  0x700606ee in irq_unexpected_isr (irq=<optimized out>, context=<optimized out>, arg=<optimized out>) at irq/irq_unexpectedisr.c:56
+#3  0x0000071e in arm_doirq (irq=3, regs=0x2021b940) at armv7-m/arm_doirq.c:100
+#4  0x00000770 in exception_common () at armv7-m/arm_exception.S:208
+Backtrace stopped: previous frame inner to this frame (corrupt stack?)
+r0             0x0                 0
+r1             0x0                 0
+r2             0x701d2075          1880957045
+r3             0x0                 0
+r4             0x3                 3
+r5             0x20208620          539002400
+r6             0x2021b940          539081024
+r7             0x0                 0
+r8             0x0                 0
+r9             0x0                 0
+r10            0x0                 0
+r11            0x2021b940          539081024
+r12            0x3                 3
+sp             0x2021b918          0x2021b918
+lr             0x7005eee1          1879437025
+pc             0x70060908          0x70060908 <_assert>
+xpsr           0x61000003          1627389955
+fpscr          0x0                 0
+msp            0x2021b918          539080984
+psp            0x0                 0
+primask        0x1                 1
+control        0x0                 0
+basepri        0x80                128
+faultmask      0x0                 0
+0xe000ed28:	0x00000001	0x40000000	0x00000000	0x00000000
+0xe000ed38:	0x00000000	0x00000000	0x00000030	0x00000200
+[Inferior 1 (process 1) detached]

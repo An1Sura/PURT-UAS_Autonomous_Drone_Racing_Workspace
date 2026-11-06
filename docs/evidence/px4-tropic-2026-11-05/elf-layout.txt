@@ -1,0 +1,42 @@
+ELF Header:
+  Magic:   7f 45 4c 46 01 01 01 00 00 00 00 00 00 00 00 00 
+  Class:                             ELF32
+  Data:                              2's complement, little endian
+  Version:                           1 (current)
+  OS/ABI:                            UNIX - System V
+  ABI Version:                       0
+  Type:                              EXEC (Executable file)
+  Machine:                           ARM
+  Version:                           0x1
+  Entry point address:               0x7005d4c8
+  Start of program headers:          52 (bytes into file)
+  Start of section headers:          55429904 (bytes into file)
+  Flags:                             0x5000400, Version5 EABI, hard-float ABI
+  Size of this header:               52 (bytes)
+  Size of program headers:           32 (bytes)
+  Number of program headers:         8
+  Size of section headers:           40 (bytes)
+  Number of section headers:         25
+  Section header string table index: 24
+
+Program Headers:
+  Type           Offset   VirtAddr   PhysAddr   FileSiz MemSiz  Flg Align
+  EXIDX          0x2310bc 0x7024f0bc 0x7024f0bc 0x00008 0x00008 R   0x4
+  LOAD           0x000000 0x2001f000 0x2001f000 0x00134 0x00dc0 RW  0x1000
+  LOAD           0x001000 0x70020000 0x70020000 0x069f0 0x069f0 R E 0x1000
+  LOAD           0x008000 0x00000000 0x700269f0 0x36ad8 0x36ad8 R E 0x1000
+  LOAD           0x03f4c8 0x7005d4c8 0x7005d4c8 0x1f1b38 0x1f1b38 R E 0x1000
+  LOAD           0x231000 0x7024f000 0x7024f000 0x000c4 0x000c4 RW  0x1000
+  LOAD           0x232000 0x20200000 0x7024f0c4 0x03ed8 0x03ed8 RWE 0x1000
+  LOAD           0x000000 0x20204000 0x70252f9c 0x00000 0x17234 RW  0x1000
+
+ Section to Segment mapping:
+  Segment Sections...
+   00     .ARM.exidx 
+   01     .dtcm_nocache 
+   02     .boot_hdr .vectors 
+   03     .itcmfunc 
+   04     .text 
+   05     .init_section .ARM.exidx 
+   06     .data .ramfunc 
+   07     .bss 
