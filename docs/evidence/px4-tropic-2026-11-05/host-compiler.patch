@@ -1,0 +1,13 @@
+diff --git a/msg/CMakeLists.txt b/msg/CMakeLists.txt
+index 4db75e68..f8d4d5e6 100644
+--- a/msg/CMakeLists.txt
++++ b/msg/CMakeLists.txt
+@@ -489,7 +489,7 @@ if(CONFIG_LIB_CDRSTREAM)
+ 	MESSAGE(STATUS "Configuring idlc :" ${CMAKE_CURRENT_BINARY_DIR}/idlc)
+ 	file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/idlc)
+ 	execute_process(COMMAND ${CMAKE_COMMAND} ${PX4_SOURCE_DIR}/src/lib/cdrstream/cyclonedds
+-			-DCMAKE_C_COMPILER=/usr/bin/gcc
++			-DCMAKE_C_COMPILER=cc
+ 			-DCMAKE_C_COMPILER_LAUNCHER=ccache
+ 			-DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+ 			-DCMAKE_C_FLAGS=-Wno-maybe-uninitialized\ -Wno-unused-parameter

@@ -1,0 +1,110 @@
+• Validating lock
+✓ Validating lock in 4.04ms
+• Configuring shell
+• Configuring cachix
+  [35;1mwarning:[0m Substituter '[35;1mhttps://devenv.cachix.org[0m' is already present in the substituters list
+✓ Configuring cachix in 1.84ms
+• Evaluating shell
+  [35;1mwarning:[0m ignoring the client-specified setting 'always-allow-substitutes', because it is a restricted setting and you are not a trusted user
+  [35;1mwarning:[0m ignoring the client-specified setting 'http-connections', because it is a restricted setting and you are not a trusted user
+  [35;1mwarning:[0m ignoring the client-specified setting 'system', because it is a restricted setting and you are not a trusted user
+✓ Evaluating shell in 2.96ms (cached)
+✓ Configuring shell in 6.40ms
+• Loading tasks
+• Evaluating devenv.config.task.config
+✓ Evaluating devenv.config.task.config in 178µs (cached)
+✓ Loading tasks in 879µs
+• Running tasks
+• Running devenv:files:cleanup
+✓ Running devenv:files:cleanup in 4.69ms
+• Running devenv:files
+✓ Running devenv:files in 6.42ms
+• Running devenv:git-hooks:install
+✓ Running devenv:git-hooks:install in 7.63ms
+• Running devenv:enterShell
+✓ Running devenv:enterShell in 4.46ms
+• Running devenv:enterTest
+✓ Running devenv:enterTest in 667ns (no command)
+✓ Running tasks in 23.3ms
+RDD2 firmware: devenv -P rdd2 tasks run rdd2:firmware:build
+RDD2 Modelica: devenv -P rdd2 tasks run rdd2:simulation:modelica:test
+RDD2 SIL test: devenv -P rdd2 tasks run rdd2:simulation:sil:test
+RDD2 BIL test: devenv -P rdd2 tasks run rdd2:simulation:bil:test
+RDD2 guide:    docs/rdd2.md
+CogniPilot workspace (rdd2 profile)
+Tasks: devenv -P rdd2 tasks list
+Guide: README.md#pick-a-profile
+
+Program received signal SIGBUS, Bus error.
+0x0000000000646975 in ?? ()
+#0  0x0000000000646975 in ?? ()
+#1  0x0000fffff7dd0b78 in ?? ()
+#2  0x65610000006d9000 in ?? ()
+Backtrace stopped: previous frame identical to this frame (corrupt stack?)
+482-	# Make sure that CycloneDDS has been checkout out
+483-	execute_process(COMMAND git submodule sync src/lib/cdrstream/cyclonedds
+484-			WORKING_DIRECTORY ${PX4_SOURCE_DIR} )
+485-	execute_process(COMMAND git submodule update --init --force src/lib/cdrstream/cyclonedds
+486-			WORKING_DIRECTORY ${PX4_SOURCE_DIR} )
+487-
+488-	# CycloneDDS-tools doesn't ship with the cdrstream-desc feature thus we've to compile idlc from source
+489-	MESSAGE(STATUS "Configuring idlc :" ${CMAKE_CURRENT_BINARY_DIR}/idlc)
+490-	file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/idlc)
+491-	execute_process(COMMAND ${CMAKE_COMMAND} ${PX4_SOURCE_DIR}/src/lib/cdrstream/cyclonedds
+492:			-DCMAKE_C_COMPILER=/usr/bin/gcc
+493:			-DCMAKE_C_COMPILER_LAUNCHER=ccache
+494-			-DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+495-			-DCMAKE_C_FLAGS=-Wno-maybe-uninitialized\ -Wno-unused-parameter
+496-			-DBUILD_EXAMPLES=OFF
+497-			-DENABLE_SSL=OFF
+498-			-DENABLE_SECURITY=OFF
+499-			-DBUILD_DDSPERF=OFF
+500-			-DENABLE_LTO=OFF
+501-			-DENABLE_LIFESPAN=OFF
+502-			-DENABLE_DEADLINE_MISSED=OFF
+503-			-DENABLE_NETWORK_PARTITIONS=oFF
+504-			-DENABLE_SOURCE_SPECIFIC_MULTICAST=oFF
+505-			-DENABLE_IPV6=OFF
+506-			-DENABLE_TYPE_DISCOVERY=OFF
+507-			-DENABLE_TOPIC_DISCOVERY=oFF
+508-			WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/idlc
+509-			RESULT_VARIABLE CMD_ERROR
+510-			OUTPUT_FILE CMD_OUTPUT )
+511-	MESSAGE(STATUS "Building idlc :" ${CMAKE_CURRENT_BINARY_DIR}/idlc)
+512-	execute_process(COMMAND ${CMAKE_COMMAND} --build . --target idlc
+513-			WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/idlc
+514-			RESULT_VARIABLE CMD_ERROR
+515-			OUTPUT_FILE CMD_OUTPUT )
+516-	list(APPEND CMAKE_PROGRAM_PATH "${CMAKE_CURRENT_BINARY_DIR}/idlc/bin")
+517-
+518-	# Copy .msg files
+519-	foreach(msg_file ${msg_files})
+520-		get_filename_component(msg ${msg_file} NAME_WE)
+521-		configure_file(${msg_file} ${idl_out_path}/${msg}.msg COPYONLY)
+522-		list(APPEND uorb_cdr_idl ${idl_out_path}/${msg}.idl)
+523-		list(APPEND uorb_cdr_msg ${idl_out_path}/${msg}.msg)
+524-		list(APPEND uorb_cdr_hash ${idl_out_path}/${msg}.json)
+525-		list(APPEND uorb_cdr_idl_uorb ${idl_uorb_path}/${msg}.h)
+526-	endforeach()
+527-
+528-	# Generate IDL from .msg using rosidl_adapter
+529-	# Note this a submodule inside PX4 hence no ROS2 installation required
+530-	add_custom_command(
+531-		OUTPUT ${uorb_cdr_idl}
+532-		COMMAND ${CMAKE_COMMAND}
+533-		        -E env "PYTHONPATH=${PX4_SOURCE_DIR}/src/lib/cdrstream/rosidl/rosidl_adapter:${PX4_SOURCE_DIR}/src/lib/cdrstream/rosidl/rosidl_cli"
+534-			${PYTHON_EXECUTABLE} ${PX4_SOURCE_DIR}/src/lib/cdrstream/msg2idl.py
+535-			${uorb_cdr_msg}
+536-		DEPENDS
+537-			${uorb_cdr_msg}
+538-			git_cyclonedds
+539-		COMMENT "Generating IDL from uORB topic headers"
+540-		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+541-		VERBATIM
+542-		)
+543-
+544-	file(CREATE_LINK ${idl_rihs01_out_path} ${idl_include_path}/px4_msgs SYMBOLIC)
+545-
+546-	# Generate IDL from .msg using rosidl_adapter
+547-	# Note this is a submodule inside PX4 hence no ROS2 installation required
+548-	add_custom_command(
