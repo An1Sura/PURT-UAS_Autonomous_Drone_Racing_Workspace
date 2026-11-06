@@ -6158,10 +6158,9 @@ index 0000000..4c78abd
 +}
 diff --git a/xtask/src/speed_sweep.rs b/xtask/src/speed_sweep.rs
 new file mode 100644
-index 0000000..d44422c
 --- /dev/null
 +++ b/xtask/src/speed_sweep.rs
-@@ -0,0 +1,358 @@
+@@ -0,0 +1,372 @@
 +//! Fixed-accuracy speed sweep with retained failures and five-seed confirmation.
 +use anyhow::{Context, Result, ensure};
 +use serde_json::{Value, json};
@@ -6225,17 +6224,31 @@ index 0000000..d44422c
 +    fs::write(&path, serde_json::to_vec_pretty(cfg)?)?;
 +    let out = root.join(id);
 +    let log = File::create(root.join(format!("{id}.log")))?;
-+    let status = Command::new(std::env::current_exe()?)
-+        .arg("shared-sil")
-+        .arg(path)
-+        .args(&a[1..5])
-+        .arg(&out)
-+        .arg("figure-eight")
-+        .arg(seed.to_string())
-+        .arg(noise)
-+        .stdout(log.try_clone()?)
-+        .stderr(log)
-+        .status()?;
++    // Optional ARM backend: the existing FastDyn configuration owns QEMU and
++    // invokes the same shared-sil command as a supervised mission helper.
++    let mut command = if let Some(config) = std::env::var_os("RDD2_SPEED_FASTDYN_CONFIG") {
++        let executable = std::env::var_os("RDD2_SPEED_FASTDYN_EXECUTABLE")
++            .context("RDD2_SPEED_FASTDYN_EXECUTABLE required for ARM sweep")?;
++        let mut c = Command::new(executable);
++        c.arg("run").arg("-c").arg(config).arg("-o").arg(root.join(format!("{id}-runtime")))
++            .env("RDD2_SHARED_CONFIG", &path)
++            .env("RDD2_SHARED_PLANT", &a[1])
++            .env("RDD2_SHARED_LIBRARY", &a[2])
++            .env("ADR_FLIGHT_OUTPUT", &out)
++            .env("ADR_FLIGHT_SHAPE", "figure-eight")
++            .env("ADR_SEED", seed.to_string())
++            .env("ADR_NOISE", noise)
++            .env("ADR_MEMORY_DIR", root.join(format!("{id}-ram")))
++            .env("FASTDYN_QEMU_MEMORY_DIR", root.join(format!("{id}-ram")))
++            .env_remove("PYTHONPATH").env_remove("PYTHONHOME");
++        c
++    } else {
++        let mut c = Command::new(std::env::current_exe()?);
++        c.arg("shared-sil").arg(&path).args(&a[1..5]).arg(&out)
++            .arg("figure-eight").arg(seed.to_string()).arg(noise);
++        c
++    };
++    let status = command.stdout(log.try_clone()?).stderr(log).status()?;
 +    let report: Value = serde_json::from_slice(&fs::read(out.join("report.json"))?)?;
 +    let geo = geometry(
 +        &out.join("trajectory.csv"),
@@ -6283,11 +6296,11 @@ index 0000000..d44422c
 +        a.len() == 6,
 +        "shared-sil-speed CONFIG PLANT LIB BINARY STACK NEW_OUTPUT [MODE]"
 +    );
-+    let root = PathBuf::from(&a[5]);
++    let root = std::path::absolute(PathBuf::from(&a[5]))?;
 +    ensure!(!root.exists(), "preserve attempts");
 +    fs::create_dir_all(&root)?;
 +    let mut cfg: Value = serde_json::from_slice(&fs::read(&a[0])?)?;
-+    let rule = json!({"coarse_lap_seconds":[40,35,30,25,22,20,18,16,14,12,10],"stop_coarse":"first failed flight; no monotonic-global-optimum claim","refinement_seconds":1,"rms_limit_m":0.35,"max_limit_m":0.75,"confirmation_noise":["none","realistic","harsh"],"confirmation_seeds":[1,2,3,4,5],"required_passes":15,"fallback":"next slower tested candidate when any confirmation fails","ff_mode":mode,"opposite_mode_comparator":"five realistic-noise seeds at selected lap time","geometry":"four ordered quadrants, +/-4.25m extents, center return within0.75m, no second lap","qualification":"shortest confirmed reference duration in tested grid; not physical maximum speed"});
++    let rule = json!({"coarse_lap_seconds":[40,35,30,25,22,20,18,16,14,12,10],"stop_coarse":"first failed flight; no monotonic-global-optimum claim","refinement_seconds":1,"rms_limit_m":0.35,"max_limit_m":0.75,"confirmation_noise":["none","realistic","harsh"],"confirmation_seeds":[1,2,3,4,5],"required_passes":15,"fallback":"next slower tested candidate when any confirmation fails","backend":if std::env::var_os("RDD2_SPEED_FASTDYN_CONFIG").is_some(){"FastDyn/QEMU ARM"}else{"native Linux"},"ff_mode":mode,"opposite_mode_comparator":"five realistic-noise seeds at selected lap time","geometry":"four ordered quadrants, +/-4.25m extents, center return within0.75m, no second lap","qualification":"shortest confirmed reference duration in tested grid; not physical maximum speed"});
 +    fs::write(
 +        root.join("predeclared-rule.json"),
 +        serde_json::to_vec_pretty(&rule)?,

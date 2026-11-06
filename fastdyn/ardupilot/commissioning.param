@@ -2,3 +2,6 @@
 BRD_SAFETY_DEFLT 0
 ARMING_CHECK 1
 # Keep firmware defaults for estimator sources, RC failsafe and auto-disarm.
+
+# Virtual motor outputs bypass the separate physical I/O MCU; no I/O MCU is emulated.
+BRD_IO_ENABLE 0

@@ -1,3 +1,5 @@
+> Update: [November 6 qualification audit](../qualification-2026-11-06/README.md) supersedes the earlier arming-check claim: inherited FastDyn hooks also bypassed checks. The checked configuration removes those overrides. ArduPilot estimator alignment now succeeds; logging/terrain storage remain blocked. PX4 now reaches the NuttX scheduler. Neither has a qualified flight.
+
 # Actual integration attempts — November 6, 2026
 
 No new PX4 or ArduPilot figure-eight flight has passed. The existing CogniPilot and Betaflight recordings are unchanged. Their equal 40 s reference lap and 83 s full schedule are prescribed inputs, not measured maximum-speed limits.

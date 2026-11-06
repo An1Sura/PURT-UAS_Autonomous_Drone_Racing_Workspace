@@ -1,0 +1,116 @@
+• Validating lock
+✓ Validating lock in 4.58ms
+• Loading tasks
+• Evaluating devenv.config.task.config
+• Building rdd2-benchmark-fastdyn-speed-betaflight-nxp
+✓ Building rdd2-benchmark-fastdyn-speed-betaflight-nxp in 19.9ms
+• Building rdd2-benchmark-fastdyn-speed-cognipilot
+✓ Building rdd2-benchmark-fastdyn-speed-cognipilot in 21.2ms
+• Building tasks.json
+  structuredAttrs is enabled
+✓ Building tasks.json in 28.0ms
+✓ Evaluating devenv.config.task.config in 2.37s
+✓ Loading tasks in 2.37s
+├── devenv:container:copy
+├── devenv:enterTest
+│   ├── devenv:enterShell
+│   │   └── devenv:git-hooks:install
+│   │       └── devenv:files
+│   │           ├── devenv:files:cleanup
+│   ├── devenv:git-hooks:run
+│   └── workspace:validate
+├── devenv:processes:mission-planner
+├── modelica-models:rdd2:export-controller
+│   ├── rumoca:compiler
+│   │   ├── results:prepare (has status check)
+│   │   └── sources:ensure:rumoca (has status check)
+│   │       └── sources:prepare (has status check)
+│   └── sources:ensure:modelica_models (has status check)
+├── modelica-models:rdd2:export-estimator
+├── modelica-models:rdd2:qualify
+│   ├── modelica-models:build
+│   └── rumoca:python
+│       └── rumoca:vendor-fix
+├── modelica-models:test
+├── rdd2:benchmark:betaflight:figure-eight
+│   ├── rdd2:benchmark:betaflight:build
+│   │   ├── sources:ensure:betaflight (has status check)
+│   ├── rdd2:benchmark:plan
+│   │   └── sources:ensure:cerebri_rdd2 (has status check)
+│   └── rdd2:simulation:sil:test
+│       ├── rdd2:workspace:ready (has status check)
+│       │   ├── sources:ensure:cerebri_modules (has status check)
+│       │   ├── sources:ensure:csyn (has status check)
+│       │   └── sources:ensure:zros (has status check)
+│       └── synapse-fbs:build
+│           └── sources:ensure:synapse_fbs (has status check)
+├── rdd2:benchmark:betaflight:hover
+├── rdd2:benchmark:cognipilot:figure-eight
+├── rdd2:benchmark:cognipilot:reference
+├── rdd2:benchmark:fastdyn:betaflight
+├── rdd2:benchmark:fastdyn:betaflight-nxp
+├── rdd2:benchmark:fastdyn:cognipilot
+├── rdd2:benchmark:fastdyn:speed:betaflight-nxp
+├── rdd2:benchmark:fastdyn:speed:cognipilot
+├── rdd2:benchmark:shared-sil:betaflight
+│   ├── rdd2:benchmark:betaflight:shared-build
+│   ├── rdd2:benchmark:shared-loop:check
+├── rdd2:benchmark:shared-sil:cognipilot
+├── rdd2:benchmark:test
+├── rdd2:firmware:configure
+│   └── rdd2:firmware:build
+├── rdd2:firmware:flash
+├── rdd2:simulation:bil:test
+│   └── rdd2:simulation:bil:build
+│       ├── fastdyn:runtime:build
+│       │   └── sources:ensure:FastDyn (has status check)
+│       ├── modelica-models:rdd2:export-plant
+├── rdd2:simulation:compare
+├── rdd2:simulation:modelica:test
+├── rdd2:simulation:sil:build
+├── rdd2:simulation:sil:build-32
+├── rdd2:workspace:update
+├── rumoca:test
+│   ├── rumoca:javascript
+├── sources:status
+│   ├── sources:status:FastDyn
+│   ├── sources:status:betaflight
+│   ├── sources:status:cerebri_cubs2
+│   ├── sources:status:cerebri_modules
+│   ├── sources:status:cerebri_rdd2
+│   ├── sources:status:csyn
+│   ├── sources:status:csyn_ros2_bridge
+│   ├── sources:status:electrode_web
+│   ├── sources:status:modelica_models
+│   ├── sources:status:qualisys_rust_sdk
+│   ├── sources:status:rumoca
+│   ├── sources:status:synapse_fbs
+│   ├── sources:status:synapse_ppm_bridge
+│   ├── sources:status:synapse_qualisys_bridge
+│   ├── sources:status:zros
+│   └── sources:status:zros_drivers
+├── sources:sync
+│   ├── sources:sync:FastDyn
+│   ├── sources:sync:betaflight
+│   ├── sources:sync:cerebri_cubs2
+│   │   └── sources:ensure:cerebri_cubs2 (has status check)
+│   ├── sources:sync:cerebri_modules
+│   ├── sources:sync:cerebri_rdd2
+│   ├── sources:sync:csyn
+│   ├── sources:sync:csyn_ros2_bridge
+│   │   └── sources:ensure:csyn_ros2_bridge (has status check)
+│   ├── sources:sync:electrode_web
+│   │   └── sources:ensure:electrode_web (has status check)
+│   ├── sources:sync:modelica_models
+│   ├── sources:sync:qualisys_rust_sdk
+│   │   └── sources:ensure:qualisys_rust_sdk (has status check)
+│   ├── sources:sync:rumoca
+│   ├── sources:sync:synapse_fbs
+│   ├── sources:sync:synapse_ppm_bridge
+│   │   └── sources:ensure:synapse_ppm_bridge (has status check)
+│   ├── sources:sync:synapse_qualisys_bridge
+│   │   └── sources:ensure:synapse_qualisys_bridge (has status check)
+│   ├── sources:sync:zros
+│   └── sources:sync:zros_drivers
+│       └── sources:ensure:zros_drivers (has status check)
+└── synapse-fbs:test

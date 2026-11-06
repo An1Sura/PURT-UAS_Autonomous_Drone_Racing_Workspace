@@ -44,3 +44,5 @@ try {
  try{const r=await fetchJson('../results/tilt-lead/checks.json');$('checks').textContent=r.passed?`Generated-code checks passed: ${r.metrics.samples} reference samples, two identical reference repeats, and shared PositionLoop compared with the GuidanceController POSITION branch. Jerk, snap and feed-forward derivatives also passed independent numerical checks; switch-off and disengage produce zero feed-forward. These are numerical component checks, not a formal firmware proof.`:'Generated-code check failed: '+r.error}catch{$('checks').textContent='Generated-code qualification results are not available in this deployment.'}
 } catch(e){$('status').textContent='Unable to load benchmark: '+e.message}
 
+
+$('arm-speed-bf').onclick=()=>{ $('variant').disabled=true; $('flight').src='flight-view.html?stack=betaflight&backend=arm-speed-bf'; $('flight').title='Betaflight TROPIC 33-second exploratory ARM flight'; $('flight').style.height='850px'; $('status').textContent='Betaflight TROPIC RT1064 · completed 33 s reference / 76 s full flight · realistic noise seed 1 · exploratory speed candidate; tuning qualification pending'; };

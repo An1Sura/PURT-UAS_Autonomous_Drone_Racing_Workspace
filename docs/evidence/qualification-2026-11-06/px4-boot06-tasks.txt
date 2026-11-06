@@ -1,0 +1,23 @@
+up_idle () at chip/imxrt_idle.c:179
+179	  END_IDLE();
+$1 = 599532
+$2 = {head = 0x202084d4 <g_idletcb>, tail = 0x202084d4 <g_idletcb>}
+$3 = {head = 0x0 <modifyreg8>, tail = 0x0 <modifyreg8>}
+No symbol "g_waitingforsemaphore" in current context.
+$4 = (struct tcb_s **) 0x2025b9c0
+[Inferior 1 (process 1) detached]
+up_idle () at chip/imxrt_idle.c:179
+179	  END_IDLE();
+$1 = 16
+$2 = {0x202084d4 <g_idletcb>, 0x20000320, 0x20000b00, 0x200013f8, 0x20002ba0, 0x20003b08, 0x20005ad0, 0x200068d0, 0x0 <modifyreg8>, 0x0 <modifyreg8>, 0x0 <modifyreg8>, 0x0 <modifyreg8>, 0x0 <modifyreg8>, 0x0 <modifyreg8>, 0x0 <modifyreg8>, 0x0 <modifyreg8>}
+No symbol "g_alive_taskcount" in current context.
+[Inferior 1 (process 1) detached]
+could not connect: Connection timed out.
+Cannot access memory at address 0xaf
+Cannot access memory at address 0xaf
+Cannot access memory at address 0xaf
+Cannot access memory at address 0xaf
+Cannot access memory at address 0xaf
+Cannot access memory at address 0xaf
+Cannot access memory at address 0xaf
+The program is not being run.

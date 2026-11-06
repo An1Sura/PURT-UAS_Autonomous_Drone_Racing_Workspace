@@ -1,0 +1,39 @@
+
+artifacts/fastdyn-pinned/virtuals/physics/flight_controllers/courbet/bin/arducopter_v462:     file format elf32-littlearm
+
+
+Disassembly of section .text:
+
+0815ac8c <_ZN7ChibiOS9Scheduler18delay_microsecondsEt>:
+ 815ac8c:	b1c9      	cbz	r1, 815acc2 <_ZN7ChibiOS9Scheduler18delay_microsecondsEt+0x36>
+ 815ac8e:	b500      	push	{lr}
+ 815ac90:	b083      	sub	sp, #12
+ 815ac92:	9100      	str	r1, [sp, #0]
+ 815ac94:	b909      	cbnz	r1, 815ac9a <_ZN7ChibiOS9Scheduler18delay_microsecondsEt+0xe>
+ 815ac96:	2301      	movs	r3, #1
+ 815ac98:	9300      	str	r3, [sp, #0]
+ 815ac9a:	f06f 0301 	mvn.w	r3, #1
+ 815ac9e:	9301      	str	r3, [sp, #4]
+ 815aca0:	9b00      	ldr	r3, [sp, #0]
+ 815aca2:	f1b3 3fff 	cmp.w	r3, #4294967295	@ 0xffffffff
+ 815aca6:	d10a      	bne.n	815acbe <_ZN7ChibiOS9Scheduler18delay_microsecondsEt+0x32>
+ 815aca8:	ab01      	add	r3, sp, #4
+ 815acaa:	6818      	ldr	r0, [r3, #0]
+ 815acac:	9000      	str	r0, [sp, #0]
+ 815acae:	280a      	cmp	r0, #10
+ 815acb0:	d800      	bhi.n	815acb4 <_ZN7ChibiOS9Scheduler18delay_microsecondsEt+0x28>
+ 815acb2:	200a      	movs	r0, #10
+ 815acb4:	f014 fc78 	bl	816f5a8 <chThdSleep>
+ 815acb8:	b003      	add	sp, #12
+ 815acba:	f85d fb04 	ldr.w	pc, [sp], #4
+ 815acbe:	466b      	mov	r3, sp
+ 815acc0:	e7f3      	b.n	815acaa <_ZN7ChibiOS9Scheduler18delay_microsecondsEt+0x1e>
+ 815acc2:	4770      	bx	lr
+
+0815acc4 <_ZN7ChibiOS9Scheduler9boost_endEv>:
+ 815acc4:	b510      	push	{r4, lr}
+ 815acc6:	4604      	mov	r4, r0
+ 815acc8:	6803      	ldr	r3, [r0, #0]
+ 815acca:	6c1b      	ldr	r3, [r3, #64]	@ 0x40
+ 815accc:	4798      	blx	r3
+ 815acce:	b108      	cbz	r0, 815acd4 <_ZN7ChibiOS9Scheduler9boost_endEv+0x10>

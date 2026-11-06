@@ -1,3 +1,5 @@
+> Update: [November 6 qualification audit](evidence/qualification-2026-11-06/README.md) supersedes the earlier arming-check claim: inherited FastDyn hooks also bypassed checks. The checked configuration removes those overrides. ArduPilot estimator alignment now succeeds; logging/terrain storage remain blocked. PX4 now reaches the NuttX scheduler. Neither has a qualified flight.
+
 # Four-stack firmware integration
 
 **November 6 update:** ArduPilot uses the existing STM32F427 target by user request. Its Rumoca/FastDyn sensor loop runs but normal estimator checks prevent arming. PX4 now passes the ROM/RTC startup blockers with explicitly simulation-only models and waits at SD-card initialization. [Current attempts, patches, hashes, tests and reproduction instructions](evidence/four-stack-2026-11-06/README.md). The following build history retains the earlier findings; neither new stack has completed a figure-eight.

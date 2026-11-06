@@ -1024,6 +1024,52 @@ let
             -c ${root}/fastdyn/cognipilot/flight.toml -o "$ADR_FLIGHT_OUTPUT/.."
         '';
 
+      "rdd2:benchmark:fastdyn:speed:betaflight-nxp" =
+        task "cerebri_rdd2" "Search confirmed Betaflight TROPIC ARM reference durations under fixed tracking gates." ''
+          export ADR_WORKSPACE=${root}
+          export RDD2_WORKSPACE_ROOT=${root}
+          export CEREBRI_RDD2_ROOT=${source "cerebri_rdd2"}
+          export RDD2_SHARED_CONFIG=${root}/docs/config/shared-position-benchmark.json
+          export RDD2_SHARED_PLANT=${source "modelica_models"}/artifacts/vehicles/rdd2/plant/Vehicles_Rdd2_Plant
+          export RDD2_SHARED_LIBRARY=${root}/artifacts/tilt-lead-generated/libshared_loop.so
+          export RDD2_FASTDYN_BUILD_DIR="${root}/src/betaflight-nxp/obj/main"
+          export BETAFLIGHT_NXP_ELF=${root}/src/betaflight-nxp/obj/main/betaflight_MIMXRT1064_MR_VMU_TROPIC.elf
+          export FASTDYN_QEMU_PATH=${root}/.devenv/state/fastdyn-pinned/qemu/build/qemu-system-arm
+          export FASTDYN_MONITOR_ELF=${root}/.devenv/state/fastdyn-pinned/qemu/ws/monitor.elf
+          export ADR_FLIGHT_OUTPUT="${root}/artifacts/nxp-betaflight-$(date +%s%N)/flight"
+          export ADR_MEMORY_DIR="$ADR_FLIGHT_OUTPUT/../ram"
+          export FASTDYN_QEMU_MEMORY_DIR="$ADR_MEMORY_DIR"
+          cd ${root}/artifacts/fastdyn-pinned
+          export RDD2_SPEED_FASTDYN_EXECUTABLE=${root}/.devenv/state/fastdyn-pinned/venv/bin/fastdyn
+          export RDD2_SPEED_FASTDYN_CONFIG=${root}/fastdyn/betaflight-nxp/flight.toml
+          ${source "cerebri_rdd2"}/target/release/xtask shared-sil-speed \
+            "$RDD2_SHARED_CONFIG" "$RDD2_SHARED_PLANT" "$RDD2_SHARED_LIBRARY" \
+            "$BETAFLIGHT_NXP_ELF" betaflight "$ADR_FLIGHT_OUTPUT/../speed" "''${ADR_SPEED_MODE:-omega}"
+        '';
+
+      "rdd2:benchmark:fastdyn:speed:cognipilot" =
+        task "cerebri_rdd2" "Search confirmed CogniPilot TROPIC ARM reference durations under fixed tracking gates." ''
+          export ADR_WORKSPACE=${root}
+          export RDD2_WORKSPACE_ROOT=${root}
+          export CEREBRI_RDD2_ROOT=${source "cerebri_rdd2"}
+          export RDD2_SHARED_CONFIG=${root}/docs/config/shared-position-benchmark.json
+          export RDD2_SHARED_PLANT=${source "modelica_models"}/artifacts/vehicles/rdd2/plant/Vehicles_Rdd2_Plant
+          export RDD2_SHARED_LIBRARY=${root}/artifacts/tilt-lead-generated/libshared_loop.so
+          export RDD2_FASTDYN_BUILD_DIR="$PWD/build-mr_vmu_tropic-fastdyn/cerebri_rdd2"
+          export BETAFLIGHT_ARM_ELF=${root}/artifacts/betaflight-fastdyn/obj/main/betaflight_STM32F405_OMNIBUSF4.elf
+          export FASTDYN_QEMU_PATH=${root}/.devenv/state/fastdyn-pinned/qemu/build/qemu-system-arm
+          export FASTDYN_MONITOR_ELF=${root}/.devenv/state/fastdyn-pinned/qemu/ws/monitor.elf
+          export ADR_FLIGHT_OUTPUT="${root}/artifacts/tilt-lead-cognipilot-$(date +%s%N)/flight"
+          export ADR_MEMORY_DIR="$ADR_FLIGHT_OUTPUT/../ram"
+          export FASTDYN_QEMU_MEMORY_DIR="$ADR_MEMORY_DIR"
+          cd ${root}/artifacts/fastdyn-pinned
+          export RDD2_SPEED_FASTDYN_EXECUTABLE=${root}/.devenv/state/fastdyn-pinned/venv/bin/fastdyn
+          export RDD2_SPEED_FASTDYN_CONFIG=${root}/fastdyn/cognipilot/flight.toml
+          ${source "cerebri_rdd2"}/target/release/xtask shared-sil-speed \
+            "$RDD2_SHARED_CONFIG" "$RDD2_SHARED_PLANT" "$RDD2_SHARED_LIBRARY" \
+            "$RDD2_FASTDYN_BUILD_DIR/zephyr/zephyr.elf" cognipilot "$ADR_FLIGHT_OUTPUT/../speed" "''${ADR_SPEED_MODE:-omega}"
+        '';
+
       "rdd2:benchmark:test" =
         (task "cerebri_rdd2" "Test the common lockstep boundary and CogniPilot adapter." ''
           cargo test --locked --package cerebri-rdd2-xtask

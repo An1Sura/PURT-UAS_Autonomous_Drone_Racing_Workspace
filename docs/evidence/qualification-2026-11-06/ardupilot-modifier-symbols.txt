@@ -1,0 +1,102 @@
+AP_Param::flush()
+/root/rooney/Rover-4.6.2/ardupilot/build/CubeBlack/../../libraries/AP_Param/AP_Param.cpp:1300
+stm32_clock_init
+/root/rooney/Rover-4.6.2/ardupilot/build/CubeBlack/../../modules/ChibiOS/os/hal/ports/STM32/STM32F4xx/hal_lld.c:161
+usb_initialise()
+/root/rooney/Rover-4.6.2/ardupilot/build/CubeBlack/../../libraries/AP_HAL_ChibiOS/UARTDriver.cpp:1866
+peripheral_power_enable
+/root/rooney/Rover-4.6.2/ardupilot/build/CubeBlack/../../libraries/AP_HAL_ChibiOS/hwdef/common/stm32_util.c:300
+AP_BoardConfig::board_setup_drivers()
+/root/rooney/Rover-4.6.2/ardupilot/build/CubeBlack/../../libraries/AP_BoardConfig/board_drivers.cpp:75
+AP_Filesystem::retry_mount()
+/root/rooney/Rover-4.6.2/ardupilot/build/CubeBlack/../../libraries/AP_Filesystem/AP_Filesystem.cpp:303
+AP_CANManager::init()
+/root/rooney/Rover-4.6.2/ardupilot/build/CubeBlack/../../libraries/AP_CANManager/AP_CANManager.cpp:128
+AP_Arming::logging_checks(bool)
+/root/rooney/Rover-4.6.2/ardupilot/build/CubeBlack/../../libraries/AP_Arming/AP_Arming.cpp:390
+AP_Arming::board_voltage_checks(bool)
+/root/rooney/Rover-4.6.2/ardupilot/build/CubeBlack/../../libraries/AP_Arming/AP_Arming.cpp:1019
+AP_Arming::servo_checks(bool) const
+/root/rooney/Rover-4.6.2/ardupilot/build/CubeBlack/../../libraries/AP_Arming/AP_Arming.cpp:1006 (discriminator 1)
+ChibiOS::Scheduler::_rcin_thread(void*)
+/root/rooney/Rover-4.6.2/ardupilot/build/CubeBlack/../../libraries/AP_HAL_ChibiOS/Scheduler.cpp:523
+Copter::set_failsafe_radio(bool)
+/root/rooney/Rover-4.6.2/ardupilot/build/CubeBlack/../../ArduCopter/AP_State.cpp:50
+AP_ExternalAHRS::get_port(AP_ExternalAHRS::AvailableSensor) const
+/root/rooney/Rover-4.6.2/ardupilot/build/CubeBlack/../../libraries/AP_ExternalAHRS/AP_ExternalAHRS.cpp:145
+AP_Baro::init()
+/root/rooney/Rover-4.6.2/ardupilot/build/CubeBlack/../../libraries/AP_Baro/AP_Baro.cpp:521
+AP_Baro::calibrate(bool)
+/root/rooney/Rover-4.6.2/ardupilot/build/CubeBlack/../../libraries/AP_Baro/AP_Baro.cpp:277
+AP_Baro::arming_checks(unsigned int, char*) const
+/root/rooney/Rover-4.6.2/ardupilot/build/CubeBlack/../../libraries/AP_Baro/AP_Baro.cpp:1057
+AP_Compass_HMC5843::_check_whoami()
+/root/rooney/Rover-4.6.2/ardupilot/build/CubeBlack/../../libraries/AP_Compass/AP_Compass_HMC5843.cpp:331
+AP_HMC5843_BusDriver_HALDevice::register_write(unsigned char, unsigned char)
+/root/rooney/Rover-4.6.2/ardupilot/build/CubeBlack/../../libraries/AP_Compass/AP_Compass_HMC5843.cpp:476
+AP_Compass_QMC5883L::init()
+/root/rooney/Rover-4.6.2/ardupilot/build/CubeBlack/../../libraries/AP_Compass/AP_Compass_QMC5883L.cpp:89
+AP_Compass_QMC5883P::init()
+/root/rooney/Rover-4.6.2/ardupilot/build/CubeBlack/../../libraries/AP_Compass/AP_Compass_QMC5883P.cpp:103
+Compass::_probe_external_i2c_compasses()
+/root/rooney/Rover-4.6.2/ardupilot/build/CubeBlack/../../libraries/AP_Compass/AP_Compass.cpp:1124 (discriminator 1)
+Compass::probe_i2c_spi_compasses()
+/root/rooney/Rover-4.6.2/ardupilot/build/CubeBlack/../../libraries/AP_Compass/AP_Compass.cpp:1430
+AP_InertialSensor_Invensense::_hardware_init()
+/root/rooney/Rover-4.6.2/ardupilot/build/CubeBlack/../../libraries/AP_InertialSensor/AP_InertialSensor_Invensense.cpp:1002
+AP_InertialSensor::detect_backends()
+/root/rooney/Rover-4.6.2/ardupilot/build/CubeBlack/../../libraries/AP_InertialSensor/AP_InertialSensor.cpp:1192 (discriminator 6)
+AP_InertialSensor_Invensense::_register_write(unsigned char, unsigned char, bool)
+/root/rooney/Rover-4.6.2/ardupilot/build/CubeBlack/../../libraries/AP_InertialSensor/AP_InertialSensor_Invensense.cpp:870
+AP_HAL::Device::read_registers(unsigned char, unsigned char*, unsigned long)
+/root/rooney/Rover-4.6.2/ardupilot/build/CubeBlack/../../libraries/AP_HAL/Device.cpp:184
+ChibiOS::SPIDevice::set_chip_select(bool)
+/root/rooney/Rover-4.6.2/ardupilot/build/CubeBlack/../../libraries/AP_HAL_ChibiOS/SPIDevice.cpp:441
+AP_InertialSensor_Invensense::_check_raw_temp(short)
+/root/rooney/Rover-4.6.2/ardupilot/build/CubeBlack/../../libraries/AP_InertialSensor/AP_InertialSensor_Invensense.cpp:845
+AP_Arming::ins_checks(bool)
+/root/rooney/Rover-4.6.2/ardupilot/build/CubeBlack/../../libraries/AP_Arming/AP_Arming.cpp:464
+AP_InertialSensor::wait_for_sample()
+/root/rooney/Rover-4.6.2/ardupilot/build/CubeBlack/../../libraries/AP_InertialSensor/AP_InertialSensor.cpp:2021
+AP_BoardConfig::init_safety()
+/root/rooney/Rover-4.6.2/ardupilot/build/CubeBlack/../../libraries/AP_BoardConfig/AP_BoardConfig.cpp:450
+st_lld_serve_interrupt
+/root/rooney/Rover-4.6.2/ardupilot/build/CubeBlack/../../modules/ChibiOS/os/hal/ports/STM32/LLD/SYSTICKv1/hal_st_lld.c:611
+ChibiOS::Scheduler::_monitor_thread(void*)
+/root/rooney/Rover-4.6.2/ardupilot/build/CubeBlack/../../libraries/AP_HAL_ChibiOS/Scheduler.cpp:416
+AP_Arming::system_checks(bool)
+/root/rooney/Rover-4.6.2/ardupilot/build/CubeBlack/../../libraries/AP_Arming/AP_Arming.cpp:1070
+Compass::configured(unsigned char)
+/root/rooney/Rover-4.6.2/ardupilot/build/CubeBlack/../../libraries/AP_Compass/AP_Compass.cpp:2087
+AP_HAL::UARTDriver::begin(unsigned long)
+/root/rooney/Rover-4.6.2/ardupilot/build/CubeBlack/../../libraries/AP_HAL/UARTDriver.cpp:17
+ChibiOS::RCOutput::init()
+/root/rooney/Rover-4.6.2/ardupilot/build/CubeBlack/../../libraries/AP_HAL_ChibiOS/RCOutput.cpp:95
+ToshibaLED_I2C::init()
+/root/rooney/Rover-4.6.2/ardupilot/build/CubeBlack/../../libraries/AP_Notify/ToshibaLED_I2C.cpp:50
+NCP5623::init()
+/root/rooney/Rover-4.6.2/ardupilot/build/CubeBlack/../../libraries/AP_Notify/NCP5623.cpp:67
+LP5562::init()
+/root/rooney/Rover-4.6.2/ardupilot/build/CubeBlack/../../libraries/AP_Notify/LP5562.cpp:57
+GCS::setup_uarts()
+/root/rooney/Rover-4.6.2/ardupilot/build/CubeBlack/../../libraries/GCS_MAVLink/GCS_Common.cpp:2758
+Compass::_detect_backends()
+/root/rooney/Rover-4.6.2/ardupilot/build/CubeBlack/../../libraries/AP_Compass/AP_Compass.cpp:1377
+AP_Arming::pre_arm_checks(bool)
+/root/rooney/Rover-4.6.2/ardupilot/build/CubeBlack/../../libraries/AP_Arming/AP_Arming.cpp:1588
+AP_Arming::arm_checks(AP_Arming::Method)
+/root/rooney/Rover-4.6.2/ardupilot/build/CubeBlack/../../libraries/AP_Arming/AP_Arming.cpp:1708 (discriminator 1)
+GCS_MAVLINK::check_payload_size(unsigned short)
+/root/rooney/Rover-4.6.2/ardupilot/build/CubeBlack/../../libraries/GCS_MAVLink/GCS.cpp:406
+AP_InertialSensor::accel_calibrated_ok_all() const
+/root/rooney/Rover-4.6.2/ardupilot/build/CubeBlack/../../libraries/AP_InertialSensor/AP_InertialSensor.cpp:1655
+AP_Compass_HMC5843::init()
+/root/rooney/Rover-4.6.2/ardupilot/build/CubeBlack/../../libraries/AP_Compass/AP_Compass_HMC5843.cpp:211 (discriminator 1)
+AP_Airspeed::enabled(unsigned char) const
+/root/rooney/Rover-4.6.2/ardupilot/build/CubeBlack/../../libraries/AP_Airspeed/AP_Airspeed.cpp:867
+GCS_MAVLINK::send_banner()
+/root/rooney/Rover-4.6.2/ardupilot/build/CubeBlack/../../libraries/GCS_MAVLink/GCS_Common.cpp:4574
+GCS_MAVLINK::txspace() const
+/root/rooney/Rover-4.6.2/ardupilot/build/CubeBlack/../../libraries/GCS_MAVLink/GCS.h:217
+AP_Arming_Copter::rc_throttle_failsafe_checks(bool) const
+/root/rooney/Rover-4.6.2/ardupilot/build/CubeBlack/../../ArduCopter/AP_Arming.cpp:77

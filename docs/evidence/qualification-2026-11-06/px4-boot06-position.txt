@@ -1,0 +1,9 @@
+up_idle () at chip/imxrt_idle.c:179
+179	  END_IDLE();
+#0  up_idle () at chip/imxrt_idle.c:179
+#1  0x00032664 in nx_start () at init/nx_start.c:764
+#2  0x7002234c in __start () at chip/imxrt_start.c:279
+#3  0x00000000 in ?? ()
+pc             0x19fce             0x19fce <up_idle+2>
+lr             0x32665             206437
+[Inferior 1 (process 1) detached]

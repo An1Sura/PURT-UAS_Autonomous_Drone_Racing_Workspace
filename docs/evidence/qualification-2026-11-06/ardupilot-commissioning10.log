@@ -1,0 +1,391 @@
+fastdyn.main|INFO|  [32m****** Fastdyn Framework 0.1.0 *******[0m
+fastdyn.main|WARNING|  [33mThe output directory: /home/suraa.guest/autonomous-drone-bench/artifacts/ardupilot-commissioning10 passed by the user does not exist.[0m
+fastdyn.main|INFO|  [32mCreating output directory at path: /home/suraa.guest/autonomous-drone-bench/artifacts/ardupilot-commissioning10[0m
+FastDyn timing log: /home/suraa.guest/autonomous-drone-bench/artifacts/ardupilot-commissioning10/fastdyn_timing.jsonl
+FASTDYN_LOG|INFO|  [32m[timing] fastdyn:fastdyn.fmu_auto_build 0.000s ok[0m
+FASTDYN_LOG|INFO|  [32m[timing] fastdyn:helpers.load_config 0.001s ok[0m
+FASTDYN_LOG|INFO|  [32m[timing] fastdyn:helper.mavproxy.popen 0.000s ok[0m
+FASTDYN_LOG|INFO|  [32mMAVCesium web viewer: open http://127.0.0.1:5000/mavcesium/[0m
+FASTDYN_LOG|INFO|  [32m[timing] fastdyn:helper.mission.popen 0.000s ok[0m
+FASTDYN_LOG|INFO|  [32m[timing] fastdyn:helpers.start 0.001s ok[0m
+FASTDYN_LOG|INFO|  [32mParsing Config file: /home/suraa.guest/autonomous-drone-bench/artifacts/ardupilot-checked.toml[0m
+FASTDYN_LOG|INFO|  [32m[timing] fastdyn:fastdyn.parse_config 0.003s ok[0m
+FASTDYN_LOG|INFO|  [32m[timing] fastdyn:machine0.compile_device_routing 0.000s ok[0m
+FASTDYN_LOG|INFO|  [32m[timing] fastdyn:qemu.write_device_config 0.000s ok[0m
+FASTDYN_LOG|INFO|  [32m[timing] fastdyn:qemu.build_command 0.000s ok[0m
+FASTDYN_LOG|INFO|  [32m[timing] fastdyn:qemu.setup 0.001s ok[0m
+FASTDYN_LOG|INFO|  [32m[timing] fastdyn:machine0.qemu_setup 0.001s ok[0m
+FASTDYN_LOG|INFO|  [32m[timing] fastdyn:qemu.kill_existing 0.008s ok[0m
+FASTDYN_LOG|INFO|  [32m[timing] fastdyn:qemu.build_env 0.000s ok[0m
+FASTDYN_LOG|INFO|  [32m[timing] fastdyn:qemu.popen 0.000s ok[0m
+Initializing flight controllers
+FMU parameter override: Cm=0.016
+FMU parameter override: Cn_r=-0.1
+FMU parameter override: Ct=8.54858e-06
+FMU parameter override: ground_alt_wgs84=149
+FMU parameter override: ixx=0.0260124
+FMU parameter override: iyy=0.0259094
+FMU parameter override: izz=0.0455718
+FMU parameter override: lat0=40.4149
+FMU parameter override: lon0=-86.9324
+FMU parameter override: mass=2.5644
+FMU parameter override: omega_max=1300
+FMU parameter override: pwm_max=1900
+FMU parameter override: pwm_min=1100
+FMU backend loaded: /home/suraa.guest/autonomous-drone-bench/artifacts/ardupilot-rumoca-plant-framed/FastDyn_Copter/binaries/aarch64-linux/Rumoca_0b475601_cdc7_4dce_b9d6_9452c38d6fd1.so
+FMU timing: init_wall=0.000s
+Current CPU type: cortex-m4-arm-cpu
+FMU backend advances synchronously from QEMU timer ticks
+Periodic IRQ 66 every 1000000 ns
+GCS using UART at address 0x200139C0
+Copter frame class address mismatch: expected 0x20008284, got 0x00000AAC
+[mission] connecting to udpin:127.0.0.1:14552
+[GPSInputReceiver]: Listening for incoming data on UDP port 14553...
+[GCSReceiver]: Listening for incoming data on UDP port 14551...
+Send socket not initialized. Cannot send MAVLink message.
+Failed to send mavlink message to GCS
+Send socket not initialized. Cannot send MAVLink message.
+Failed to send mavlink message to GCS
+[31m[GCSReceiver]: Initialized send socket to GCS at 127.0.0.1:41027
+[mission] heartbeat from system=1 component=1
+[mission] waiting up to 180s for ArduPilot readiness
+[mission] STATUSTEXT: Calibrating barometer
+[mission] STATUSTEXT: Initialising ArduPilot
+[mission] STATUSTEXT: Barometer 1 calibration complete
+[mission] STATUSTEXT: ArduPilot Ready
+[mission] STATUSTEXT: AHRS: DCM active
+[mission] STATUSTEXT: RCOut: None
+[mission] STATUSTEXT: GPS 1: specified as MAV
+[mission] STATUSTEXT: Terrain: Allocation failed
+[mission] STATUSTEXT: GPS 1: detected MAV
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: EKF3 IMU0 initialised
+[mission] STATUSTEXT: AHRS: EKF3 active
+[mission] ArduPilot ready with GPS and EKF initialized
+[mission] loading 3 params from /home/suraa.guest/autonomous-drone-bench/artifacts/ardupilot-checked.param
+[mission] param BRD_SAFETY_DEFLT=0
+[mission] param ARMING_CHECK=1
+[mission] param BRD_IO_ENABLE=0
+[mission] params sent
+[mission] normal simulated-sensor calibration command=241
+[mission] calibration accepted command=241
+[mission] normal simulated-sensor calibration command=42006
+[mission] calibration accepted command=42006
+[mission] keeping QGC home row for ArduPilot mission indexing
+[mission] uploading 6 mission items from virtuals/physics/flight_controllers/courbet/mavlink/copter_mission.waypoints
+[mission] previous mission cleared
+[mission] sending mission item 0/5
+[mission] sending mission item 1/5
+[mission] sending mission item 2/5
+[mission] sending mission item 3/5
+[mission] sending mission item 4/5
+[mission] sending mission item 5/5
+[mission] upload accepted
+[mission] ensuring armed state in STABILIZE
+[mission] setting mode STABILIZE
+[mission] safety switch released
+[mission] arming
+[mission] STATUSTEXT: Flight plan received
+[mission] safety ack result=0
+[mission] arm ack result=4
+[mission] STATUSTEXT: Arm: EKF attitude is bad
+[mission] STATUSTEXT: Arm: Check mag field (xy diff:201>100)
+[mission] STATUSTEXT: Arm: Terrain out of memory
+[mission] rel_alt=0.0m
+[mission] current item 0/5
+[mission] STATUSTEXT: EKF3 IMU0 tilt alignment complete
+[mission] STATUSTEXT: EKF3 IMU0 MAG0 initial yaw alignment complete
+[mission] STATUSTEXT: Frame: QUAD/X
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: EKF3 IMU0 origin set
+[mission] STATUSTEXT: Field Elevation Set: 149m
+[mission] rel_alt=0.0m
+[mission] rel_alt=0.0m
+[0mFMU timing: sim=28.442s wall_since_init=5.000s sim_wall_rtf=5.69x advanced=28.442s wall_advance=0.078s fmu_compute_rtf=365.91x advance_calls=28438 do_steps=28440 avg_do_step=2.7us
+[mission] STATUSTEXT: PreArm: Terrain out of memory
+[mission] rel_alt=0.0m
+[mission] arming
+[mission] arm ack result=4
+[mission] STATUSTEXT: Arm: Terrain out of memory
+[mission] rel_alt=0.0m
+[mission] rel_alt=-0.0m
+[mission] rel_alt=-0.0m
+[mission] STATUSTEXT: EKF3 IMU0 is using GPS
+FMU timing: sim=51.315s wall_since_init=10.000s sim_wall_rtf=5.13x advanced=51.315s wall_advance=0.144s fmu_compute_rtf=356.33x advance_calls=51311 do_steps=51313 avg_do_step=2.7us
+[mission] rel_alt=0.0m
+[mission] rel_alt=0.0m
+[mission] setting mode STABILIZE
+[mission] safety switch released
+[mission] arming
+[mission] safety ack result=0
+[mission] arm ack result=4
+[mission] STATUSTEXT: Arm: Terrain out of memory
+[mission] STATUSTEXT: PreArm: Logging failed
+[mission] STATUSTEXT: PreArm: Terrain out of memory
+[mission] rel_alt=0.0m
+[mission] rel_alt=0.0m
+[mission] rel_alt=0.0m
+FMU timing: sim=75.723s wall_since_init=15.000s sim_wall_rtf=5.05x advanced=75.723s wall_advance=0.212s fmu_compute_rtf=357.63x advance_calls=75719 do_steps=75721 avg_do_step=2.7us
+[mission] rel_alt=0.0m
+[mission] rel_alt=0.0m
+[mission] arming
+[mission] arm ack result=4
+[mission] STATUSTEXT: Arm: Terrain out of memory
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: Logging failed
+[mission] STATUSTEXT: PreArm: Terrain out of memory
+[mission] rel_alt=0.0m
+[mission] rel_alt=0.0m
+FMU timing: sim=101.118s wall_since_init=20.000s sim_wall_rtf=5.06x advanced=101.118s wall_advance=0.283s fmu_compute_rtf=357.75x advance_calls=101114 do_steps=101116 avg_do_step=2.7us
+[mission] rel_alt=0.0m
+[mission] rel_alt=0.0m
+[mission] setting mode STABILIZE
+[mission] safety switch released
+[mission] safety ack result=0
+[mission] arming
+[mission] arm ack result=4
+[mission] STATUSTEXT: Arm: Terrain out of memory
+[mission] rel_alt=0.0m
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: Logging failed
+[mission] STATUSTEXT: PreArm: Terrain out of memory
+[mission] rel_alt=0.0m
+FMU timing: sim=125.862s wall_since_init=25.001s sim_wall_rtf=5.03x advanced=125.862s wall_advance=0.351s fmu_compute_rtf=358.30x advance_calls=125858 do_steps=125860 avg_do_step=2.7us
+[mission] rel_alt=0.0m
+[mission] rel_alt=0.0m
+[mission] arming
+[mission] arm ack result=4
+[mission] STATUSTEXT: Arm: Terrain out of memory
+[mission] rel_alt=0.0m
+[mission] rel_alt=0.0m
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: Terrain out of memory
+FMU timing: sim=152.280s wall_since_init=30.001s sim_wall_rtf=5.08x advanced=152.280s wall_advance=0.422s fmu_compute_rtf=361.03x advance_calls=152276 do_steps=152278 avg_do_step=2.7us
+[mission] rel_alt=0.0m
+[mission] setting mode STABILIZE
+[mission] safety switch released
+[mission] safety ack result=0
+[mission] arming
+[mission] arm ack result=4
+[mission] STATUSTEXT: Arm: Terrain out of memory
+[mission] rel_alt=0.0m
+[mission] rel_alt=0.0m
+[mission] rel_alt=0.0m
+[mission] rel_alt=0.0m
+FMU timing: sim=179.635s wall_since_init=35.001s sim_wall_rtf=5.13x advanced=179.635s wall_advance=0.496s fmu_compute_rtf=361.94x advance_calls=179631 do_steps=179633 avg_do_step=2.7us
+[mission] STATUSTEXT: PreArm: Terrain out of memory
+[mission] rel_alt=0.0m
+[mission] arming
+[mission] arm ack result=4
+[mission] STATUSTEXT: Arm: Terrain out of memory
+[mission] rel_alt=0.0m
+[mission] rel_alt=0.0m
+[mission] rel_alt=0.0m
+[mission] rel_alt=0.0m
+FMU timing: sim=206.792s wall_since_init=40.001s sim_wall_rtf=5.17x advanced=206.792s wall_advance=0.571s fmu_compute_rtf=362.40x advance_calls=206788 do_steps=206790 avg_do_step=2.7us
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: Terrain out of memory
+[mission] setting mode STABILIZE
+[mission] safety switch released
+[mission] safety ack result=0
+[mission] arming
+[mission] arm ack result=4
+[mission] STATUSTEXT: Arm: Terrain out of memory
+[mission] rel_alt=0.0m
+[mission] rel_alt=0.0m
+[mission] rel_alt=0.0m
+[mission] rel_alt=0.0m
+FMU timing: sim=231.852s wall_since_init=45.001s sim_wall_rtf=5.15x advanced=231.852s wall_advance=0.641s fmu_compute_rtf=361.95x advance_calls=231848 do_steps=231850 avg_do_step=2.7us
+[mission] rel_alt=0.0m
+[mission] arming
+[mission] arm ack result=4
+[mission] STATUSTEXT: Arm: Terrain out of memory
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: Logging failed
+[mission] STATUSTEXT: PreArm: Terrain out of memory
+[mission] rel_alt=0.0m
+[mission] rel_alt=0.0m
+[mission] rel_alt=0.0m
+FMU timing: sim=258.804s wall_since_init=50.001s sim_wall_rtf=5.18x advanced=258.804s wall_advance=0.714s fmu_compute_rtf=362.41x advance_calls=258800 do_steps=258802 avg_do_step=2.7us
+[mission] rel_alt=0.0m
+[mission] setting mode STABILIZE
+[mission] safety switch released
+[mission] safety ack result=0
+[mission] arming
+[mission] arm ack result=4
+[mission] STATUSTEXT: Arm: Terrain out of memory
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: Logging failed
+[mission] STATUSTEXT: PreArm: Terrain out of memory
+[mission] rel_alt=0.0m
+[mission] rel_alt=0.0m
+FMU timing: sim=284.832s wall_since_init=55.001s sim_wall_rtf=5.18x advanced=284.832s wall_advance=0.787s fmu_compute_rtf=362.10x advance_calls=284828 do_steps=284830 avg_do_step=2.7us
+[mission] rel_alt=0.0m
+[mission] rel_alt=0.0m
+[mission] arming
+[mission] arm ack result=4
+[mission] STATUSTEXT: Arm: Terrain out of memory
+[mission] rel_alt=0.0m
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: Logging failed
+[mission] STATUSTEXT: PreArm: Terrain out of memory
+[mission] rel_alt=0.0m
+FMU timing: sim=310.511s wall_since_init=60.001s sim_wall_rtf=5.18x advanced=310.511s wall_advance=0.858s fmu_compute_rtf=361.77x advance_calls=310507 do_steps=310509 avg_do_step=2.7us
+[mission] rel_alt=0.0m
+[mission] rel_alt=0.0m
+[mission] setting mode STABILIZE
+[mission] safety switch released
+[mission] safety ack result=0
+[mission] arming
+[mission] arm ack result=4
+[mission] STATUSTEXT: Arm: Terrain out of memory
+[mission] rel_alt=0.0m
+[mission] rel_alt=0.0m
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: Logging failed
+[mission] STATUSTEXT: PreArm: Terrain out of memory
+FMU timing: sim=336.866s wall_since_init=65.001s sim_wall_rtf=5.18x advanced=336.866s wall_advance=0.931s fmu_compute_rtf=361.86x advance_calls=336862 do_steps=336864 avg_do_step=2.7us
+[mission] rel_alt=0.0m
+[mission] rel_alt=0.0m
+[mission] arming
+[mission] arm ack result=4
+[mission] STATUSTEXT: Arm: Terrain out of memory
+[mission] rel_alt=0.0m
+[mission] rel_alt=0.0m
+[mission] rel_alt=0.0m
+FMU timing: sim=360.893s wall_since_init=70.001s sim_wall_rtf=5.16x advanced=360.893s wall_advance=0.999s fmu_compute_rtf=361.11x advance_calls=360889 do_steps=360891 avg_do_step=2.7us
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: Terrain out of memory
+[mission] rel_alt=0.0m
+[mission] setting mode STABILIZE
+[mission] safety switch released
+[mission] safety ack result=0
+[mission] arming
+[mission] arm ack result=4
+[mission] STATUSTEXT: Arm: Terrain out of memory
+[mission] rel_alt=0.0m
+[mission] rel_alt=0.0m
+[mission] rel_alt=0.0m
+FMU timing: sim=386.294s wall_since_init=75.001s sim_wall_rtf=5.15x advanced=386.294s wall_advance=1.070s fmu_compute_rtf=361.00x advance_calls=386290 do_steps=386292 avg_do_step=2.7us
+[mission] rel_alt=0.0m
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: Terrain out of memory
+[mission] arming
+[mission] arm ack result=4
+[mission] STATUSTEXT: Arm: Terrain out of memory
+[mission] rel_alt=0.0m
+[mission] rel_alt=0.0m
+[mission] rel_alt=0.0m
+FMU timing: sim=409.557s wall_since_init=80.001s sim_wall_rtf=5.12x advanced=409.557s wall_advance=1.137s fmu_compute_rtf=360.30x advance_calls=409553 do_steps=409555 avg_do_step=2.7us
+[mission] rel_alt=0.0m
+[mission] setting mode STABILIZE
+[mission] safety switch released
+[mission] safety ack result=0
+[mission] rel_alt=0.0m
+[mission] arming
+[mission] arm ack result=4
+[mission] STATUSTEXT: Arm: Terrain out of memory
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: Logging failed
+[mission] STATUSTEXT: PreArm: Terrain out of memory
+[mission] rel_alt=0.0m
+[mission] rel_alt=0.0m
+FMU timing: sim=434.883s wall_since_init=85.001s sim_wall_rtf=5.12x advanced=434.883s wall_advance=1.208s fmu_compute_rtf=360.03x advance_calls=434879 do_steps=434881 avg_do_step=2.7us
+[mission] rel_alt=0.0m
+[mission] arming
+[mission] arm ack result=4
+[mission] STATUSTEXT: Arm: Terrain out of memory
+[mission] rel_alt=0.0m
+[mission] rel_alt=0.0m
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: Logging failed
+[mission] STATUSTEXT: PreArm: Terrain out of memory
+[mission] rel_alt=0.0m
+FMU timing: sim=460.082s wall_since_init=90.001s sim_wall_rtf=5.11x advanced=460.082s wall_advance=1.279s fmu_compute_rtf=359.76x advance_calls=460078 do_steps=460080 avg_do_step=2.7us
+[mission] rel_alt=0.0m
+[mission] setting mode STABILIZE
+[mission] safety switch released
+[mission] safety ack result=0
+[mission] arming
+[mission] arm ack result=4
+[mission] STATUSTEXT: Arm: Terrain out of memory
+[mission] rel_alt=0.0m
+[mission] rel_alt=0.0m
+[mission] rel_alt=0.0m
+FMU timing: sim=484.998s wall_since_init=95.001s sim_wall_rtf=5.11x advanced=484.998s wall_advance=1.350s fmu_compute_rtf=359.39x advance_calls=484994 do_steps=484996 avg_do_step=2.7us
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: Terrain out of memory
+[mission] rel_alt=0.0m
+[mission] arming
+[mission] arm ack result=4
+[mission] STATUSTEXT: Arm: Terrain out of memory
+[mission] rel_alt=0.0m
+[mission] rel_alt=0.0m
+[mission] rel_alt=0.0m
+FMU timing: sim=510.062s wall_since_init=100.001s sim_wall_rtf=5.10x advanced=510.062s wall_advance=1.420s fmu_compute_rtf=359.23x advance_calls=510058 do_steps=510060 avg_do_step=2.7us
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: Terrain out of memory
+[mission] rel_alt=0.0m
+[mission] setting mode STABILIZE
+[mission] safety switch released
+[mission] safety ack result=0
+[mission] arming
+[mission] arm ack result=4
+[mission] STATUSTEXT: Arm: Terrain out of memory
+[mission] rel_alt=0.0m
+[mission] rel_alt=0.0m
+[mission] rel_alt=0.0m
+FMU timing: sim=535.553s wall_since_init=105.002s sim_wall_rtf=5.10x advanced=535.553s wall_advance=1.492s fmu_compute_rtf=359.06x advance_calls=535549 do_steps=535551 avg_do_step=2.7us
+[mission] rel_alt=0.0m
+[mission] rel_alt=0.0m
+[mission] arming
+[mission] arm ack result=4
+[mission] STATUSTEXT: Arm: Terrain out of memory
+[mission] STATUSTEXT: PreArm: Logging failed
+[mission] STATUSTEXT: PreArm: Terrain out of memory
+[mission] rel_alt=0.0m
+[mission] rel_alt=0.0m
+[mission] rel_alt=0.0m
+FMU timing: sim=561.473s wall_since_init=110.002s sim_wall_rtf=5.10x advanced=561.473s wall_advance=1.563s fmu_compute_rtf=359.24x advance_calls=561469 do_steps=561471 avg_do_step=2.7us
+[mission] rel_alt=0.0m
+[mission] rel_alt=0.0m
+[mission] setting mode STABILIZE
+[mission] safety switch released
+[mission] safety ack result=0
+[mission] arming
+[mission] arm ack result=4
+[mission] STATUSTEXT: Arm: Terrain out of memory
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: Logging failed
+[mission] STATUSTEXT: PreArm: Terrain out of memory
+[mission] rel_alt=0.0m
+[mission] rel_alt=0.0m
+FMU timing: sim=588.881s wall_since_init=115.002s sim_wall_rtf=5.12x advanced=588.881s wall_advance=1.638s fmu_compute_rtf=359.57x advance_calls=588877 do_steps=588879 avg_do_step=2.7us
+[mission] rel_alt=0.0m
+[mission] rel_alt=0.0m
+[mission] arming
+[mission] arm ack result=4
+[mission] STATUSTEXT: Arm: Terrain out of memory
+[mission] rel_alt=0.0m
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: Logging failed
+[mission] STATUSTEXT: PreArm: Terrain out of memory
+[mission] rel_alt=0.0m
+FMU timing: sim=612.509s wall_since_init=120.002s sim_wall_rtf=5.10x advanced=612.509s wall_advance=1.704s fmu_compute_rtf=359.39x advance_calls=612505 do_steps=612507 avg_do_step=2.7us
+[mission] rel_alt=0.0m
+Traceback (most recent call last):
+  File "/home/suraa.guest/autonomous-drone-bench/artifacts/fastdyn-pinned/virtuals/physics/flight_controllers/courbet/mavlink/mav_command_and_control.py", line 708, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/home/suraa.guest/autonomous-drone-bench/artifacts/fastdyn-pinned/virtuals/physics/flight_controllers/courbet/mavlink/mav_command_and_control.py", line 689, in main
+    ensure_armed_and_started(
+  File "/home/suraa.guest/autonomous-drone-bench/artifacts/fastdyn-pinned/virtuals/physics/flight_controllers/courbet/mavlink/mav_command_and_control.py", line 537, in ensure_armed_and_started
+    raise RuntimeError(f"timed out arming after {timeout:g}s")
+RuntimeError: timed out arming after 120s
+FASTDYN_LOG|INFO|  [32m[timing] fastdyn:helper.mission.exited exit_code=1[0m
+FASTDYN_LOG|INFO|  [32m[timing] fastdyn:qemu.wait 121.681s ok[0m
+FASTDYN_LOG|INFO|  [32m[timing] fastdyn:machine0.qemu_execution 121.690s ok[0m
+FASTDYN_LOG|INFO|  [32m[timing] fastdyn:fastdyn.machine0.run 121.691s ok[0m
+FASTDYN_LOG|INFO|  [32m[timing] fastdyn:helpers.stop 0.166s ok[0m
+FASTDYN_LOG|INFO|  [32m[timing] fastdyn:fastdyn.run.total 121.862s error[0m
+Error: helper 'mission' exited with status 1

@@ -1,0 +1,532 @@
+diff --git a/modelica/FastDyn/Copter.mo b/modelica/FastDyn/Copter.mo
+index d246f05..8398842 100644
+--- a/modelica/FastDyn/Copter.mo
++++ b/modelica/FastDyn/Copter.mo
+@@ -73,27 +73,29 @@ equation
+     plant.omega_cmd[i] = motor_cmd[i];
+   end for;
+ 
+-  accel = plant.accel + accel_bias;
+-  gyro = plant.gyro + gyro_bias;
+-  mag = plant.mag + mag_bias;
++  // QuadrotorPlant uses body FLU; the ArduPilot interface uses body FRD.
++  accel = {plant.accel[1], -plant.accel[2], -plant.accel[3]} + accel_bias;
++  gyro = {plant.gyro[1], -plant.gyro[2], -plant.gyro[3]} + gyro_bias;
++  mag = {plant.mag[1], -plant.mag[2], -plant.mag[3]} + mag_bias;
+ 
+   gps_lat_lon = Geodesy.localNorthEastToLatLon(
+     lat0,
+     lon0,
+-    plant.p[1] + gps_bias[1],
+-    -plant.p[2] + gps_bias[2],
++    plant.p[2] + gps_bias[1],
++    plant.p[1] + gps_bias[2],
+     earth_radius_m);
+   gps[1] = gps_lat_lon[1];
+   gps[2] = gps_lat_lon[2];
+   gps[3] = ground_alt_wgs84 + plant.p[3] + gps_bias[3];
+ 
+-  vel_ned[1] = plant.v_w[1];
+-  vel_ned[2] = -plant.v_w[2];
++  vel_ned[1] = plant.v_w[2];
++  vel_ned[2] = plant.v_w[1];
+   vel_ned[3] = -plant.v_w[3];
+ 
+   yaw_rad = atan2(2.0 * (plant.q[1] * plant.q[4] + plant.q[2] * plant.q[3]),
+                   1.0 - 2.0 * (plant.q[3] * plant.q[3] + plant.q[4] * plant.q[4]));
+-  yaw_deg = -yaw_rad * 180.0 / pi;
++  // ENU yaw zero points east; NED heading zero points north.
++  yaw_deg = 90.0 - yaw_rad * 180.0 / pi;
+ 
+   baro_altitude_m = plant.p[3] + baro_alt_bias;
+   baro_temperature_c = 15.0 - 0.0065 * (ground_alt_wgs84 + baro_altitude_m);
+diff --git a/src/fastdyn/fmu_build.py b/src/fastdyn/fmu_build.py
+index 62660e1..9c67cc7 100644
+--- a/src/fastdyn/fmu_build.py
++++ b/src/fastdyn/fmu_build.py
+@@ -4,6 +4,7 @@ from __future__ import annotations
+ 
+ from dataclasses import dataclass
+ import os
++import platform
+ from pathlib import Path
+ import shutil
+ import subprocess
+@@ -440,6 +441,25 @@ def _model_description_xml(build: FmuBuild) -> bytes:
+     )
+ 
+ 
++def runtime_metadata(build: FmuBuild) -> tuple[str, str]:
++    """Resolve the FMI token and host binary from the FMU's own metadata."""
++    root = ET.fromstring(_model_description_xml(build))
++    token = root.attrib.get("instantiationToken", "")
++    cs = root.find("CoSimulation")
++    identifier = cs.attrib.get("modelIdentifier", "") if cs is not None else ""
++    if not token or any(c in token for c in ",=\n\r"):
++        raise FmuConfigError("Missing or unsafe FMI instantiationToken")
++    if not identifier or Path(identifier).name != identifier:
++        raise FmuConfigError("Missing or unsafe CoSimulation modelIdentifier")
++    host = {"aarch64": "aarch64-linux", "x86_64": "x86_64-linux"}.get(platform.machine())
++    if platform.system() != "Linux" or host is None:
++        raise FmuConfigError("This native FastDyn FMU loader requires a supported Linux host")
++    library = build.output / "binaries" / host / (identifier + ".so")
++    if not library.is_file():
++        raise FmuConfigError(f"Build the FMU host library first: {library}")
++    return str(library.resolve()), token
++
++
+ def value_references(build: FmuBuild) -> dict[str, int]:
+     """Read named FMI value references from the generated modelDescription.xml."""
+ 
+diff --git a/virtuals/physics/flight_controllers/ardupilot/ardupilot.c b/virtuals/physics/flight_controllers/ardupilot/ardupilot.c
+index 285c9ab..60f98f8 100644
+--- a/virtuals/physics/flight_controllers/ardupilot/ardupilot.c
++++ b/virtuals/physics/flight_controllers/ardupilot/ardupilot.c
+@@ -1,3 +1,5 @@
++#include "config.h"
++#include "fifo_clock.h"
+ /**
+  * @brief Reusable virtuals for ArduRover
+  *
+@@ -98,6 +100,7 @@ void start_advancing_sim(unsigned int cpu_index, void *udata)
+ 
+ // Storage
+ static volatile char *storage_memory = NULL;
++static bool storage_fault = false;
+ static const size_t storage_size = 32 * 1024; // 32KB of simulated storage
+ 
+ /**
+@@ -116,6 +119,7 @@ void storage_read_block(unsigned int cpu_index, void *udata)
+         storage_memory = malloc(storage_size);
+         if (storage_memory == NULL)
+         {
++            storage_fault = true;
+             fprintf(stderr, "Failed to allocate storage memory\n");
+             goto end;
+         }
+@@ -134,6 +138,7 @@ void storage_read_block(unsigned int cpu_index, void *udata)
+ 
+     if (loc + size > storage_size)
+     {
++        storage_fault = true;
+         fprintf(stderr, "Storage read out of bounds\n");
+         fprintf(stderr, "Offset: %u, Size: %lu, Storage Size: %zu\n", loc, size, storage_size);
+         goto end;
+@@ -142,6 +147,7 @@ void storage_read_block(unsigned int cpu_index, void *udata)
+     temp_buffer = malloc(size);
+     if (!temp_buffer)
+     {
++        storage_fault = true;
+         fprintf(stderr, "Failed to allocate temporary buffer\n");
+         goto end;
+     }
+@@ -184,6 +190,7 @@ void storage_write_block(unsigned int cpu_index, void *udata)
+         storage_memory = malloc(storage_size);
+         if (storage_memory == NULL)
+         {
++            storage_fault = true;
+             fprintf(stderr, "Failed to allocate storage memory\n");
+             goto end;
+         }
+@@ -202,6 +209,7 @@ void storage_write_block(unsigned int cpu_index, void *udata)
+ 
+     if (loc + size > storage_size)
+     {
++        storage_fault = true;
+         fprintf(stderr, "Storage write out of bounds\n");
+         goto end;
+     }
+@@ -209,6 +217,7 @@ void storage_write_block(unsigned int cpu_index, void *udata)
+     temp_buffer = malloc(size);
+     if (!temp_buffer)
+     {
++        storage_fault = true;
+         fprintf(stderr, "Failed to allocate temporary buffer\n");
+         goto end;
+     }
+@@ -228,6 +237,14 @@ end:
+     }
+ }
+ 
++// Health of the simulated RAM-backed parameter device, not an arming bypass.
++void adr_storage_healthy(unsigned int cpu_index, void *udata)
++{
++    (void)cpu_index; (void)udata;
++    qemu_set_register(storage_memory != NULL && !storage_fault, ARM_V7M_R0);
++    qemu_set_register(qemu_get_register(ARM_V7M_LR), ARM_V7M_PC);
++}
++
+ // Timer functions
+ /**
+  * @brief Get high-resolution time in microseconds
+@@ -301,7 +318,8 @@ void adc_voltage(unsigned int cpu_index, void *udata)
+     voltage_conv.f = 5.0f;
+     uint32_t voltage_int = voltage_conv.i;
+ 
+-    qemu_set_register(voltage_int, ARM_V7M_R0);
++    // ARM hard-float ABI returns float in S0, not the integer R0.
++    qemu_set_register(voltage_int, ARM_V7M_S0);
+     uint32_t lr = qemu_get_register(ARM_V7M_LR);
+     qemu_set_register(lr, ARM_V7M_PC);
+ }
+@@ -701,10 +719,19 @@ void ins_block_read(unsigned int cpu_index, void *udata)
+     uint32_t reg = (uint32_t)qemu_get_register(ARM_V7M_R1);
+     uint32_t buf = (uint32_t)qemu_get_register(ARM_V7M_R2);
+     uint32_t size = (uint32_t)qemu_get_register(ARM_V7M_R3);
+-    uint16_t count = 14 * 24; // 24 samples of 14 bytes each (3 x 8 samples)
+-
++    // State is per firmware sensor object. Layout/rate verified from this ELF.
++    static struct { uint32_t object; AdrFifoClock clock; } states[4];
++    uint32_t object = (uint32_t)qemu_get_register(ARM_V7M_R0);
++    unsigned slot;
++    for (slot = 0; slot < 4; ++slot) {
++        if (states[slot].object == object || states[slot].object == 0) break;
++    }
++    if (slot == 4) { qemu_set_register(0, ARM_V7M_R0); qemu_set_register(qemu_get_register(ARM_V7M_LR), ARM_V7M_PC); return; }
++    states[slot].object = object;
++    AdrFifoClock *fifo = &states[slot].clock;
+     if (reg == 0x72)
+     {
++        uint16_t count = 14 * adr_fifo_available(fifo, qemu_plugin_get_virtual_timer());
+         uint8_t count_bytes[2];
+         fifo_count_to_bytes(count, count_bytes);
+         qemu_plugin_write_memory(buf, count_bytes, 2);
+@@ -736,7 +763,7 @@ void ins_block_read(unsigned int cpu_index, void *udata)
+         ins_read_count++;
+ #endif // PROFILE_INS_READS
+ 
+-        if (size < 14)
++        if (size < 14 || size % 14 != 0 || size > 17 * 14 || !adr_fifo_consume(fifo, size / 14))
+         {
+             fprintf(stderr, "INS block read size too small: %u\n", size);
+             qemu_set_register(0, ARM_V7M_R0);                             // failure
+@@ -754,10 +781,10 @@ void ins_block_read(unsigned int cpu_index, void *udata)
+             return;
+         }
+ 
+-        uint16_t mini_batch_size = 8 * 14; // 8 samples of 14 bytes each
++        uint16_t mini_batch_size = size; // Return exactly the requested complete records.
+         uint8_t imu_data_bytes[mini_batch_size];
+         memset(imu_data_bytes, 0, sizeof(imu_data_bytes));
+-        for (int i = 0; i < 8; i++)
++        for (unsigned i = 0; i < size / 14; i++)
+         {
+             imu_t imu = imu_batch.imu[i];
+             float accel_x = imu.accel_body.x;
+@@ -894,10 +921,11 @@ HMC5843RawData convert_to_hmc5843(SimulatorMagnetometer sim_data)
+     // int mag_y_raw = temp_z;    // raw Z -> Y
+     // int mag_z_raw = -1 * temp_y;   // raw Y -> Z (negated)
+ 
+-    // Conversion from FLU to FRD
+-    temp_x = temp_x;
+-    temp_y = -1 * temp_y;
+-    temp_z = -1 * temp_z;
++    // Convert only FLU backends. The FMI backend already supplies body FRD.
++    if (phy_get_imu_frame() != PHY_BODY_FRAME_FRD) {
++        temp_y = -temp_y;
++        temp_z = -temp_z;
++    }
+ 
+     // Apply hardware remapping for HMC5843
+     int mag_x_raw = temp_y;
+@@ -1093,13 +1121,10 @@ void compass_configure(unsigned int cpu_index, void *udata)
+  */
+ void chibiOS_tick_handler(unsigned int cpu_index, void *udata)
+ {
+-    // uint32_t tick_frequency = 1000; // 1 kHz
+-    uint32_t tick_frequency = 10000; // 1 MHz
+-
+-    int64_t current_nanos = qemu_plugin_get_virtual_timer();
+-    uint32_t current_millis = (uint32_t)(current_nanos / 1000000);
+-    // printf("Current millis: %u\n", current_millis);
+-    uint32_t system_ticks = current_millis * tick_frequency / 1000;
++    // Copter 4.6.2 FMUv3 uses CH_CFG_ST_FREQUENCY=1,000,000.
++    // Verified in delay_microseconds at 0x0815ac8c: usec passes unchanged
++    // to chThdSleep. stGetCounter is a wrapping 32-bit microsecond counter.
++    uint32_t system_ticks = (uint32_t)(qemu_plugin_get_virtual_timer() / 1000);
+     qemu_set_register(system_ticks, ARM_V7M_R0);
+     uint32_t lr = qemu_get_register(ARM_V7M_LR);
+     qemu_set_register(lr, ARM_V7M_PC);
+@@ -1596,14 +1621,21 @@ void ap_fs_open(unsigned int cpu_index, void *udata)
+ 
+     char fname[256];
+     memset(fname, 0, sizeof(fname));
+-    qemu_plugin_read_memory(fname_ptr, (uint8_t *)fname, sizeof(fname));
++    qemu_plugin_read_memory(fname_ptr, (uint8_t *)fname, sizeof(fname) - 1);
+ 
+     // printf("Opening file: /root/rooney/FastDyn/courbet/flight_logs/%s\n", fname);
+ 
+-    char path[256];
+-    snprintf(path, sizeof(path) + 59, "/home/mhcho/ws/courbet_project/FastDyn/courbet/flight_logs/%s", fname);
+-
+-    int fd = open(path, O_RDWR | O_CREAT, 0666);
++    char path[1024];
++    const char *root = getenv("FASTDYN_FLIGHT_LOG_DIR");
++    if (!root) root = "flight_logs";
++    /* Restrict the guest to the configured log directory. Full FATFS ABI
++       virtualization is not implemented by these upstream hooks. */
++    int length = snprintf(path, sizeof(path), "%s/%s", root, fname);
++    int fd = -1;
++    if (fname[0] != '/' && !strstr(fname, "..") && length > 0 &&
++        (size_t)length < sizeof(path)) {
++        fd = open(path, O_RDWR | O_CREAT, 0666);
++    }
+     mark_open_flight_log_fd(fd);
+     qemu_set_register(fd, ARM_V7M_R0);
+     uint32_t lr = qemu_get_register(ARM_V7M_LR);
+@@ -1635,7 +1667,7 @@ void ap_fs_read(unsigned int cpu_index, void *udata)
+         return;
+     }
+     ssize_t result = read(fd, buf, count);
+-    qemu_plugin_write_memory(buf_ptr, (uint8_t *)buf, count);
++    if (result > 0) qemu_plugin_write_memory(buf_ptr, (uint8_t *)buf, (size_t)result);
+     free(buf);
+     qemu_set_register(result, ARM_V7M_R0);
+     uint32_t lr = qemu_get_register(ARM_V7M_LR);
+@@ -1993,10 +2025,45 @@ void proximity_set_type_param(unsigned int cpu_index, void *udata)
+     qemu_plugin_write_memory(zero_index_params_addr, &lidar_type, sizeof(uint8_t));
+ }
+ 
++#if ENABLE_FMU
++extern int fmu_get_baro_sample(double *pressure_pa, double *temperature_c);
++// Offsets verified from DWARF in the pinned ArduCopter 4.6.2 ELF.
++// Replace driver discovery only. Keep AP_Baro::calibrate/update/arming_checks.
++void adr_baro_init(unsigned int cpu_index, void *udata)
++{
++    (void)cpu_index; (void)udata;
++    uint32_t object = (uint32_t)qemu_get_register(ARM_V7M_R0);
++    uint8_t one = 1;
++    qemu_plugin_write_memory(object + 16, &one, 1); // _num_sensors
++    qemu_plugin_write_memory(object + 24, &one, 1); // init_done
++    qemu_set_register(qemu_get_register(ARM_V7M_LR), ARM_V7M_PC);
++}
++// Entry hook: supply raw sensor fields, then execute the original frontend.
++void adr_baro_sample(unsigned int cpu_index, void *udata)
++{
++    (void)cpu_index; (void)udata;
++    uint32_t object = (uint32_t)qemu_get_register(ARM_V7M_R0);
++    double pressure, temperature;
++    uint8_t healthy = fmu_get_baro_sample(&pressure, &temperature);
++    qemu_plugin_write_memory(object + 28 + 29, &healthy, 1);
++    if (!healthy) return;
++    float p = pressure, t = temperature;
++    uint32_t timestamp_ms = (uint32_t)(qemu_plugin_get_virtual_timer() / 1000000);
++    qemu_plugin_write_memory(object + 28, (uint8_t *)&timestamp_ms, 4);
++    qemu_plugin_write_memory(object + 32, (uint8_t *)&timestamp_ms, 4);
++    qemu_plugin_write_memory(object + 36, (uint8_t *)&p, 4);
++    qemu_plugin_write_memory(object + 40, (uint8_t *)&t, 4);
++}
++#endif
++
+ int ardupilot_init_virtuals(int argc, char **argv)
+ {
+     int status = 0;
+ 
++#if ENABLE_FMU
++    virtual_register("adr_baro_init", adr_baro_init);
++    virtual_register("adr_baro_sample", adr_baro_sample);
++#endif
+     // advancing sim
+     virtual_register("start_advancing_sim", start_advancing_sim);
+ 
+@@ -2005,6 +2072,7 @@ int ardupilot_init_virtuals(int argc, char **argv)
+     virtual_register("print_r1", print_r1);
+     virtual_register("ignore_cpu_failsafe_disarm", ignore_cpu_failsafe_disarm);
+ 
++    virtual_register("adr_storage_healthy", adr_storage_healthy);
+     // storage
+     virtual_register("storage_read_block", storage_read_block);
+     virtual_register("storage_write_block", storage_write_block);
+diff --git a/virtuals/physics/flight_controllers/courbet/mavlink/mav_command_and_control.py b/virtuals/physics/flight_controllers/courbet/mavlink/mav_command_and_control.py
+index 921a242..f480418 100644
+--- a/virtuals/physics/flight_controllers/courbet/mavlink/mav_command_and_control.py
++++ b/virtuals/physics/flight_controllers/courbet/mavlink/mav_command_and_control.py
+@@ -91,6 +91,8 @@ def parse_args() -> argparse.Namespace:
+         default=os.environ.get("FASTDYN_OPTIFUZZ_PARAM_NAMES", ""),
+         help="Comma-separated parameter names matching --mutation-bin float32 values.",
+     )
++    parser.add_argument("--virtual-rc", action="store_true", help="Supply neutral simulated RC through normal MAVLink overrides")
++    parser.add_argument("--calibrate-sim-sensors", action="store_true", help="Run normal level accel and known-heading compass calibration; fixture heading is 90 degrees")
+     return parser.parse_args()
+ 
+ 
+@@ -575,7 +577,7 @@ def wait_for_gps_fusion(mav: mavutil.mavfile, count: int, timeout: float) -> Non
+             timing.mark("mission.gps_fusion_confirmed", echo=True)
+             return
+ 
+-    print("[mission] EKF GPS fusion wait timed out; starting mission anyway", flush=True)
++    raise RuntimeError("EKF GPS fusion was not confirmed before timeout")
+ 
+ 
+ def wait_for_mode(mav: mavutil.mavfile, mode: str, count: int, timeout: float) -> None:
+@@ -618,11 +620,49 @@ def monitor(mav: mavutil.mavfile, count: int, duration: float, *, exit_on_comple
+         handle_runtime_message(mav, msg, count=count, state=state)
+         if exit_on_complete and state.get("final_item_seen"):
+             rel_alt = state.get("rel_alt_m")
+-            if rel_alt is not None and float(rel_alt) <= 1.0:
+-                print("[mission] final landing confirmed near ground", flush=True)
++            if rel_alt is not None and abs(float(rel_alt)) <= 0.2 and state.get("armed") is False:
++                print("[mission] firmware reports disarmed near ground; plant/motor verification still required", flush=True)
+                 timing.mark("mission.completed", echo=True, rel_alt_m=float(rel_alt))
+                 return
+-    print("[mission] monitor timeout reached", flush=True)
++    raise RuntimeError("mission timed out before confirmed disarm near ground")
++
++
++def install_virtual_rc(mav):
++    next_send = [0.0]
++    def send(*_args):
++        now = time.monotonic()
++        if now >= next_send[0]:
++            mav.mav.rc_channels_override_send(mav.target_system, mav.target_component,
++                1500, 1500, 1000, 1500, 1500, 1500, 1500, 1500)
++            next_send[0] = now + 0.05
++    mav.idle_hooks.append(send)
++    mav.message_hooks.append(send)
++    send()
++
++
++def calibrate_sim_sensors(mav):
++    # This is a stationary, level simulation fixture with ENU yaw zero (east).
++    # Use public firmware calibration commands, never the force-valid code 76.
++    for command, params in [
++        (mavutil.mavlink.MAV_CMD_PREFLIGHT_CALIBRATION, [0, 0, 0, 0, 4, 0, 0]),
++        (mavutil.mavlink.MAV_CMD_FIXED_MAG_CAL_YAW, [90, 0, 0, 0, 0, 0, 0]),
++    ]:
++        print(f"[mission] normal simulated-sensor calibration command={command}", flush=True)
++        mav.mav.command_long_send(mav.target_system, mav.target_component, command, 0, *params)
++        deadline = time.monotonic() + 60
++        while time.monotonic() < deadline:
++            msg = mav.recv_match(blocking=True, timeout=0.1)
++            if msg is None:
++                continue
++            handle_runtime_message(mav, msg)
++            if msg.get_type() == "COMMAND_ACK" and msg.command == command:
++                if msg.result == mavutil.mavlink.MAV_RESULT_ACCEPTED:
++                    print(f"[mission] calibration accepted command={command}", flush=True)
++                    break
++                if msg.result != mavutil.mavlink.MAV_RESULT_IN_PROGRESS:
++                    raise RuntimeError(f"calibration rejected: {command}, result={msg.result}")
++        else:
++            raise TimeoutError(f"calibration timed out: {command}")
+ 
+ 
+ def main() -> int:
+@@ -633,11 +673,15 @@ def main() -> int:
+     with timing.phase("mission.total"):
+         with timing.phase("mission.connect"):
+             mav = connect(args.connect, args.heartbeat_timeout)
++            if args.virtual_rc:
++                install_virtual_rc(mav)
+         with timing.phase("mission.wait_autopilot_ready"):
+             wait_for_autopilot_ready(mav, args.ready_timeout)
+         with timing.phase("mission.load_params"):
+             load_params(mav, args.param_file)
+             load_mutation_params(mav, args.mutation_params, args.mutation_bin)
++        if args.calibrate_sim_sensors:
++            calibrate_sim_sensors(mav)
+         with timing.phase("mission.upload"):
+             count = upload_mission(mav, args.mission_file, args.mission_timeout)
+         if not args.no_arm:
+diff --git a/virtuals/physics/physics_engines/fmu/fmu.c b/virtuals/physics/physics_engines/fmu/fmu.c
+index ddb07dc..837de9b 100644
+--- a/virtuals/physics/physics_engines/fmu/fmu.c
++++ b/virtuals/physics/physics_engines/fmu/fmu.c
+@@ -535,8 +535,11 @@ static int fmu_backend_init(void)
+     }
+     fmu_state.terminate = (fmi3Terminate_ft)dlsym(fmu_state.handle, "fmi3Terminate");
+ 
+-    char token[640];
+-    snprintf(token, sizeof(token), "%s-rumoca", model);
++    const char *token = utils_get_arg("fmu_token", fmu_state.argc, fmu_state.argv);
++    if (token == NULL || token[0] == '\0') {
++        fprintf(stderr, "FMU instantiationToken from modelDescription.xml is required\n");
++        return 0;
++    }
+     fmu_state.instance = fmu_state.instantiateCoSimulation(
+         fmu_name ? fmu_name : model,
+         token,
+@@ -592,6 +595,15 @@ static void fmu_backend_shutdown(void)
+     fmu_state.initialized = false;
+ }
+ 
++// Raw barometer sample for the ARM firmware's normal AP_Baro frontend.
++int fmu_get_baro_sample(double *pressure_pa, double *temperature_c)
++{
++    if (!fmu_state.initialized) return 0;
++    return get_values(fmu_state.vr.baro_pressure_pa, pressure_pa, 1)
++        && get_values(fmu_state.vr.baro_temperature_c, temperature_c, 1)
++        && isfinite(*pressure_pa) && *pressure_pa > 0 && isfinite(*temperature_c);
++}
++
+ static int fmu_get_imu_batch(imu_batch_t *imu_batch)
+ {
+     double accel[3] = {0.0, 0.0, -9.80665};
+diff --git a/virtuals/physics/flight_controllers/ardupilot/fifo_clock.h b/virtuals/physics/flight_controllers/ardupilot/fifo_clock.h
+new file mode 100644
+--- /dev/null
++++ b/virtuals/physics/flight_controllers/ardupilot/fifo_clock.h
+@@ -0,0 +1,25 @@
++/* MPU6000 diagnostic FIFO model: 8 kHz raw samples, 14 bytes/sample.
++ * Timing is QEMU virtual time; repeated FMU values are zero-order held.
++ * The 1024-byte device FIFO holds 73 complete 14-byte records.
++ */
++#pragma once
++#include <stdint.h>
++#include <stdbool.h>
++typedef struct { uint64_t sample_index, dropped; unsigned pending; bool started; } AdrFifoClock;
++static inline unsigned adr_fifo_available(AdrFifoClock *f, uint64_t ns)
++{
++    uint64_t index = ns / 125000;
++    if (!f->started) { f->started = true; f->sample_index = index; return 0; }
++    uint64_t added = index - f->sample_index;
++    f->sample_index = index;
++    uint64_t total = f->pending + added;
++    if (total > 73) { f->dropped += total - 73; total = 73; }
++    f->pending = (unsigned)total;
++    return f->pending;
++}
++static inline bool adr_fifo_consume(AdrFifoClock *f, unsigned samples)
++{
++    if (samples > f->pending) return false;
++    f->pending -= samples;
++    return true;
++}
+diff --git a/tests/unit/test_adr_mission_completion.py b/tests/unit/test_adr_mission_completion.py
+new file mode 100644
+--- /dev/null
++++ b/tests/unit/test_adr_mission_completion.py
+@@ -0,0 +1,33 @@
++"""Qualification guards for the project-native commissioning helper."""
++import importlib.util
++from pathlib import Path
++import pytest
++
++@pytest.fixture
++def helper():
++    path = Path(__file__).resolve().parents[2] / 'virtuals/physics/flight_controllers/courbet/mavlink/mav_command_and_control.py'
++    spec = importlib.util.spec_from_file_location('adr_mission', path)
++    module = importlib.util.module_from_spec(spec)
++    spec.loader.exec_module(module)
++    return module
++
++class Link:
++    def recv_match(self, **kwargs):
++        return object()
++
++@pytest.mark.parametrize('altitude,armed,passes', [(0.1,False,True),(0.9,False,False),(0.1,True,False),(0.1,None,False)])
++def test_near_ground_alone_is_not_completion(helper, monkeypatch, altitude, armed, passes):
++    clock=iter([0,0,2])
++    monkeypatch.setattr(helper.time,'monotonic',lambda:next(clock))
++    monkeypatch.setattr(helper,'handle_runtime_message',lambda *args,**kw:kw['state'].update(final_item_seen=True,rel_alt_m=altitude,armed=armed))
++    if passes:
++        helper.monitor(Link(),5,1,exit_on_complete=True)
++    else:
++        with pytest.raises(RuntimeError,match='disarm'):
++            helper.monitor(Link(),5,1,exit_on_complete=True)
++
++def test_gps_timeout_is_failure(helper, monkeypatch):
++    clock=iter([0,2])
++    monkeypatch.setattr(helper.time,'monotonic',lambda:next(clock))
++    with pytest.raises(RuntimeError,match='GPS fusion'):
++        helper.wait_for_gps_fusion(Link(),5,1)
