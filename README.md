@@ -8,7 +8,9 @@ Betaflight is the performance baseline; CogniPilot is the stack we aim to improv
 
 [**Watch the Flight Simulation & Stats page**](https://an1sura.github.io/PURT-UAS_Autonomous_Drone_Racing_Workspace/sim/) · [Open the VM-connected simulation](http://127.0.0.1:8766/sim/) · [Current benchmark integration](docs/arm-benchmark-integration.md) · [Repository source map](docs/repository-map.md)
 
-**Current milestone (October 22):** both ARM autopilot binaries run through FastDyn/QEMU against the shared Rumoca plant. The updated interface adds rate feed-forward offboard as a normal tilt command; onboard control equations remain upstream. Both stacks selected K = 6/s under the same step-response rule. New ARM recordings and native speed-screening results are published with failed attempts and limitations. [Integration, tasks and qualification](docs/arm-benchmark-integration.md).
+**Current milestone (November 5):** Betaflight’s proposed NXP support now runs as **MR_VMU_TROPIC / RT1064 / Cortex-M7** firmware in FastDyn/QEMU. Hover, position-step, and the 10 × 10 m figure-eight passed. The new figure-eight measured **0.195 m RMS / 0.507 m maximum error**, with verified landing/disarm and zero final motor commands. The prior STM32F405 regression remains unchanged. [Pinned sources, exact adapter and build/test evidence](docs/betaflight-nxp-integration.md) · [Timing and preintegration experiments](docs/timing-and-preintegration-plan.md). NXP tuning/speed requalification and physical driver timing remain outstanding.
+
+**Previous milestone (October 22):** both ARM autopilot binaries run through FastDyn/QEMU against the shared Rumoca plant. The updated interface adds rate feed-forward offboard as a normal tilt command; onboard control equations remain upstream. Both stacks selected K = 6/s under the same step-response rule. New ARM recordings and native speed-screening results are published with failed attempts and limitations. [Integration, tasks and qualification](docs/arm-benchmark-integration.md).
 
 ## What this project does
 
