@@ -20,7 +20,7 @@ Target: upstream FastDyn ArduCopter 4.6.2 ELF, CubeBlack/FMUv3/STM32F427/Cortex-
 - Attempt 10 still refuses arming: logging and terrain storage are unresolved. No figure-eight or landing is claimed.
 - The helper now fails on unconfirmed GPS fusion or missing disarm near ground. Five native tests pass. Firmware messages alone still do not establish plant ground contact and stopped motors.
 
-`fastdyn-checked-integration.patch` is a scoped patch against pinned FastDyn `94c85f3e47be410e8d760b7f8207eb1580d7cd4c`. Use `fastdyn/ardupilot/checked-hooks` with the exact pinned ELF; numerical hook addresses are not portable across binaries. The filesystem correction removes an inherited buffer overflow but does not implement the missing full filesystem ABI.
+`fastdyn-checked-integration.patch` is a scoped patch against pinned FastDyn `94c85f3e47be410e8d760b7f8207eb1580d7cd4c`. Use `fastdyn/ardupilot/checked-hooks` with the exact pinned ELF; numerical hook addresses are not portable across binaries. The filesystem work now also translates guest paths/flags/stat metadata and adds capacity/mkdir/seek callbacks. Native tests and the isolated build pass, but a new QEMU attempt is pending; full directory operations and terrain allocation remain unresolved. See [the filesystem investigation](../../ardupilot-filesystem-investigation.md).
 
 ## PX4 boot probe
 

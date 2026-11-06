@@ -1,0 +1,37 @@
+/* offset      |    size */  type = struct stat {
+/*      0      |       2 */    dev_t st_dev;
+/*      2      |       2 */    ino_t st_ino;
+/*      4      |       4 */    mode_t st_mode;
+/*      8      |       2 */    nlink_t st_nlink;
+/*     10      |       2 */    uid_t st_uid;
+/*     12      |       2 */    gid_t st_gid;
+/*     14      |       2 */    dev_t st_rdev;
+/*     16      |       4 */    off_t st_size;
+/* XXX  4-byte hole      */
+/*     24      |      16 */    struct timespec {
+/*     24      |       8 */        time_t tv_sec;
+/*     32      |       4 */        long tv_nsec;
+/* XXX  4-byte padding   */
+
+                                   /* total size (bytes):   16 */
+                               } st_atim;
+/*     40      |      16 */    struct timespec {
+/*     40      |       8 */        time_t tv_sec;
+/*     48      |       4 */        long tv_nsec;
+/* XXX  4-byte padding   */
+
+                                   /* total size (bytes):   16 */
+                               } st_mtim;
+/*     56      |      16 */    struct timespec {
+/*     56      |       8 */        time_t tv_sec;
+/*     64      |       4 */        long tv_nsec;
+/* XXX  4-byte padding   */
+
+                                   /* total size (bytes):   16 */
+                               } st_ctim;
+/*     72      |       4 */    blksize_t st_blksize;
+/*     76      |       4 */    blkcnt_t st_blocks;
+/*     80      |       8 */    long st_spare4[2];
+
+                               /* total size (bytes):   88 */
+                             }

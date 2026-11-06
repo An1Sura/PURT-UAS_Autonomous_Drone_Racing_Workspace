@@ -22,6 +22,11 @@
 0x80ced84 ap_fs_fsync *
 0x80ced60 ap_fs_write *
 0x80ced20 ap_fs_close *
+0x80ceda0 ap_fs_lseek *
+0x80cedc4 ap_fs_stat *
+0x80cee00 ap_fs_mkdir *
+0x80cef68 ap_fs_disk_free *
+0x80cef84 ap_fs_disk_space *
 0x8029a90 copter_allocate_motors
 
 0x80316ac adr_baro_init *

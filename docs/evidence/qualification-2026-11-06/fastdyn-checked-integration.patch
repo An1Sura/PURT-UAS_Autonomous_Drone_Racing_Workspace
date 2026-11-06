@@ -79,16 +79,17 @@ index 62660e1..9c67cc7 100644
      """Read named FMI value references from the generated modelDescription.xml."""
  
 diff --git a/virtuals/physics/flight_controllers/ardupilot/ardupilot.c b/virtuals/physics/flight_controllers/ardupilot/ardupilot.c
-index 285c9ab..60f98f8 100644
+index 285c9ab..b86728b 100644
 --- a/virtuals/physics/flight_controllers/ardupilot/ardupilot.c
 +++ b/virtuals/physics/flight_controllers/ardupilot/ardupilot.c
-@@ -1,3 +1,5 @@
+@@ -1,3 +1,6 @@
 +#include "config.h"
 +#include "fifo_clock.h"
++#include "filesystem_host.h"
  /**
   * @brief Reusable virtuals for ArduRover
   *
-@@ -98,6 +100,7 @@ void start_advancing_sim(unsigned int cpu_index, void *udata)
+@@ -98,6 +101,7 @@ void start_advancing_sim(unsigned int cpu_index, void *udata)
  
  // Storage
  static volatile char *storage_memory = NULL;
@@ -96,7 +97,7 @@ index 285c9ab..60f98f8 100644
  static const size_t storage_size = 32 * 1024; // 32KB of simulated storage
  
  /**
-@@ -116,6 +119,7 @@ void storage_read_block(unsigned int cpu_index, void *udata)
+@@ -116,6 +120,7 @@ void storage_read_block(unsigned int cpu_index, void *udata)
          storage_memory = malloc(storage_size);
          if (storage_memory == NULL)
          {
@@ -104,7 +105,7 @@ index 285c9ab..60f98f8 100644
              fprintf(stderr, "Failed to allocate storage memory\n");
              goto end;
          }
-@@ -134,6 +138,7 @@ void storage_read_block(unsigned int cpu_index, void *udata)
+@@ -134,6 +139,7 @@ void storage_read_block(unsigned int cpu_index, void *udata)
  
      if (loc + size > storage_size)
      {
@@ -112,7 +113,7 @@ index 285c9ab..60f98f8 100644
          fprintf(stderr, "Storage read out of bounds\n");
          fprintf(stderr, "Offset: %u, Size: %lu, Storage Size: %zu\n", loc, size, storage_size);
          goto end;
-@@ -142,6 +147,7 @@ void storage_read_block(unsigned int cpu_index, void *udata)
+@@ -142,6 +148,7 @@ void storage_read_block(unsigned int cpu_index, void *udata)
      temp_buffer = malloc(size);
      if (!temp_buffer)
      {
@@ -120,7 +121,7 @@ index 285c9ab..60f98f8 100644
          fprintf(stderr, "Failed to allocate temporary buffer\n");
          goto end;
      }
-@@ -184,6 +190,7 @@ void storage_write_block(unsigned int cpu_index, void *udata)
+@@ -184,6 +191,7 @@ void storage_write_block(unsigned int cpu_index, void *udata)
          storage_memory = malloc(storage_size);
          if (storage_memory == NULL)
          {
@@ -128,7 +129,7 @@ index 285c9ab..60f98f8 100644
              fprintf(stderr, "Failed to allocate storage memory\n");
              goto end;
          }
-@@ -202,6 +209,7 @@ void storage_write_block(unsigned int cpu_index, void *udata)
+@@ -202,6 +210,7 @@ void storage_write_block(unsigned int cpu_index, void *udata)
  
      if (loc + size > storage_size)
      {
@@ -136,7 +137,7 @@ index 285c9ab..60f98f8 100644
          fprintf(stderr, "Storage write out of bounds\n");
          goto end;
      }
-@@ -209,6 +217,7 @@ void storage_write_block(unsigned int cpu_index, void *udata)
+@@ -209,6 +218,7 @@ void storage_write_block(unsigned int cpu_index, void *udata)
      temp_buffer = malloc(size);
      if (!temp_buffer)
      {
@@ -144,7 +145,7 @@ index 285c9ab..60f98f8 100644
          fprintf(stderr, "Failed to allocate temporary buffer\n");
          goto end;
      }
-@@ -228,6 +237,14 @@ end:
+@@ -228,6 +238,14 @@ end:
      }
  }
  
@@ -159,7 +160,7 @@ index 285c9ab..60f98f8 100644
  // Timer functions
  /**
   * @brief Get high-resolution time in microseconds
-@@ -301,7 +318,8 @@ void adc_voltage(unsigned int cpu_index, void *udata)
+@@ -301,7 +319,8 @@ void adc_voltage(unsigned int cpu_index, void *udata)
      voltage_conv.f = 5.0f;
      uint32_t voltage_int = voltage_conv.i;
  
@@ -169,7 +170,7 @@ index 285c9ab..60f98f8 100644
      uint32_t lr = qemu_get_register(ARM_V7M_LR);
      qemu_set_register(lr, ARM_V7M_PC);
  }
-@@ -701,10 +719,19 @@ void ins_block_read(unsigned int cpu_index, void *udata)
+@@ -701,10 +720,19 @@ void ins_block_read(unsigned int cpu_index, void *udata)
      uint32_t reg = (uint32_t)qemu_get_register(ARM_V7M_R1);
      uint32_t buf = (uint32_t)qemu_get_register(ARM_V7M_R2);
      uint32_t size = (uint32_t)qemu_get_register(ARM_V7M_R3);
@@ -191,7 +192,7 @@ index 285c9ab..60f98f8 100644
          uint8_t count_bytes[2];
          fifo_count_to_bytes(count, count_bytes);
          qemu_plugin_write_memory(buf, count_bytes, 2);
-@@ -736,7 +763,7 @@ void ins_block_read(unsigned int cpu_index, void *udata)
+@@ -736,7 +764,7 @@ void ins_block_read(unsigned int cpu_index, void *udata)
          ins_read_count++;
  #endif // PROFILE_INS_READS
  
@@ -200,7 +201,7 @@ index 285c9ab..60f98f8 100644
          {
              fprintf(stderr, "INS block read size too small: %u\n", size);
              qemu_set_register(0, ARM_V7M_R0);                             // failure
-@@ -754,10 +781,10 @@ void ins_block_read(unsigned int cpu_index, void *udata)
+@@ -754,10 +782,10 @@ void ins_block_read(unsigned int cpu_index, void *udata)
              return;
          }
  
@@ -213,7 +214,7 @@ index 285c9ab..60f98f8 100644
          {
              imu_t imu = imu_batch.imu[i];
              float accel_x = imu.accel_body.x;
-@@ -894,10 +921,11 @@ HMC5843RawData convert_to_hmc5843(SimulatorMagnetometer sim_data)
+@@ -894,10 +922,11 @@ HMC5843RawData convert_to_hmc5843(SimulatorMagnetometer sim_data)
      // int mag_y_raw = temp_z;    // raw Z -> Y
      // int mag_z_raw = -1 * temp_y;   // raw Y -> Z (negated)
  
@@ -229,7 +230,7 @@ index 285c9ab..60f98f8 100644
  
      // Apply hardware remapping for HMC5843
      int mag_x_raw = temp_y;
-@@ -1093,13 +1121,10 @@ void compass_configure(unsigned int cpu_index, void *udata)
+@@ -1093,13 +1122,10 @@ void compass_configure(unsigned int cpu_index, void *udata)
   */
  void chibiOS_tick_handler(unsigned int cpu_index, void *udata)
  {
@@ -247,43 +248,165 @@ index 285c9ab..60f98f8 100644
      qemu_set_register(system_ticks, ARM_V7M_R0);
      uint32_t lr = qemu_get_register(ARM_V7M_LR);
      qemu_set_register(lr, ARM_V7M_PC);
-@@ -1596,14 +1621,21 @@ void ap_fs_open(unsigned int cpu_index, void *udata)
+@@ -1588,26 +1614,97 @@ All virtuals should be called like this:
+ <address/symbol> ap_fs_fsync *
+ */
  
+-void ap_fs_open(unsigned int cpu_index, void *udata)
++/* Firmware 3fc6ee14...: __errno reads _impure_ptr at 0x20002200;
++ * DWARF places _reent::_errno at offset zero. Host errors must be translated.
++ */
++static void adr_fs_return(int64_t value, int wide)
+ {
+-    uint32_t fname_ptr = (uint32_t)qemu_get_register(ARM_V7M_R1);
+-    // uint32_t flags = (uint32_t)qemu_get_register(ARM_V7M_R2);
+-    // bool allow_absolute_paths = false;
++    if (value < 0) {
++        int guest_error;
++        switch (errno) {
++        case ENOENT: guest_error=2; break;
++        case EBADF: guest_error=9; break;
++        case ENOMEM: guest_error=12; break;
++        case EACCES: guest_error=13; break;
++        case EEXIST: guest_error=17; break;
++        case ENOTDIR: guest_error=20; break;
++        case EISDIR: guest_error=21; break;
++        case EINVAL: guest_error=22; break;
++        case EMFILE: guest_error=24; break;
++        case ENOSPC: guest_error=28; break;
++        case ELOOP: guest_error=92; break;
++        case EOVERFLOW: guest_error=139; break;
++        default: guest_error=5; break;
++        }
++        uint32_t reent=0;
++        qemu_plugin_read_memory(0x20002200,(uint8_t *)&reent,4);
++        if (reent >= 0x20000000 && reent < 0x20080000)
++            qemu_plugin_write_memory(reent,(uint8_t *)&guest_error,4);
++    }
++    qemu_set_register((uint32_t)value,ARM_V7M_R0);
++    if (wide) qemu_set_register((uint32_t)((uint64_t)value>>32),ARM_V7M_R1);
++    qemu_set_register(qemu_get_register(ARM_V7M_LR),ARM_V7M_PC);
++}
+ 
++static const char *adr_fs_root(void)
++{
++    const char *root=getenv("FASTDYN_FLIGHT_LOG_DIR");
++    return root ? root : "flight_logs";
++}
++
++static int adr_fs_name(char name[256])
++{
++    memset(name,0,256);
++    qemu_plugin_read_memory((uint32_t)qemu_get_register(ARM_V7M_R1),(uint8_t *)name,256);
++    if (!memchr(name,0,256)) { errno=EINVAL; return -1; }
++    return 0;
++}
++
++void ap_fs_open(unsigned int cpu_index, void *udata)
++{
      char fname[256];
-     memset(fname, 0, sizeof(fname));
+-    memset(fname, 0, sizeof(fname));
 -    qemu_plugin_read_memory(fname_ptr, (uint8_t *)fname, sizeof(fname));
-+    qemu_plugin_read_memory(fname_ptr, (uint8_t *)fname, sizeof(fname) - 1);
++    int fd=adr_fs_name(fname) ? -1 : adr_fs_open(adr_fs_root(),fname,(uint32_t)qemu_get_register(ARM_V7M_R2));
++    if (fd >= 0 && mark_open_flight_log_fd(fd)) { close(fd); errno=EMFILE; fd=-1; }
++    adr_fs_return(fd,0);
++}
  
-     // printf("Opening file: /root/rooney/FastDyn/courbet/flight_logs/%s\n", fname);
+-    // printf("Opening file: /root/rooney/FastDyn/courbet/flight_logs/%s\n", fname);
++void ap_fs_stat(unsigned int cpu_index, void *udata)
++{
++    char name[256]; uint8_t bytes[88];
++    uint32_t destination=qemu_get_register(ARM_V7M_R2);
++    int result=adr_fs_name(name) ? -1 : adr_fs_stat(adr_fs_root(),name,bytes);
++    if (!result) qemu_plugin_write_memory(destination,bytes,sizeof(bytes));
++    adr_fs_return(result,0);
++}
  
 -    char path[256];
 -    snprintf(path, sizeof(path) + 59, "/home/mhcho/ws/courbet_project/FastDyn/courbet/flight_logs/%s", fname);
--
++void ap_fs_mkdir(unsigned int cpu_index, void *udata)
++{
++    char name[256];
++    int result=adr_fs_name(name) ? -1 : adr_fs_mkdir(adr_fs_root(),name);
++    adr_fs_return(result,0);
++}
+ 
 -    int fd = open(path, O_RDWR | O_CREAT, 0666);
-+    char path[1024];
-+    const char *root = getenv("FASTDYN_FLIGHT_LOG_DIR");
-+    if (!root) root = "flight_logs";
-+    /* Restrict the guest to the configured log directory. Full FATFS ABI
-+       virtualization is not implemented by these upstream hooks. */
-+    int length = snprintf(path, sizeof(path), "%s/%s", root, fname);
-+    int fd = -1;
-+    if (fname[0] != '/' && !strstr(fname, "..") && length > 0 &&
-+        (size_t)length < sizeof(path)) {
-+        fd = open(path, O_RDWR | O_CREAT, 0666);
-+    }
-     mark_open_flight_log_fd(fd);
-     qemu_set_register(fd, ARM_V7M_R0);
-     uint32_t lr = qemu_get_register(ARM_V7M_LR);
-@@ -1635,7 +1667,7 @@ void ap_fs_read(unsigned int cpu_index, void *udata)
+-    mark_open_flight_log_fd(fd);
+-    qemu_set_register(fd, ARM_V7M_R0);
+-    uint32_t lr = qemu_get_register(ARM_V7M_LR);
+-    qemu_set_register(lr, ARM_V7M_PC);
++void ap_fs_disk_free(unsigned int cpu_index, void *udata)
++{
++    char name[256];
++    int64_t result=adr_fs_name(name) ? -1 : adr_fs_capacity(adr_fs_root(),name,1);
++    adr_fs_return(result,1);
++}
++
++void ap_fs_disk_space(unsigned int cpu_index, void *udata)
++{
++    char name[256];
++    int64_t result=adr_fs_name(name) ? -1 : adr_fs_capacity(adr_fs_root(),name,0);
++    adr_fs_return(result,1);
++}
++
++void ap_fs_lseek(unsigned int cpu_index, void *udata)
++{
++    off_t result=lseek((int)qemu_get_register(ARM_V7M_R1),
++                      (int32_t)qemu_get_register(ARM_V7M_R2),
++                      (int)qemu_get_register(ARM_V7M_R3));
++    if (result > INT32_MAX) { errno=EOVERFLOW; result=-1; }
++    adr_fs_return(result,0);
+ }
+ 
+ void ap_fs_close(unsigned int cpu_index, void *udata)
+@@ -1615,9 +1712,7 @@ void ap_fs_close(unsigned int cpu_index, void *udata)
+     uint32_t fd = (uint32_t)qemu_get_register(ARM_V7M_R1);
+     int result = close(fd);
+     mark_close_flight_log_fd(fd);
+-    qemu_set_register(result, ARM_V7M_R0);
+-    uint32_t lr = qemu_get_register(ARM_V7M_LR);
+-    qemu_set_register(lr, ARM_V7M_PC);
++    adr_fs_return(result,0);
+ }
+ 
+ void ap_fs_read(unsigned int cpu_index, void *udata)
+@@ -1635,11 +1730,9 @@ void ap_fs_read(unsigned int cpu_index, void *udata)
          return;
      }
      ssize_t result = read(fd, buf, count);
 -    qemu_plugin_write_memory(buf_ptr, (uint8_t *)buf, count);
 +    if (result > 0) qemu_plugin_write_memory(buf_ptr, (uint8_t *)buf, (size_t)result);
      free(buf);
-     qemu_set_register(result, ARM_V7M_R0);
-     uint32_t lr = qemu_get_register(ARM_V7M_LR);
-@@ -1993,10 +2025,45 @@ void proximity_set_type_param(unsigned int cpu_index, void *udata)
+-    qemu_set_register(result, ARM_V7M_R0);
+-    uint32_t lr = qemu_get_register(ARM_V7M_LR);
+-    qemu_set_register(lr, ARM_V7M_PC);
++    adr_fs_return(result,0);
+ }
+ 
+ void ap_fs_write(unsigned int cpu_index, void *udata)
+@@ -1659,18 +1752,14 @@ void ap_fs_write(unsigned int cpu_index, void *udata)
+     qemu_plugin_read_memory(buf_ptr, (uint8_t *)buf, count);
+     ssize_t result = write(fd, buf, count);
+     free(buf);
+-    qemu_set_register(result, ARM_V7M_R0);
+-    uint32_t lr = qemu_get_register(ARM_V7M_LR);
+-    qemu_set_register(lr, ARM_V7M_PC);
++    adr_fs_return(result,0);
+ }
+ 
+ void ap_fs_fsync(unsigned int cpu_index, void *udata)
+ {
+     uint32_t fd = (uint32_t)qemu_get_register(ARM_V7M_R1);
+     int result = fsync(fd);
+-    qemu_set_register(result, ARM_V7M_R0);
+-    uint32_t lr = qemu_get_register(ARM_V7M_LR);
+-    qemu_set_register(lr, ARM_V7M_PC);
++    adr_fs_return(result,0);
+ }
+ 
+ /**
+@@ -1993,10 +2082,45 @@ void proximity_set_type_param(unsigned int cpu_index, void *udata)
      qemu_plugin_write_memory(zero_index_params_addr, &lidar_type, sizeof(uint8_t));
  }
  
@@ -329,7 +452,7 @@ index 285c9ab..60f98f8 100644
      // advancing sim
      virtual_register("start_advancing_sim", start_advancing_sim);
  
-@@ -2005,6 +2072,7 @@ int ardupilot_init_virtuals(int argc, char **argv)
+@@ -2005,6 +2129,7 @@ int ardupilot_init_virtuals(int argc, char **argv)
      virtual_register("print_r1", print_r1);
      virtual_register("ignore_cpu_failsafe_disarm", ignore_cpu_failsafe_disarm);
  
@@ -337,6 +460,55 @@ index 285c9ab..60f98f8 100644
      // storage
      virtual_register("storage_read_block", storage_read_block);
      virtual_register("storage_write_block", storage_write_block);
+@@ -2059,6 +2184,11 @@ int ardupilot_init_virtuals(int argc, char **argv)
+     virtual_register("ap_fs_read", ap_fs_read);
+     virtual_register("ap_fs_write", ap_fs_write);
+     virtual_register("ap_fs_fsync", ap_fs_fsync);
++    virtual_register("ap_fs_stat", ap_fs_stat);
++    virtual_register("ap_fs_mkdir", ap_fs_mkdir);
++    virtual_register("ap_fs_disk_free", ap_fs_disk_free);
++    virtual_register("ap_fs_disk_space", ap_fs_disk_space);
++    virtual_register("ap_fs_lseek", ap_fs_lseek);
+ 
+     // copter allocate motors
+     virtual_register("copter_allocate_motors", copter_allocate_motors);
+diff --git a/virtuals/physics/flight_controllers/ardupilot/gcs_receiver.c b/virtuals/physics/flight_controllers/ardupilot/gcs_receiver.c
+index 9413110..918eea5 100644
+--- a/virtuals/physics/flight_controllers/ardupilot/gcs_receiver.c
++++ b/virtuals/physics/flight_controllers/ardupilot/gcs_receiver.c
+@@ -109,9 +109,18 @@ void assign_fuzzed_input(uint32_t msgid,
+     memcpy(g_fuzzed_input.payload, payload, real_length);
+ }
+ 
+-void mark_open_flight_log_fd(int fd) {
++int mark_open_flight_log_fd(int fd) {
++    if (fd < 0) return -1;
++    for (int i = 0; i < flight_log_fd_index; i++) {
++        if (flight_log_fd_array[i] == -1) {
++            flight_log_fd_array[i] = fd;
++            return 0;
++        }
++    }
++    if (flight_log_fd_index >= (int)(sizeof(flight_log_fd_array)/sizeof(flight_log_fd_array[0]))) return -1;
+     flight_log_fd_array[flight_log_fd_index] = fd;
+     flight_log_fd_index++;
++    return 0;
+ }
+ 
+ void mark_close_flight_log_fd(int fd) {
+diff --git a/virtuals/physics/flight_controllers/ardupilot/mavlink_lib.h b/virtuals/physics/flight_controllers/ardupilot/mavlink_lib.h
+index 8987db7..527f6d9 100644
+--- a/virtuals/physics/flight_controllers/ardupilot/mavlink_lib.h
++++ b/virtuals/physics/flight_controllers/ardupilot/mavlink_lib.h
+@@ -131,7 +131,7 @@ void start_gcs_listener(RingBuffer *rb);
+ *
+ * @param fd File descriptor of the flight log file.
+ */
+-void mark_open_flight_log_fd(int fd);
++int mark_open_flight_log_fd(int fd);
+ 
+ /**
+ * @brief Mark the close of a flight log file descriptor.
 diff --git a/virtuals/physics/flight_controllers/courbet/mavlink/mav_command_and_control.py b/virtuals/physics/flight_controllers/courbet/mavlink/mav_command_and_control.py
 index 921a242..f480418 100644
 --- a/virtuals/physics/flight_controllers/courbet/mavlink/mav_command_and_control.py
@@ -530,3 +702,144 @@ new file mode 100644
 +    monkeypatch.setattr(helper.time,'monotonic',lambda:next(clock))
 +    with pytest.raises(RuntimeError,match='GPS fusion'):
 +        helper.wait_for_gps_fusion(Link(),5,1)
+diff --git a/virtuals/physics/flight_controllers/ardupilot/filesystem_abi.h b/virtuals/physics/flight_controllers/ardupilot/filesystem_abi.h
+new file mode 100644
+--- /dev/null
++++ b/virtuals/physics/flight_controllers/ardupilot/filesystem_abi.h
+@@ -0,0 +1,57 @@
++/* ArduCopter v4.6.2 FMUv3 binary ABI, verified with DWARF (88-byte stat).
++ * Native host structures must never be copied directly into guest memory.
++ * Pure conversion helpers only; this is not a complete filesystem adapter.
++ */
++#ifndef ADR_FILESYSTEM_ABI_H
++#define ADR_FILESYSTEM_ABI_H
++#include <stdint.h>
++#include <stddef.h>
++#include <string.h>
++#include <fcntl.h>
++#include <limits.h>
++#include <sys/stat.h>
++
++static inline void adr_fs_put_le(uint8_t *p, uint64_t value, size_t n)
++{
++    for (size_t i = 0; i < n; ++i) p[i] = (uint8_t)(value >> (8 * i));
++}
++
++/* ARM newlib flags differ from Linux host flags. Unknown flags are rejected. */
++static inline int adr_fs_open_flags(uint32_t guest, int *host)
++{
++    const uint32_t known = 3u | 0x8u | 0x200u | 0x400u | 0x800u;
++    if ((guest & ~known) || (guest & 3u) == 3u) return -1;
++    *host = (guest & 3u) == 0 ? O_RDONLY : (guest & 3u) == 1 ? O_WRONLY : O_RDWR;
++    if (guest & 0x8u) *host |= O_APPEND;
++    if (guest & 0x200u) *host |= O_CREAT;
++    if (guest & 0x400u) *host |= O_TRUNC;
++    if (guest & 0x800u) *host |= O_EXCL;
++    return 0;
++}
++
++/* Only regular files and directories are represented by this SD-card model.
++ * Reject sizes that the guest's signed 32-bit off_t cannot represent.
++ */
++static inline int adr_fs_stat_bytes(const struct stat *s, uint8_t out[88])
++{
++    if ((!S_ISREG(s->st_mode) && !S_ISDIR(s->st_mode)) ||
++        s->st_size < 0 || (uint64_t)s->st_size > INT32_MAX ||
++        s->st_blocks < 0 || (uint64_t)s->st_blocks > INT32_MAX ||
++        s->st_blksize < 0 || (uint64_t)s->st_blksize > INT32_MAX) return -1;
++    memset(out, 0, 88);
++    /* Guest mode constants come from newlib sys/stat.h, not host bit layout. */
++    const uint32_t mode = (S_ISDIR(s->st_mode) ? 0040000u : 0100000u) |
++        ((s->st_mode & S_IRUSR) ? 0400u : 0) |
++        ((s->st_mode & S_IWUSR) ? 0200u : 0) |
++        ((s->st_mode & S_IXUSR) ? 0100u : 0);
++    adr_fs_put_le(out + 4, mode, 4);
++    adr_fs_put_le(out + 8, 1, 2);
++    adr_fs_put_le(out + 16, (uint32_t)s->st_size, 4);
++    adr_fs_put_le(out + 24, (uint64_t)s->st_atime, 8);
++    adr_fs_put_le(out + 40, (uint64_t)s->st_mtime, 8);
++    adr_fs_put_le(out + 56, (uint64_t)s->st_ctime, 8);
++    adr_fs_put_le(out + 72, (uint32_t)s->st_blksize, 4);
++    adr_fs_put_le(out + 76, (uint32_t)s->st_blocks, 4);
++    return 0;
++}
++#endif
+diff --git a/virtuals/physics/flight_controllers/ardupilot/filesystem_host.h b/virtuals/physics/flight_controllers/ardupilot/filesystem_host.h
+new file mode 100644
+--- /dev/null
++++ b/virtuals/physics/flight_controllers/ardupilot/filesystem_host.h
+@@ -0,0 +1,74 @@
++/* Linux host storage primitives for the FMUv3 filesystem adapter.
++ * Guest absolute paths are rooted inside the configured simulation directory.
++ * Never follow guest-controlled symlinks or traverse above that directory.
++ */
++#ifndef ADR_FILESYSTEM_HOST_H
++#define ADR_FILESYSTEM_HOST_H
++#include "filesystem_abi.h"
++#include <errno.h>
++#include <unistd.h>
++#include <sys/statvfs.h>
++
++static inline int adr_fs_parent(const char *root, const char *guest, char leaf[256])
++{
++    if (!root || !guest || !guest[0] || strlen(guest) >= 256 || strchr(guest, '@')) {
++        errno = EINVAL; return -1;
++    }
++    char copy[256]; strcpy(copy,guest);
++    int fd = open(root, O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC);
++    if (fd < 0) return -1;
++    char *save = NULL, *part = strtok_r(copy, "/", &save);
++    if (!part) { strcpy(leaf,"."); return fd; }
++    while (part) {
++        if (!strcmp(part,"..")) { close(fd); errno = EACCES; return -1; }
++        char *next = strtok_r(NULL, "/", &save);
++        if (!next) { strcpy(leaf,part); return fd; }
++        int child = openat(fd,part,O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC);
++        int error = errno; close(fd);
++        if (child < 0) { errno = error; return -1; }
++        fd = child; part = next;
++    }
++    close(fd); errno = EINVAL; return -1;
++}
++
++static inline int adr_fs_open(const char *root, const char *guest, uint32_t flags)
++{
++    int host;
++    if (adr_fs_open_flags(flags,&host)) { errno = EINVAL; return -1; }
++    char leaf[256]; int parent = adr_fs_parent(root,guest,leaf);
++    if (parent < 0) return -1;
++    int fd = openat(parent,leaf,host | O_NOFOLLOW | O_CLOEXEC,0600);
++    int error = errno; close(parent); errno = error; return fd;
++}
++
++static inline int adr_fs_stat(const char *root, const char *guest, uint8_t out[88])
++{
++    char leaf[256]; int parent = adr_fs_parent(root,guest,leaf);
++    if (parent < 0) return -1;
++    struct stat s;
++    int result = fstatat(parent,leaf,&s,AT_SYMLINK_NOFOLLOW);
++    int error = errno; close(parent);
++    if (!result && adr_fs_stat_bytes(&s,out)) { result = -1; error = EOVERFLOW; }
++    errno = error; return result;
++}
++
++static inline int adr_fs_mkdir(const char *root, const char *guest)
++{
++    char leaf[256]; int parent = adr_fs_parent(root,guest,leaf);
++    if (parent < 0) return -1;
++    int result = mkdirat(parent,leaf,0700);
++    int error = errno; close(parent); errno = error; return result;
++}
++
++static inline int64_t adr_fs_capacity(const char *root, const char *guest, int available)
++{
++    int fd = adr_fs_open(root,guest,0);
++    if (fd < 0) return -1;
++    struct statvfs s;
++    int result = fstatvfs(fd,&s), error = errno; close(fd);
++    if (result) { errno = error; return -1; }
++    uint64_t blocks = available ? s.f_bavail : s.f_blocks;
++    if (s.f_frsize && blocks > INT64_MAX / s.f_frsize) { errno = EOVERFLOW; return -1; }
++    return (int64_t)(blocks*s.f_frsize);
++}
++#endif
