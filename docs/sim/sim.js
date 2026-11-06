@@ -11,6 +11,7 @@ try {
  $('fit').textContent=`Approximate envelope: ${fits?'fits':'does not fit'} with ${number(margin,2)} m combined vehicle/tracking/wall allowance. Overall PURT clearance remains UNVERIFIED: calibrated MoCap coverage and obstacle inventory are missing.`;
  $('preview').onclick=()=>{$('flight').src='course-view.html';$('flight').title='Requested PURT course geometry';$('flight').style.height='650px';$('status').textContent='Static requested course geometry.'};
  const variants=['off','omega','omega_alpha'], labels={off:'FF off',omega:'Rate FF',omega_alpha:'Rate + acceleration FF'}, recordings=new Map();
+ try {
  for(const name of names)for(const variant of variants){
   const r=await fetchJson('../results/shared-sil/feedforward/'+name+'-'+variant+'.json');recordings.set(name+'-'+variant,r);
   const tr=document.createElement('tr');for(const text of [name+' / '+labels[variant],r.passed?'Passed':'FAILED; see report',r.config.lap_time_s+' s',number(r.report.simulated_seconds,2)+' s',number(r.report.tracking_rms_m)+' / '+number(r.report.tracking_max_m)+' m']){const td=document.createElement('td');td.textContent=text;tr.append(td)}$('stats').append(tr);
@@ -20,7 +21,8 @@ try {
  for(const name of names){const b=document.querySelector('[data-stack="'+name+'"]');b.hidden=false;b.onclick=()=>show(name);}
  $('variant').onchange=()=>show(selected);
  $('flight-results').textContent='Historical prototype: these native recordings used the earlier onboard feed-forward implementation. They are retained as evidence, not results for the updated tilt-lead method.';
- const first=document.querySelector('[data-stack="cognipilot"]:not([hidden])');if(first)first.click();
+
+ } catch(error) { $('flight-results').textContent='Archived recordings unavailable: '+error.message; }
  try {
   for(const [name,folder,id] of [['cognipilot','cognipilot','fastdyn'],['betaflight','betaflight','fastdyn-betaflight'],['betaflight','betaflight-nxp','fastdyn-nxp']]) {
   const r=await fetchJson('../results/tilt-lead/fastdyn/'+folder+'/replay.json'),p=r.report;

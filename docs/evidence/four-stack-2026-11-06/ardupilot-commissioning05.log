@@ -1,0 +1,1117 @@
+fastdyn.main|INFO|  [32m****** Fastdyn Framework 0.1.0 *******[0m
+fastdyn.main|WARNING|  [33mThe output directory: /home/suraa.guest/autonomous-drone-bench/artifacts/ardupilot-commissioning05 passed by the user does not exist.[0m
+fastdyn.main|INFO|  [32mCreating output directory at path: /home/suraa.guest/autonomous-drone-bench/artifacts/ardupilot-commissioning05[0m
+FastDyn timing log: /home/suraa.guest/autonomous-drone-bench/artifacts/ardupilot-commissioning05/fastdyn_timing.jsonl
+FASTDYN_LOG|INFO|  [32m[timing] fastdyn:fastdyn.fmu_auto_build 0.000s ok[0m
+FASTDYN_LOG|INFO|  [32m[timing] fastdyn:helpers.load_config 0.001s ok[0m
+FASTDYN_LOG|INFO|  [32m[timing] fastdyn:helper.mavproxy.popen 0.000s ok[0m
+FASTDYN_LOG|INFO|  [32mMAVCesium web viewer: open http://127.0.0.1:5000/mavcesium/[0m
+FASTDYN_LOG|INFO|  [32m[timing] fastdyn:helper.mission.popen 0.000s ok[0m
+FASTDYN_LOG|INFO|  [32m[timing] fastdyn:helpers.start 0.001s ok[0m
+FASTDYN_LOG|INFO|  [32mParsing Config file: /home/suraa.guest/autonomous-drone-bench/artifacts/ardupilot-commissioning.toml[0m
+FASTDYN_LOG|INFO|  [32m[timing] fastdyn:fastdyn.parse_config 0.002s ok[0m
+FASTDYN_LOG|INFO|  [32m[timing] fastdyn:machine0.compile_device_routing 0.000s ok[0m
+FASTDYN_LOG|INFO|  [32m[timing] fastdyn:qemu.write_device_config 0.000s ok[0m
+FASTDYN_LOG|INFO|  [32m[timing] fastdyn:qemu.build_command 0.000s ok[0m
+FASTDYN_LOG|INFO|  [32m[timing] fastdyn:qemu.setup 0.000s ok[0m
+FASTDYN_LOG|INFO|  [32m[timing] fastdyn:machine0.qemu_setup 0.001s ok[0m
+FASTDYN_LOG|INFO|  [32m[timing] fastdyn:qemu.kill_existing 0.008s ok[0m
+FASTDYN_LOG|INFO|  [32m[timing] fastdyn:qemu.build_env 0.000s ok[0m
+FASTDYN_LOG|INFO|  [32m[timing] fastdyn:qemu.popen 0.000s ok[0m
+Initializing flight controllers
+FMU parameter override: Cm=0.016
+FMU parameter override: Cn_r=-0.1
+FMU parameter override: Ct=8.54858e-06
+FMU parameter override: ground_alt_wgs84=149
+FMU parameter override: ixx=0.0260124
+FMU parameter override: iyy=0.0259094
+FMU parameter override: izz=0.0455718
+FMU parameter override: lat0=40.4149
+FMU parameter override: lon0=-86.9324
+FMU parameter override: mass=2.5644
+FMU parameter override: omega_max=1300
+FMU parameter override: pwm_max=1900
+FMU parameter override: pwm_min=1100
+FMU backend loaded: /home/suraa.guest/autonomous-drone-bench/artifacts/ardupilot-rumoca-plant-framed/FastDyn_Copter/binaries/aarch64-linux/Rumoca_0b475601_cdc7_4dce_b9d6_9452c38d6fd1.so
+FMU timing: init_wall=0.000s
+Current CPU type: cortex-m4-arm-cpu
+FMU backend advances synchronously from QEMU timer ticks
+Periodic IRQ 66 every 1000000 ns
+GCS using UART at address 0x200139C0
+[mission] connecting to udpin:127.0.0.1:14552
+Copter frame class address mismatch: expected 0x20008284, got 0x00000AAC
+[GCSReceiver]: Listening for incoming data on UDP port 14551...
+[GPSInputReceiver]: Listening for incoming data on UDP port 14553...
+Send socket not initialized. Cannot send MAVLink message.
+Failed to send mavlink message to GCS
+[31m[GCSReceiver]: Initialized send socket to GCS at 127.0.0.1:45437
+[mission] heartbeat from system=1 component=1
+[mission] waiting up to 180s for ArduPilot readiness
+[mission] STATUSTEXT: Initialising ArduPilot
+[mission] STATUSTEXT: Initialising ArduPilot
+[mission] STATUSTEXT: Initialising ArduPilot
+[mission] STATUSTEXT: Initialising ArduPilot
+[mission] STATUSTEXT: Frame: QUAD/X
+[mission] STATUSTEXT: Initialising ArduPilot
+[mission] STATUSTEXT: Initialising ArduPilot
+[mission] STATUSTEXT: ArduPilot Ready
+[mission] STATUSTEXT: AHRS: DCM active
+[mission] STATUSTEXT: RCOut: None
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: Terrain: Allocation failed
+[mission] STATUSTEXT: GPS 1: specified as MAV
+[mission] STATUSTEXT: GPS 1: detected MAV
+[mission] STATUSTEXT: EKF3 IMU0 initialised
+[mission] STATUSTEXT: AHRS: EKF3 active
+[mission] ArduPilot ready with GPS and EKF initialized
+[mission] loading 2 params from /home/suraa.guest/autonomous-drone-bench/artifacts/ardupilot-commissioning.param
+[mission] param BRD_SAFETY_DEFLT=0
+[mission] param ARMING_CHECK=1
+[mission] params sent
+[mission] keeping QGC home row for ArduPilot mission indexing
+[mission] uploading 6 mission items from virtuals/physics/flight_controllers/courbet/mavlink/copter_mission.waypoints
+[mission] previous mission cleared
+[mission] sending mission item 0/5
+[mission] sending mission item 1/5
+[mission] sending mission item 2/5
+[mission] sending mission item 3/5
+[mission] sending mission item 4/5
+[mission] sending mission item 5/5
+[mission] upload accepted
+[mission] ensuring armed state in STABILIZE
+[mission] setting mode STABILIZE
+[mission] safety switch released
+[mission] arming
+[mission] STATUSTEXT: Flight plan received
+[mission] safety ack result=0
+[mission] arm ack result=4
+[mission] STATUSTEXT: Arm: EKF attitude is bad
+[mission] STATUSTEXT: Arm: Check mag field (xy diff:201>100)
+[mission] STATUSTEXT: Arm: AHRS: EKF starting GPS checks
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:200>100)
+[mission] STATUSTEXT: PreArm: AHRS: EKF starting GPS checks
+[mission] rel_alt=0.0m
+[mission] current item 0/5
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:200>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:200>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:200>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: EKF3 IMU0 origin set
+[mission] STATUSTEXT: Field Elevation Set: 149m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:200>100)
+[0mFMU timing: sim=47.722s wall_since_init=5.000s sim_wall_rtf=9.54x advanced=47.722s wall_advance=0.125s fmu_compute_rtf=382.79x advance_calls=47718 do_steps=47720 avg_do_step=2.6us
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:200>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:200>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:200>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:200>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:200>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:200>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:200>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:199>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:199>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:199>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:199>100)
+[mission] arming
+[mission] arm ack result=4
+[mission] STATUSTEXT: Arm: EKF attitude is bad
+[mission] STATUSTEXT: Arm: Check mag field (xy diff:199>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:199>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:199>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:199>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:199>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:199>100)
+FMU timing: sim=89.097s wall_since_init=10.000s sim_wall_rtf=8.91x advanced=89.097s wall_advance=0.234s fmu_compute_rtf=381.01x advance_calls=89093 do_steps=89095 avg_do_step=2.6us
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:199>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:199>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:199>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:199>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:199>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:199>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:199>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:199>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:199>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:199>100)
+[mission] setting mode STABILIZE
+[mission] safety switch released
+[mission] safety ack result=0
+[mission] arming
+[mission] arm ack result=4
+[mission] STATUSTEXT: Arm: EKF attitude is bad
+[mission] STATUSTEXT: Arm: Check mag field (xy diff:199>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:199>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:199>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:199>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:199>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:199>100)
+[mission] rel_alt=0.0m
+FMU timing: sim=130.551s wall_since_init=15.000s sim_wall_rtf=8.70x advanced=130.551s wall_advance=0.343s fmu_compute_rtf=380.42x advance_calls=130547 do_steps=130549 avg_do_step=2.6us
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:199>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:199>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:199>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:199>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:199>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:199>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:199>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:199>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:199>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:199>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:199>100)
+[mission] arming
+[mission] arm ack result=4
+[mission] STATUSTEXT: Arm: EKF attitude is bad
+[mission] STATUSTEXT: Arm: Check mag field (xy diff:199>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:199>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:198>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:198>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:198>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:198>100)
+FMU timing: sim=171.870s wall_since_init=20.000s sim_wall_rtf=8.59x advanced=171.870s wall_advance=0.452s fmu_compute_rtf=380.00x advance_calls=171866 do_steps=171868 avg_do_step=2.6us
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:198>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:198>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:198>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:198>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:198>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:198>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:198>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:198>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:198>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:198>100)
+[mission] setting mode STABILIZE
+[mission] safety switch released
+[mission] safety ack result=0
+[mission] arming
+[mission] arm ack result=4
+[mission] STATUSTEXT: Arm: EKF attitude is bad
+[mission] STATUSTEXT: Arm: Check mag field (xy diff:198>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:198>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:198>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:198>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:198>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:198>100)
+FMU timing: sim=213.312s wall_since_init=25.000s sim_wall_rtf=8.53x advanced=213.312s wall_advance=0.562s fmu_compute_rtf=379.68x advance_calls=213308 do_steps=213310 avg_do_step=2.6us
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:198>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:198>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:198>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:198>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:198>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:198>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:198>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:198>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:198>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:198>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:198>100)
+[mission] arming
+[mission] arm ack result=4
+[mission] STATUSTEXT: Arm: EKF attitude is bad
+[mission] STATUSTEXT: Arm: Check mag field (xy diff:198>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:198>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:198>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:197>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:197>100)
+FMU timing: sim=254.386s wall_since_init=30.000s sim_wall_rtf=8.48x advanced=254.386s wall_advance=0.671s fmu_compute_rtf=379.39x advance_calls=254382 do_steps=254384 avg_do_step=2.6us
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:197>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:197>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:197>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:197>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:197>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:197>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:197>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:197>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:197>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:197>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:197>100)
+[mission] setting mode STABILIZE
+[mission] safety switch released
+[mission] safety ack result=0
+[mission] arming
+[mission] arm ack result=4
+[mission] STATUSTEXT: Arm: EKF attitude is bad
+[mission] STATUSTEXT: Arm: Check mag field (xy diff:197>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:197>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:197>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:197>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:197>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:197>100)
+FMU timing: sim=295.766s wall_since_init=35.000s sim_wall_rtf=8.45x advanced=295.766s wall_advance=0.780s fmu_compute_rtf=379.18x advance_calls=295762 do_steps=295764 avg_do_step=2.6us
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:197>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:197>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:197>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:197>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:197>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:197>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:197>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:197>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:197>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:197>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:197>100)
+[mission] arming
+[mission] arm ack result=4
+[mission] STATUSTEXT: Arm: EKF attitude is bad
+[mission] STATUSTEXT: Arm: Check mag field (xy diff:197>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:197>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:197>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:196>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:196>100)
+FMU timing: sim=336.959s wall_since_init=40.000s sim_wall_rtf=8.42x advanced=336.959s wall_advance=0.889s fmu_compute_rtf=379.03x advance_calls=336955 do_steps=336957 avg_do_step=2.6us
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:196>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:196>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:196>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:196>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:196>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:196>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:196>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:196>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:196>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:196>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:196>100)
+[mission] setting mode STABILIZE
+[mission] safety switch released
+[mission] arming
+[mission] safety ack result=0
+[mission] arm ack result=4
+[mission] STATUSTEXT: Arm: EKF attitude is bad
+[mission] STATUSTEXT: Arm: Check mag field (xy diff:196>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:196>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:196>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:196>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:196>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:196>100)
+FMU timing: sim=378.110s wall_since_init=45.000s sim_wall_rtf=8.40x advanced=378.110s wall_advance=0.998s fmu_compute_rtf=378.84x advance_calls=378106 do_steps=378108 avg_do_step=2.6us
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:196>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:196>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:196>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:196>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:196>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:196>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:196>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:196>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:196>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:196>100)
+[mission] rel_alt=0.0m
+[mission] arming
+[mission] arm ack result=4
+[mission] STATUSTEXT: Arm: EKF attitude is bad
+[mission] STATUSTEXT: Arm: Check mag field (xy diff:195>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:195>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:195>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:195>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:195>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:195>100)
+FMU timing: sim=419.213s wall_since_init=50.001s sim_wall_rtf=8.38x advanced=419.213s wall_advance=1.107s fmu_compute_rtf=378.54x advance_calls=419209 do_steps=419211 avg_do_step=2.6us
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:195>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:195>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:195>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:195>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:195>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:195>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:195>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:195>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:195>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:195>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:195>100)
+[mission] setting mode STABILIZE
+[mission] safety switch released
+[mission] arming
+[mission] safety ack result=0
+[mission] arm ack result=4
+[mission] STATUSTEXT: Arm: EKF attitude is bad
+[mission] STATUSTEXT: Arm: Check mag field (xy diff:195>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:195>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:195>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:195>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:195>100)
+FMU timing: sim=460.028s wall_since_init=55.001s sim_wall_rtf=8.36x advanced=460.028s wall_advance=1.216s fmu_compute_rtf=378.29x advance_calls=460024 do_steps=460026 avg_do_step=2.6us
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:195>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:195>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:195>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:195>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:195>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:195>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:195>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:195>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:194>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:194>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:194>100)
+[mission] arming
+[mission] rel_alt=0.0m
+[mission] arm ack result=4
+[mission] STATUSTEXT: Arm: EKF attitude is bad
+[mission] STATUSTEXT: Arm: Check mag field (xy diff:194>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:194>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:194>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:194>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:194>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:194>100)
+FMU timing: sim=501.274s wall_since_init=60.001s sim_wall_rtf=8.35x advanced=501.274s wall_advance=1.325s fmu_compute_rtf=378.26x advance_calls=501270 do_steps=501272 avg_do_step=2.6us
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:194>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:194>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:194>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:194>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:194>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:194>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:194>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:194>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:194>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:194>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:194>100)
+[mission] setting mode STABILIZE
+[mission] safety switch released
+[mission] arming
+[mission] safety ack result=0
+[mission] arm ack result=4
+[mission] STATUSTEXT: Arm: EKF attitude is bad
+[mission] STATUSTEXT: Arm: Check mag field (xy diff:194>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:194>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:194>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:194>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:194>100)
+FMU timing: sim=542.652s wall_since_init=65.001s sim_wall_rtf=8.35x advanced=542.652s wall_advance=1.435s fmu_compute_rtf=378.21x advance_calls=542648 do_steps=542650 avg_do_step=2.6us
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:194>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:194>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:194>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:194>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:194>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:193>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:193>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:193>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:193>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:193>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:193>100)
+[mission] arming
+[mission] arm ack result=4
+[mission] STATUSTEXT: Arm: EKF attitude is bad
+[mission] STATUSTEXT: Arm: Check mag field (xy diff:193>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:193>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:193>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:193>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:193>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:193>100)
+FMU timing: sim=583.479s wall_since_init=70.001s sim_wall_rtf=8.34x advanced=583.479s wall_advance=1.543s fmu_compute_rtf=378.12x advance_calls=583475 do_steps=583477 avg_do_step=2.6us
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:193>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:193>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:193>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:193>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:193>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:193>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:193>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:193>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:193>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:193>100)
+[mission] setting mode STABILIZE
+[mission] safety switch released
+[mission] arming
+[mission] safety ack result=0
+[mission] arm ack result=4
+[mission] STATUSTEXT: Arm: EKF attitude is bad
+[mission] STATUSTEXT: Arm: Check mag field (xy diff:193>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:193>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:193>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:193>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:193>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:193>100)
+FMU timing: sim=624.642s wall_since_init=75.001s sim_wall_rtf=8.33x advanced=624.642s wall_advance=1.652s fmu_compute_rtf=378.02x advance_calls=624638 do_steps=624640 avg_do_step=2.6us
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:193>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:192>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:192>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:192>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:192>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:192>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:192>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:192>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:192>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:192>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:192>100)
+[mission] arming
+[mission] arm ack result=4
+[mission] STATUSTEXT: Arm: EKF attitude is bad
+[mission] STATUSTEXT: Arm: Check mag field (xy diff:192>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:192>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:192>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:192>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:192>100)
+[mission] rel_alt=0.0m
+FMU timing: sim=666.040s wall_since_init=80.001s sim_wall_rtf=8.33x advanced=666.040s wall_advance=1.762s fmu_compute_rtf=377.98x advance_calls=666036 do_steps=666038 avg_do_step=2.6us
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:192>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:192>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:192>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:192>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:192>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:192>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:192>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:192>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:192>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:192>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:192>100)
+[mission] setting mode STABILIZE
+[mission] safety switch released
+[mission] arming
+[mission] safety ack result=0
+[mission] arm ack result=4
+[mission] STATUSTEXT: Arm: EKF attitude is bad
+[mission] STATUSTEXT: Arm: Check mag field (xy diff:192>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:192>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:192>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:192>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:192>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:191>100)
+FMU timing: sim=707.212s wall_since_init=85.001s sim_wall_rtf=8.32x advanced=707.212s wall_advance=1.872s fmu_compute_rtf=377.87x advance_calls=707208 do_steps=707210 avg_do_step=2.6us
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:191>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:191>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:191>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:191>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:191>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:191>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:191>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:191>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:191>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:191>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:191>100)
+[mission] arming
+[mission] arm ack result=4
+[mission] STATUSTEXT: Arm: EKF attitude is bad
+[mission] STATUSTEXT: Arm: Check mag field (xy diff:191>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:191>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:191>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:191>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:191>100)
+FMU timing: sim=748.189s wall_since_init=90.001s sim_wall_rtf=8.31x advanced=748.189s wall_advance=1.980s fmu_compute_rtf=377.80x advance_calls=748185 do_steps=748187 avg_do_step=2.6us
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:191>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:191>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:191>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:191>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:191>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:191>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:191>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:191>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:191>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:191>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:191>100)
+[mission] setting mode STABILIZE
+[mission] safety switch released
+[mission] arming
+[mission] safety ack result=0
+[mission] arm ack result=4
+[mission] STATUSTEXT: Arm: EKF attitude is bad
+[mission] STATUSTEXT: Arm: Check mag field (xy diff:191>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:191>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:191>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:190>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:190>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:190>100)
+FMU timing: sim=789.493s wall_since_init=95.001s sim_wall_rtf=8.31x advanced=789.493s wall_advance=2.090s fmu_compute_rtf=377.73x advance_calls=789489 do_steps=789491 avg_do_step=2.6us
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:190>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:190>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:190>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:190>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:190>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:190>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:190>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:190>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:190>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:190>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:190>100)
+[mission] arming
+[mission] arm ack result=4
+[mission] STATUSTEXT: Arm: EKF attitude is bad
+[mission] STATUSTEXT: Arm: Check mag field (xy diff:190>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:190>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:190>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:190>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:190>100)
+FMU timing: sim=830.814s wall_since_init=100.001s sim_wall_rtf=8.31x advanced=830.814s wall_advance=2.199s fmu_compute_rtf=377.74x advance_calls=830810 do_steps=830812 avg_do_step=2.6us
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:190>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:190>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:190>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:190>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:190>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:190>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:190>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:190>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:190>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:190>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:190>100)
+[mission] setting mode STABILIZE
+[mission] safety switch released
+[mission] arming
+[mission] safety ack result=0
+[mission] arm ack result=4
+[mission] STATUSTEXT: Arm: EKF attitude is bad
+[mission] STATUSTEXT: Arm: Check mag field (xy diff:189>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:189>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:189>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:189>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:189>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:189>100)
+FMU timing: sim=872.171s wall_since_init=105.001s sim_wall_rtf=8.31x advanced=872.171s wall_advance=2.309s fmu_compute_rtf=377.73x advance_calls=872167 do_steps=872169 avg_do_step=2.6us
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:189>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:189>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:189>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:189>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:189>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:189>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:189>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:189>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:189>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:189>100)
+[mission] rel_alt=0.0m
+[mission] arming
+[mission] arm ack result=4
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:189>100)
+[mission] STATUSTEXT: Arm: EKF attitude is bad
+[mission] STATUSTEXT: Arm: Check mag field (xy diff:189>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:189>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:189>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:189>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:189>100)
+FMU timing: sim=913.253s wall_since_init=110.001s sim_wall_rtf=8.30x advanced=913.253s wall_advance=2.418s fmu_compute_rtf=377.71x advance_calls=913249 do_steps=913251 avg_do_step=2.6us
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:189>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:189>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:189>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:189>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:189>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:189>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:189>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:189>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:189>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:189>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:188>100)
+[mission] rel_alt=0.0m
+[mission] setting mode STABILIZE
+[mission] safety switch released
+[mission] arming
+[mission] safety ack result=0
+[mission] arm ack result=4
+[mission] STATUSTEXT: Arm: EKF attitude is bad
+[mission] STATUSTEXT: Arm: Check mag field (xy diff:188>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:188>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:188>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:188>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:188>100)
+FMU timing: sim=954.334s wall_since_init=115.001s sim_wall_rtf=8.30x advanced=954.334s wall_advance=2.527s fmu_compute_rtf=377.64x advance_calls=954330 do_steps=954332 avg_do_step=2.6us
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:188>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:188>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:188>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:188>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:188>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:188>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:188>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:188>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:188>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:188>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:188>100)
+[mission] rel_alt=0.0m
+[mission] arming
+[mission] arm ack result=4
+[mission] STATUSTEXT: Arm: EKF attitude is bad
+[mission] STATUSTEXT: Arm: Check mag field (xy diff:188>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:188>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:188>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:188>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:188>100)
+FMU timing: sim=995.127s wall_since_init=120.001s sim_wall_rtf=8.29x advanced=995.127s wall_advance=2.635s fmu_compute_rtf=377.61x advance_calls=995123 do_steps=995125 avg_do_step=2.6us
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:188>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:188>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:188>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:188>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:188>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:188>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:188>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:188>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:188>100)
+[mission] rel_alt=0.0m
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:188>100)
+[mission] STATUSTEXT: PreArm: EKF attitude is bad
+[mission] STATUSTEXT: PreArm: Check mag field (xy diff:187>100)
+Traceback (most recent call last):
+  File "/home/suraa.guest/autonomous-drone-bench/artifacts/fastdyn-pinned/virtuals/physics/flight_controllers/courbet/mavlink/mav_command_and_control.py", line 664, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/home/suraa.guest/autonomous-drone-bench/artifacts/fastdyn-pinned/virtuals/physics/flight_controllers/courbet/mavlink/mav_command_and_control.py", line 645, in main
+    ensure_armed_and_started(
+  File "/home/suraa.guest/autonomous-drone-bench/artifacts/fastdyn-pinned/virtuals/physics/flight_controllers/courbet/mavlink/mav_command_and_control.py", line 535, in ensure_armed_and_started
+    raise RuntimeError(f"timed out arming after {timeout:g}s")
+RuntimeError: timed out arming after 120s
+FASTDYN_LOG|INFO|  [32m[timing] fastdyn:helper.mission.exited exit_code=1[0m
+FASTDYN_LOG|INFO|  [32m[timing] fastdyn:qemu.wait 123.676s ok[0m
+FASTDYN_LOG|INFO|  [32m[timing] fastdyn:machine0.qemu_execution 123.685s ok[0m
+FASTDYN_LOG|INFO|  [32m[timing] fastdyn:fastdyn.machine0.run 123.686s ok[0m
+FASTDYN_LOG|INFO|  [32m[timing] fastdyn:helpers.stop 0.135s ok[0m
+FASTDYN_LOG|INFO|  [32m[timing] fastdyn:fastdyn.run.total 123.825s error[0m
+Error: helper 'mission' exited with status 1

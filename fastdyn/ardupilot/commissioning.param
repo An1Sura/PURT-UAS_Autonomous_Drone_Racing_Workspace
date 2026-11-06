@@ -1,0 +1,4 @@
+# Simulation-only safety-switch state; not a physical-board configuration.
+BRD_SAFETY_DEFLT 0
+ARMING_CHECK 1
+# Keep firmware defaults for estimator sources, RC failsafe and auto-disarm.

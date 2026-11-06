@@ -1,0 +1,144 @@
+diff --git a/modelica/FastDyn/Copter.mo b/modelica/FastDyn/Copter.mo
+index d246f05..8398842 100644
+--- a/modelica/FastDyn/Copter.mo
++++ b/modelica/FastDyn/Copter.mo
+@@ -73,27 +73,29 @@ equation
+     plant.omega_cmd[i] = motor_cmd[i];
+   end for;
+ 
+-  accel = plant.accel + accel_bias;
+-  gyro = plant.gyro + gyro_bias;
+-  mag = plant.mag + mag_bias;
++  // QuadrotorPlant uses body FLU; the ArduPilot interface uses body FRD.
++  accel = {plant.accel[1], -plant.accel[2], -plant.accel[3]} + accel_bias;
++  gyro = {plant.gyro[1], -plant.gyro[2], -plant.gyro[3]} + gyro_bias;
++  mag = {plant.mag[1], -plant.mag[2], -plant.mag[3]} + mag_bias;
+ 
+   gps_lat_lon = Geodesy.localNorthEastToLatLon(
+     lat0,
+     lon0,
+-    plant.p[1] + gps_bias[1],
+-    -plant.p[2] + gps_bias[2],
++    plant.p[2] + gps_bias[1],
++    plant.p[1] + gps_bias[2],
+     earth_radius_m);
+   gps[1] = gps_lat_lon[1];
+   gps[2] = gps_lat_lon[2];
+   gps[3] = ground_alt_wgs84 + plant.p[3] + gps_bias[3];
+ 
+-  vel_ned[1] = plant.v_w[1];
+-  vel_ned[2] = -plant.v_w[2];
++  vel_ned[1] = plant.v_w[2];
++  vel_ned[2] = plant.v_w[1];
+   vel_ned[3] = -plant.v_w[3];
+ 
+   yaw_rad = atan2(2.0 * (plant.q[1] * plant.q[4] + plant.q[2] * plant.q[3]),
+                   1.0 - 2.0 * (plant.q[3] * plant.q[3] + plant.q[4] * plant.q[4]));
+-  yaw_deg = -yaw_rad * 180.0 / pi;
++  // ENU yaw zero points east; NED heading zero points north.
++  yaw_deg = 90.0 - yaw_rad * 180.0 / pi;
+ 
+   baro_altitude_m = plant.p[3] + baro_alt_bias;
+   baro_temperature_c = 15.0 - 0.0065 * (ground_alt_wgs84 + baro_altitude_m);
+diff --git a/src/fastdyn/fmu_build.py b/src/fastdyn/fmu_build.py
+index 62660e1..9c67cc7 100644
+--- a/src/fastdyn/fmu_build.py
++++ b/src/fastdyn/fmu_build.py
+@@ -4,6 +4,7 @@ from __future__ import annotations
+ 
+ from dataclasses import dataclass
+ import os
++import platform
+ from pathlib import Path
+ import shutil
+ import subprocess
+@@ -440,6 +441,25 @@ def _model_description_xml(build: FmuBuild) -> bytes:
+     )
+ 
+ 
++def runtime_metadata(build: FmuBuild) -> tuple[str, str]:
++    """Resolve the FMI token and host binary from the FMU's own metadata."""
++    root = ET.fromstring(_model_description_xml(build))
++    token = root.attrib.get("instantiationToken", "")
++    cs = root.find("CoSimulation")
++    identifier = cs.attrib.get("modelIdentifier", "") if cs is not None else ""
++    if not token or any(c in token for c in ",=\n\r"):
++        raise FmuConfigError("Missing or unsafe FMI instantiationToken")
++    if not identifier or Path(identifier).name != identifier:
++        raise FmuConfigError("Missing or unsafe CoSimulation modelIdentifier")
++    host = {"aarch64": "aarch64-linux", "x86_64": "x86_64-linux"}.get(platform.machine())
++    if platform.system() != "Linux" or host is None:
++        raise FmuConfigError("This native FastDyn FMU loader requires a supported Linux host")
++    library = build.output / "binaries" / host / (identifier + ".so")
++    if not library.is_file():
++        raise FmuConfigError(f"Build the FMU host library first: {library}")
++    return str(library.resolve()), token
++
++
+ def value_references(build: FmuBuild) -> dict[str, int]:
+     """Read named FMI value references from the generated modelDescription.xml."""
+ 
+diff --git a/src/fastdyn/targets/qemu_target.py b/src/fastdyn/targets/qemu_target.py
+index 4ecb2fa..44b02f4 100644
+--- a/src/fastdyn/targets/qemu_target.py
++++ b/src/fastdyn/targets/qemu_target.py
+@@ -571,6 +571,8 @@ def build_qemu_cmd(machine, dev_config_path, out_path):
+         plugin_kv.append(f"fmu={machine.fmu_path}")
+     if getattr(machine, "fmu_name", None):
+         plugin_kv.append(f"fmu_name={machine.fmu_name}")
++    if getattr(machine, "fmu_token", None):
++        plugin_kv.append(f"fmu_token={machine.fmu_token}")
+     for name, value in sorted(getattr(machine, "fmu_parameters", {}).items()):
+         if "," in name or "=" in name:
+             raise ValueError(f"FMU parameter name cannot contain ',' or '=': {name!r}")
+diff --git a/src/fastdyn/toml_parser.py b/src/fastdyn/toml_parser.py
+index b7f6371..5287f35 100644
+--- a/src/fastdyn/toml_parser.py
++++ b/src/fastdyn/toml_parser.py
+@@ -147,7 +147,7 @@ def parser(
+         try:
+             fmu = fmu_build.resolve(Path(toml_config), fmu_name)
+             machine0.fmu_name = fmu.name
+-            machine0.fmu_path = str(fmu.fmu_path if fmu.package else fmu.output)
++            machine0.fmu_path, machine0.fmu_token = fmu_build.runtime_metadata(fmu)
+             machine0.fmu_parameters = fmu.parameters or {}
+             machine0.fmu_value_references = fmu_build.value_references(fmu)
+         except fmu_build.NoFmuConfig:
+diff --git a/virtuals/physics/flight_controllers/ardupilot/ardupilot.c b/virtuals/physics/flight_controllers/ardupilot/ardupilot.c
+index 285c9ab..5d1c379 100644
+--- a/virtuals/physics/flight_controllers/ardupilot/ardupilot.c
++++ b/virtuals/physics/flight_controllers/ardupilot/ardupilot.c
+@@ -894,10 +894,11 @@ HMC5843RawData convert_to_hmc5843(SimulatorMagnetometer sim_data)
+     // int mag_y_raw = temp_z;    // raw Z -> Y
+     // int mag_z_raw = -1 * temp_y;   // raw Y -> Z (negated)
+ 
+-    // Conversion from FLU to FRD
+-    temp_x = temp_x;
+-    temp_y = -1 * temp_y;
+-    temp_z = -1 * temp_z;
++    // Convert only FLU backends. The FMI backend already supplies body FRD.
++    if (phy_get_imu_frame() != PHY_BODY_FRAME_FRD) {
++        temp_y = -temp_y;
++        temp_z = -temp_z;
++    }
+ 
+     // Apply hardware remapping for HMC5843
+     int mag_x_raw = temp_y;
+diff --git a/virtuals/physics/physics_engines/fmu/fmu.c b/virtuals/physics/physics_engines/fmu/fmu.c
+index ddb07dc..c175159 100644
+--- a/virtuals/physics/physics_engines/fmu/fmu.c
++++ b/virtuals/physics/physics_engines/fmu/fmu.c
+@@ -535,8 +535,11 @@ static int fmu_backend_init(void)
+     }
+     fmu_state.terminate = (fmi3Terminate_ft)dlsym(fmu_state.handle, "fmi3Terminate");
+ 
+-    char token[640];
+-    snprintf(token, sizeof(token), "%s-rumoca", model);
++    const char *token = utils_get_arg("fmu_token", fmu_state.argc, fmu_state.argv);
++    if (token == NULL || token[0] == '\0') {
++        fprintf(stderr, "FMU instantiationToken from modelDescription.xml is required\n");
++        return 0;
++    }
+     fmu_state.instance = fmu_state.instantiateCoSimulation(
+         fmu_name ? fmu_name : model,
+         token,

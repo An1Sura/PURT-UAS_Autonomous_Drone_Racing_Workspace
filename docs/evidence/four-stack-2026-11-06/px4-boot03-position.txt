@@ -1,0 +1,18 @@
+0x7006bd64 in imxrt_lpsrtc_enable () at chip/imxrt_lpsrtc.c:79
+79	  while ((getreg32(IMXRT_SNVS_LPCR) & SVNS_LPCR_SRTCENV) == 0)
+#0  0x7006bd64 in imxrt_lpsrtc_enable () at chip/imxrt_lpsrtc.c:79
+#1  0x7006bd84 in imxrt_lpsrtc_initialize () at chip/imxrt_lpsrtc.c:139
+#2  0x7006bdd2 in up_rtc_initialize () at chip/imxrt_hprtc.c:303
+#3  0x70061ade in clock_initialize () at clock/clock_initialize.c:221
+#4  0x0003278e in nx_start () at init/nx_start.c:639
+#5  0x7002234c in __start () at chip/imxrt_start.c:279
+#6  0x00000000 in ?? ()
+pc             0x7006bd64          0x7006bd64 <imxrt_lpsrtc_enable+12>
+lr             0x7006bd85          1879489925
+=> 0x7006bd64 <imxrt_lpsrtc_enable+12>:	lsls	r2, r2, #31
+   0x7006bd66 <imxrt_lpsrtc_enable+14>:	bpl.n	0x7006bd62 <imxrt_lpsrtc_enable+10>
+   0x7006bd68 <imxrt_lpsrtc_enable+16>:	bx	lr
+   0x7006bd6a <imxrt_lpsrtc_enable+18>:	nop
+   0x7006bd6c <imxrt_lpsrtc_enable+20>:	ands	r0, r0
+   0x7006bd6e <imxrt_lpsrtc_enable+22>:	ands	r5, r1
+[Inferior 1 (process 1) detached]

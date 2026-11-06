@@ -1,0 +1,25 @@
+0x701c5a4c in imxrt_clock (rate=<optimized out>, dev=0x202038e0 <g_sdhcdev>) at chip/imxrt_usdhc.c:1860
+1860	          USDHC_PRSSTAT_SDSTB) == 0)
+#0  0x701c5a4c in imxrt_clock (rate=<optimized out>, dev=0x202038e0 <g_sdhcdev>) at chip/imxrt_usdhc.c:1860
+#1  imxrt_clock (dev=0x202038e0 <g_sdhcdev>, rate=<optimized out>) at chip/imxrt_usdhc.c:1776
+#2  0x701cee58 in mmcsd_cardidentify (priv=0x20004ea0) at mmcsd/mmcsd_sdio.c:3946
+#3  mmcsd_probe (priv=priv@entry=0x20004ea0) at mmcsd/mmcsd_sdio.c:4326
+#4  0x701cf874 in mmcsd_hwinitialize (priv=0x20004ea0) at mmcsd/mmcsd_sdio.c:4548
+#5  mmcsd_slotinitialize (minor=minor@entry=0, dev=<optimized out>) at mmcsd/mmcsd_sdio.c:4655
+#6  0x701c39d0 in fmurt1062_usdhc_initialize () at /home/suraa.guest/autonomous-drone-bench/src/PX4-Autopilot/boards/nxp/mr-tropic/src/sdhc.c:117
+#7  0x701c395e in board_app_initialize (arg=arg@entry=0) at /home/suraa.guest/autonomous-drone-bench/src/PX4-Autopilot/boards/nxp/mr-tropic/src/init.c:375
+#8  0x70073a5a in boardctl (cmd=cmd@entry=65281, arg=arg@entry=0) at boardctl.c:368
+#9  0x70063dea in nsh_initialize () at nsh_init.c:149
+#10 0x70063d88 in nsh_main (argc=1, argv=0x20001a30) at nsh_main.c:71
+#11 0x7006dcce in nxtask_startup (entrypt=0x70063d65 <nsh_main>, entrypt@entry=0x1 <board_peripheral_reset>, argc=1, argv=0x20001a30) at sched/task_startup.c:72
+#12 0x70062ccc in nxtask_start () at task/task_start.c:104
+#13 0x00000000 in ?? ()
+=> 0x701c5a4c <imxrt_clock+36>:	lsls	r2, r2, #28
+   0x701c5a4e <imxrt_clock+38>:	bpl.n	0x701c5a4a <imxrt_clock+34>
+   0x701c5a50 <imxrt_clock+40>:	b.n	0x701c5a54 <imxrt_clock+44>
+   0x701c5a52 <imxrt_clock+42>:	str	r3, [r4, #44]	@ 0x2c
+   0x701c5a54 <imxrt_clock+44>:	pop	{r4, pc}
+   0x701c5a56 <imxrt_clock+46>:	ldr	r2, [pc, #4]	@ (0x701c5a5c <imxrt_clock+52>)
+   0x701c5a58 <imxrt_clock+48>:	orrs	r2, r3
+   0x701c5a5a <imxrt_clock+50>:	b.n	0x701c5a42 <imxrt_clock+26>
+[Inferior 1 (process 1) detached]

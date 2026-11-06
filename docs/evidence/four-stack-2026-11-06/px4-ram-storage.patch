@@ -1,0 +1,134 @@
+diff --git a/boards/nxp/mr-tropic/src/CMakeLists.txt b/boards/nxp/mr-tropic/src/CMakeLists.txt
+index 868faca8..fdefdeb5 100644
+--- a/boards/nxp/mr-tropic/src/CMakeLists.txt
++++ b/boards/nxp/mr-tropic/src/CMakeLists.txt
+@@ -84,3 +84,9 @@ else()
+ 	)
+ 
+ endif()
++
++# Explicit simulation-only build; never enable for a hardware image.
++option(ADR_FASTDYN "Use volatile parameter storage for FastDyn startup" OFF)
++if(ADR_FASTDYN)
++  target_compile_definitions(drivers_board PRIVATE ADR_FASTDYN=1)
++endif()
+diff --git a/boards/nxp/mr-tropic/src/imxrt_flexspi_storage.c b/boards/nxp/mr-tropic/src/imxrt_flexspi_storage.c
+index 807dfa2d..729e6e02 100644
+--- a/boards/nxp/mr-tropic/src/imxrt_flexspi_storage.c
++++ b/boards/nxp/mr-tropic/src/imxrt_flexspi_storage.c
+@@ -59,6 +59,15 @@
+ 
+ extern struct flexspi_nor_config_s g_bootConfig;
+ 
++#ifdef ADR_FASTDYN
++/* Same 256 KiB geometry, erased each boot; no physical flash timing claim. */
++static uint8_t g_fastdyn_storage[NOR_USED_SECTORS * NOR_SECTOR_SIZE];
++#undef NOR_STORAGE_ADDR
++#undef NOR_STORAGE_END
++#define NOR_STORAGE_ADDR g_fastdyn_storage
++#define NOR_STORAGE_END (g_fastdyn_storage + sizeof(g_fastdyn_storage))
++#endif
++
+ /****************************************************************************
+  * Private Types
+  ****************************************************************************/
+@@ -126,6 +135,9 @@ static sem_t g_exclsem = SEM_INITIALIZER(1);
+ static int imxrt_flexspi_storage_erase_chip(
+ 	const struct imxrt_flexspi_storage_dev_s *dev)
+ {
++	#ifdef ADR_FASTDYN
++	return imxrt_flexspi_storage_erase((struct mtd_dev_s *)dev, 0, NOR_USED_SECTORS);
++#endif
+ 	/* We can't erase the chip we're executing from */
+ 	return -EINVAL;
+ }
+@@ -146,6 +158,9 @@ static ssize_t imxrt_flexspi_storage_read(struct mtd_dev_s *dev,
+ 		return -EIO;
+ 	}
+ 
++	#ifdef ADR_FASTDYN
++	if ((size_t)offset > sizeof(g_fastdyn_storage) || nbytes > sizeof(g_fastdyn_storage) - (size_t)offset) return -EIO;
++#endif
+ 	src = priv->ahb_base + offset;
+ 
+ 	if (src + nbytes > (uint8_t *)NOR_STORAGE_END) {
+@@ -195,6 +210,20 @@ static ssize_t imxrt_flexspi_storage_bwrite(struct mtd_dev_s *dev,
+ 		size_t nblocks,
+ 		const uint8_t *buffer)
+ {
++#ifdef ADR_FASTDYN
++	(void)dev;
++	const size_t pages = sizeof(g_fastdyn_storage) / NOR_PAGE_SIZE;
++	if (startblock < 0 || (size_t)startblock > pages || nblocks > pages - (size_t)startblock) return -EINVAL;
++	int ret = nxsem_wait(&g_exclsem);
++	if (ret < 0) return ret;
++	uint8_t *dst = g_fastdyn_storage + (size_t)startblock * NOR_PAGE_SIZE;
++	for (size_t i = 0; i < nblocks * NOR_PAGE_SIZE; ++i) {
++		if ((dst[i] & buffer[i]) != buffer[i]) { nxsem_post(&g_exclsem); return -EIO; }
++	}
++	for (size_t i = 0; i < nblocks * NOR_PAGE_SIZE; ++i) dst[i] &= buffer[i];
++	nxsem_post(&g_exclsem);
++	return nblocks;
++#else
+ 	ssize_t ret;
+ 	struct flexspi_nor_config_s *pConfig = &g_bootConfig;
+ 	size_t len = nblocks * NOR_PAGE_SIZE;
+@@ -243,6 +272,8 @@ static ssize_t imxrt_flexspi_storage_bwrite(struct mtd_dev_s *dev,
+ 	nxsem_post(&g_exclsem);
+ 
+ 	return nblocks;
++
++#endif
+ }
+ 
+ locate_code(".ramfunc")
+@@ -250,6 +281,15 @@ static int imxrt_flexspi_storage_erase(struct mtd_dev_s *dev,
+ 				       off_t startblock,
+ 				       size_t nblocks)
+ {
++#ifdef ADR_FASTDYN
++	(void)dev;
++	if (startblock < 0 || (size_t)startblock > NOR_USED_SECTORS || nblocks > NOR_USED_SECTORS - (size_t)startblock) return -EINVAL;
++	int ret = nxsem_wait(&g_exclsem);
++	if (ret < 0) return ret;
++	memset(g_fastdyn_storage + (size_t)startblock * NOR_SECTOR_SIZE, 0xff, nblocks * NOR_SECTOR_SIZE);
++	nxsem_post(&g_exclsem);
++	return nblocks;
++#else
+ 	struct flexspi_nor_config_s *pConfig = &g_bootConfig;
+ 	size_t blocksleft = nblocks;
+ #ifdef CONFIG_ARMV7M_DCACHE
+@@ -287,6 +327,8 @@ static int imxrt_flexspi_storage_erase(struct mtd_dev_s *dev,
+ 	nxsem_post(&g_exclsem);
+ 
+ 	return (int)nblocks;
++
++#endif
+ }
+ 
+ static int imxrt_flexspi_storage_ioctl(struct mtd_dev_s *dev,
+@@ -378,6 +420,9 @@ static int imxrt_flexspi_storage_ioctl(struct mtd_dev_s *dev,
+ 
+ int imxrt_flexspi_storage_initialize(void)
+ {
++#ifdef ADR_FASTDYN
++	memset(g_fastdyn_storage, 0xff, sizeof(g_fastdyn_storage));
++#endif
+ 	struct mtd_dev_s *mtd_dev = &g_flexspi_nor.mtd;
+ 	int ret = -ENODEV;
+ 
+diff --git a/boards/nxp/mr-tropic/src/init.c b/boards/nxp/mr-tropic/src/init.c
+index d1b0881c..929cdba9 100644
+--- a/boards/nxp/mr-tropic/src/init.c
++++ b/boards/nxp/mr-tropic/src/init.c
+@@ -157,6 +157,10 @@ struct flexspi_nor_config_s g_bootConfig;
+ locate_code(".ramfunc") __attribute__((noinline))
+ void imxrt_flash_romapi_initialize(void)
+ {
++#ifdef ADR_FASTDYN
++	/* QEMU has no NXP ROM API; simulation parameter storage is RAM-backed. */
++	return;
++#endif
+ 	memcpy((struct flexspi_nor_config_s *)&g_bootConfig, &g_flash_config,
+ 	       sizeof(struct flexspi_nor_config_s));
+ 	g_bootConfig.memConfig.tag = FLEXSPI_CFG_BLK_TAG;

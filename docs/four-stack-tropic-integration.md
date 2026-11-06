@@ -1,4 +1,6 @@
-# Four-stack TROPIC integration
+# Four-stack firmware integration
+
+**November 6 update:** ArduPilot uses the existing STM32F427 target by user request. Its Rumoca/FastDyn sensor loop runs but normal estimator checks prevent arming. PX4 now passes the ROM/RTC startup blockers with explicitly simulation-only models and waits at SD-card initialization. [Current attempts, patches, hashes, tests and reproduction instructions](evidence/four-stack-2026-11-06/README.md). The following build history retains the earlier findings; neither new stack has completed a figure-eight.
 
 The comparison requires real ARM firmware, explicit board targets, FastDyn/QEMU execution, and the same Rumoca plant. A compiled binary is not a completed simulation. Host build time and QEMU wall time are not measurements of physical control-loop latency.
 

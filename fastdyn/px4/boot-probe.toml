@@ -1,5 +1,5 @@
 # PX4 startup probe only: no plant, mailbox or flight qualification.
-# Memory/vector values verified against GCC 13.2 ELF 107b60cb6ee322b6e4887d671768172a7cfa97cea0f8f596161cd9c43e5b0473.
+# Memory/vector values verified against GCC 13.2 ADR_FASTDYN simulation-only ELF 1dc124e8007a089f9b70ddb7a14a291f7432b856d15f13630ae20dc5e1ea0107.
 # Peripheral model entries inherited from existing RT1064 probe; not validated for PX4.
 [Rehosting]
 [Rehosting.directories]
@@ -227,7 +227,7 @@ read_priority = "elder"
 [[Device.snvs.handlers]]
 model = "elder"
 enabled = true
-scroll = "boardrunner/boardrunner_sdk/build/snvs.so"
+scroll = "boardrunner/boardrunner_sdk/build/snvs_px4.so"
 [[Device.snvs.connections]]
 type = "endpoint"
 name = "gazebo"
