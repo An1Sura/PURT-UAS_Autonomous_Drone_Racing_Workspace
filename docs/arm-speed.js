@@ -20,7 +20,11 @@ try {
  }
  const confirmations=new Map();
  for(const a of attempts.filter(a=>a.id.startsWith('confirm-'))){const lap=a.config.course.lap_time_s;if(!confirmations.has(lap))confirmations.set(lap,[]);confirmations.get(lap).push(a);}
- const confirmed=[...confirmations].filter(([lap,runs])=>runs.length===15&&runs.every(a=>a.passed===true)).map(([lap])=>lap).sort((a,b)=>a-b);
+ const confirmed=[...confirmations].filter(([lap,runs])=>{
+  const cells=new Set(runs.map(a=>a.report.sensor_profile.level+'|'+a.report.sensor_profile.seed));
+  const complete=['none','realistic','harsh'].every(noise=>[1,2,3,4,5].every(seed=>cells.has(noise+'|'+seed)));
+  return runs.length===15&&cells.size===15&&complete&&runs.every(a=>a.passed===true);
+ }).map(([lap])=>lap).sort((a,b)=>a-b);
  const rejected=[...confirmations].filter(([lap,runs])=>runs.some(a=>a.passed!==true)).map(([lap])=>lap);
  status.textContent=(rejected.length?'Rejected by confirmation: '+rejected.join(', ')+' s. ':'')+attempts.length+' completed attempts in this published snapshot. '+(confirmed.length?confirmed[0]+' s passed all 15 noise/seed confirmations; ARM tuning prerequisites remain open. ':'Speed confirmation is in progress. ')+'CogniPilot’s new ARM speed sweep is queued separately. Failed attempts are retained.';
 } catch(error) {status.textContent='Speed reports unavailable: '+error.message+'. No substitute results are shown.';}

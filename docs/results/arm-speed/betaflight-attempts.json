@@ -3820,5 +3820,2735 @@
       "tracking_rms_m": 0.2891038147849917,
       "wall_seconds": 124.110548045
     }
+  },
+  {
+    "config": {
+      "controller": {
+        "feedback": "common plant truth in SIL; calibrated motion capture in physical trials",
+        "feedforward": "omega",
+        "feedforward_interface": "normal tilt commands: reference tilt + omega_ff / tuned attitude gain",
+        "feedforward_options": [
+          "off",
+          "omega"
+        ],
+        "feedforward_reference": "PDF commanded-thrust/desired-axis expression; snap derivative holds feedback correction locally fixed; yaw reference is fixed",
+        "frame": "world ENU, body FLU, scalar-first Hamilton quaternion body-to-world",
+        "position_model": "Benchmarks.PositionLoop",
+        "sample_rate_hz": 100,
+        "stick_rate_hz": 250,
+        "tilt_limit_deg": 35,
+        "trajectory_model": "Benchmarks.Trajectory",
+        "translational_correction_fraction": 0.7,
+        "yaw_rate_limit_deg_s": 200
+      },
+      "course": {
+        "altitude_m": 2,
+        "center_enu_m": [
+          0,
+          0
+        ],
+        "height_m": 10,
+        "lap_time_s": 34,
+        "laps": 1,
+        "phase_law": "minimum_jerk_each_lap",
+        "scale": 1,
+        "timing_status": "40-second commissioning reference; measured outcomes are reported separately, not a fastest-speed claim",
+        "width_m": 10,
+        "yaw_rad": 0
+      },
+      "environment": "purt-environment.json",
+      "id": "purt-10x10-z2-offboard-tilt-lead-v3",
+      "qualification": {
+        "attitude_tuning_evidence": "docs/results/tilt-lead/tuning",
+        "attitude_tuning_status": "passed_common_step_rule",
+        "gains_tuning": "equal step-response criterion and documented tuning budget",
+        "native_control_algorithm_changes_allowed": false,
+        "noise_profiles": [
+          "none",
+          "realistic",
+          "harsh"
+        ],
+        "performance_margins_status": "must agree before campaign; PDF numbers are examples",
+        "requires": [
+          "packet lockstep gate",
+          "generated-code oracle check",
+          "ideal-attitude common-plant check",
+          "hover",
+          "0.5 m step",
+          "square",
+          "one figure eight",
+          "native disarm and grounded stopped motors",
+          "noise repeats"
+        ],
+        "seeds_per_profile_min": 5,
+        "status": "matched attitude tuning qualified; speed and noise campaign in progress"
+      },
+      "schema_version": 1,
+      "stacks": {
+        "betaflight": {
+          "angle_feedforward": 0,
+          "angle_limit_deg": 35,
+          "attitude_gain_per_s": 6,
+          "d_max": [
+            0,
+            0,
+            0
+          ],
+          "hover_throttle": 0.6885788423153674,
+          "hover_throttle_status": "mean commanded PWM fraction over 30–35 s of closed-loop native Betaflight hover at 2 m in the shared plant",
+          "mode": "ANGLE",
+          "rc_smoothing": "OFF",
+          "rc_smoothing_status": "fixed for commissioning"
+        },
+        "cognipilot": {
+          "attitude_gain_per_s": 6,
+          "maximum_collective_thrust_n": 41.3749272,
+          "mode": "ATTITUDE",
+          "native_yaw_full_scale_rad_s": 3.5
+        }
+      },
+      "status": "qualification_in_progress",
+      "tracking_margin_m": 0.15,
+      "tuning": null,
+      "vehicle_radius_m": 0.4
+    },
+    "geometry": {
+      "center_tolerance_m": 0.75,
+      "completion_timestamp_s": 55.39,
+      "extents_covered": true,
+      "extra_lap": false,
+      "ordered_quadrants": 4,
+      "passed": true,
+      "returned_to_center": true
+    },
+    "id": "confirm-34-none-1",
+    "passed": true,
+    "report": {
+      "armed_observed": true,
+      "arming_flags": 0,
+      "commanded_accel_ff_peak_rad_s2": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "commanded_rate_ff_peak_rad_s": [
+        0.17331461608409882,
+        0.023316746577620503
+      ],
+      "error": null,
+      "final_armed": false,
+      "final_motors": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "final_position": [
+        -0.007635066010732459,
+        0.006341554223652717,
+        0.0983655583333402
+      ],
+      "firmware_exchanges": 616000,
+      "grounded_stopped_samples": 48825,
+      "hashes": {
+        "config": "e9827e384e4b9aa07905e1d68f3f7851dc973e966da9afa41c1a103519f77720",
+        "firmware": "c9530644680b907053022efa349bd0564701dd09ead526c862ac76d71755423f",
+        "offboard": "220db232fd2cae1744afcfd4eb773d6b2dbe37b97f5f36124849344281ec9a3d",
+        "plant": "284cced3ceec15128886d05753900b8ae47f38570ce0112c50e801356de97654",
+        "plant_description": "fdb12c3379b56d2d18f0ccaab3c62d15d2f97281f55270f37b837ea9c980b91c",
+        "runner": "7c9ade8116c66f1e6e0dad59fdf57bc461a1e9efecd7691c3eee599788e81693"
+      },
+      "lap_end_s": 59.0,
+      "lap_start_s": 25.0,
+      "maximum_tilt_deg": 13.475754257631406,
+      "mode_observed": true,
+      "offboard_updates": 7700,
+      "passed": true,
+      "peak_tilt_lead_rad": [
+        0.028885769347349804,
+        0.003886124429603418
+      ],
+      "qualification": "FastDyn/QEMU ARM BIL; shared generated offboard loop and plant; local-source commissioning run, not physical hardware latency",
+      "samples": 616000,
+      "sensor_profile": {
+        "accel_std_m_s2": 0.0,
+        "attitude_gain_per_s": 6.0,
+        "betaflight_hover_throttle": 0.6885788423153674,
+        "distribution": "12-uniform sum approximation; assumed diagnostic magnitudes, not measured hardware",
+        "execution_backend": "fastdyn-qemu-arm",
+        "feedforward": "omega",
+        "feedforward_interface": "offboard tilt lead omega/K; six normal RC channels; no onboard feed-forward modifications",
+        "gyro_std_rad_s": 0.0,
+        "hover_calibration_status": "mean commanded PWM fraction over 30–35 s of closed-loop native Betaflight hover at 2 m in the shared plant",
+        "imu_hz": 1600,
+        "level": "none",
+        "master_tick_hz": 8000,
+        "motor_vibration": "deterministic two-blade harmonic at 2*1100*normalized_motor rad/s; fixed per-motor and per-axis phase offsets; amplitude 0.25*IMU noise std scaled by motor command, assumed diagnostic model",
+        "position_feedback": "plant truth",
+        "position_loop_hz": 100,
+        "rc_smoothing": "OFF",
+        "seed": 1,
+        "sensor_and_command_ingress": "BF packets at 8000Hz hold 1600Hz IMU; CG reads latest at 1600Hz (up to 0.5ms stick-delivery quantization)",
+        "stick_schedule_hz": 250,
+        "tuning": null,
+        "tuning_status": "passed_common_step_rule"
+      },
+      "shape": "figure-eight",
+      "simulated_seconds": 77.0,
+      "stack": "betaflight",
+      "stick_updates": 19251,
+      "tilt_clamp_updates": 0,
+      "tracking_max_m": 0.6886819944208943,
+      "tracking_rms_m": 0.27182538514617066,
+      "wall_seconds": 133.671054416
+    }
+  },
+  {
+    "config": {
+      "controller": {
+        "feedback": "common plant truth in SIL; calibrated motion capture in physical trials",
+        "feedforward": "omega",
+        "feedforward_interface": "normal tilt commands: reference tilt + omega_ff / tuned attitude gain",
+        "feedforward_options": [
+          "off",
+          "omega"
+        ],
+        "feedforward_reference": "PDF commanded-thrust/desired-axis expression; snap derivative holds feedback correction locally fixed; yaw reference is fixed",
+        "frame": "world ENU, body FLU, scalar-first Hamilton quaternion body-to-world",
+        "position_model": "Benchmarks.PositionLoop",
+        "sample_rate_hz": 100,
+        "stick_rate_hz": 250,
+        "tilt_limit_deg": 35,
+        "trajectory_model": "Benchmarks.Trajectory",
+        "translational_correction_fraction": 0.7,
+        "yaw_rate_limit_deg_s": 200
+      },
+      "course": {
+        "altitude_m": 2,
+        "center_enu_m": [
+          0,
+          0
+        ],
+        "height_m": 10,
+        "lap_time_s": 34,
+        "laps": 1,
+        "phase_law": "minimum_jerk_each_lap",
+        "scale": 1,
+        "timing_status": "40-second commissioning reference; measured outcomes are reported separately, not a fastest-speed claim",
+        "width_m": 10,
+        "yaw_rad": 0
+      },
+      "environment": "purt-environment.json",
+      "id": "purt-10x10-z2-offboard-tilt-lead-v3",
+      "qualification": {
+        "attitude_tuning_evidence": "docs/results/tilt-lead/tuning",
+        "attitude_tuning_status": "passed_common_step_rule",
+        "gains_tuning": "equal step-response criterion and documented tuning budget",
+        "native_control_algorithm_changes_allowed": false,
+        "noise_profiles": [
+          "none",
+          "realistic",
+          "harsh"
+        ],
+        "performance_margins_status": "must agree before campaign; PDF numbers are examples",
+        "requires": [
+          "packet lockstep gate",
+          "generated-code oracle check",
+          "ideal-attitude common-plant check",
+          "hover",
+          "0.5 m step",
+          "square",
+          "one figure eight",
+          "native disarm and grounded stopped motors",
+          "noise repeats"
+        ],
+        "seeds_per_profile_min": 5,
+        "status": "matched attitude tuning qualified; speed and noise campaign in progress"
+      },
+      "schema_version": 1,
+      "stacks": {
+        "betaflight": {
+          "angle_feedforward": 0,
+          "angle_limit_deg": 35,
+          "attitude_gain_per_s": 6,
+          "d_max": [
+            0,
+            0,
+            0
+          ],
+          "hover_throttle": 0.6885788423153674,
+          "hover_throttle_status": "mean commanded PWM fraction over 30–35 s of closed-loop native Betaflight hover at 2 m in the shared plant",
+          "mode": "ANGLE",
+          "rc_smoothing": "OFF",
+          "rc_smoothing_status": "fixed for commissioning"
+        },
+        "cognipilot": {
+          "attitude_gain_per_s": 6,
+          "maximum_collective_thrust_n": 41.3749272,
+          "mode": "ATTITUDE",
+          "native_yaw_full_scale_rad_s": 3.5
+        }
+      },
+      "status": "qualification_in_progress",
+      "tracking_margin_m": 0.15,
+      "tuning": null,
+      "vehicle_radius_m": 0.4
+    },
+    "geometry": {
+      "center_tolerance_m": 0.75,
+      "completion_timestamp_s": 55.39,
+      "extents_covered": true,
+      "extra_lap": false,
+      "ordered_quadrants": 4,
+      "passed": true,
+      "returned_to_center": true
+    },
+    "id": "confirm-34-none-2",
+    "passed": true,
+    "report": {
+      "armed_observed": true,
+      "arming_flags": 0,
+      "commanded_accel_ff_peak_rad_s2": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "commanded_rate_ff_peak_rad_s": [
+        0.17331461608409882,
+        0.023316746577620503
+      ],
+      "error": null,
+      "final_armed": false,
+      "final_motors": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "final_position": [
+        -0.007635066010732459,
+        0.006341554223652717,
+        0.0983655583333402
+      ],
+      "firmware_exchanges": 616000,
+      "grounded_stopped_samples": 48825,
+      "hashes": {
+        "config": "e9827e384e4b9aa07905e1d68f3f7851dc973e966da9afa41c1a103519f77720",
+        "firmware": "c9530644680b907053022efa349bd0564701dd09ead526c862ac76d71755423f",
+        "offboard": "220db232fd2cae1744afcfd4eb773d6b2dbe37b97f5f36124849344281ec9a3d",
+        "plant": "284cced3ceec15128886d05753900b8ae47f38570ce0112c50e801356de97654",
+        "plant_description": "fdb12c3379b56d2d18f0ccaab3c62d15d2f97281f55270f37b837ea9c980b91c",
+        "runner": "7c9ade8116c66f1e6e0dad59fdf57bc461a1e9efecd7691c3eee599788e81693"
+      },
+      "lap_end_s": 59.0,
+      "lap_start_s": 25.0,
+      "maximum_tilt_deg": 13.475754257631406,
+      "mode_observed": true,
+      "offboard_updates": 7700,
+      "passed": true,
+      "peak_tilt_lead_rad": [
+        0.028885769347349804,
+        0.003886124429603418
+      ],
+      "qualification": "FastDyn/QEMU ARM BIL; shared generated offboard loop and plant; local-source commissioning run, not physical hardware latency",
+      "samples": 616000,
+      "sensor_profile": {
+        "accel_std_m_s2": 0.0,
+        "attitude_gain_per_s": 6.0,
+        "betaflight_hover_throttle": 0.6885788423153674,
+        "distribution": "12-uniform sum approximation; assumed diagnostic magnitudes, not measured hardware",
+        "execution_backend": "fastdyn-qemu-arm",
+        "feedforward": "omega",
+        "feedforward_interface": "offboard tilt lead omega/K; six normal RC channels; no onboard feed-forward modifications",
+        "gyro_std_rad_s": 0.0,
+        "hover_calibration_status": "mean commanded PWM fraction over 30–35 s of closed-loop native Betaflight hover at 2 m in the shared plant",
+        "imu_hz": 1600,
+        "level": "none",
+        "master_tick_hz": 8000,
+        "motor_vibration": "deterministic two-blade harmonic at 2*1100*normalized_motor rad/s; fixed per-motor and per-axis phase offsets; amplitude 0.25*IMU noise std scaled by motor command, assumed diagnostic model",
+        "position_feedback": "plant truth",
+        "position_loop_hz": 100,
+        "rc_smoothing": "OFF",
+        "seed": 2,
+        "sensor_and_command_ingress": "BF packets at 8000Hz hold 1600Hz IMU; CG reads latest at 1600Hz (up to 0.5ms stick-delivery quantization)",
+        "stick_schedule_hz": 250,
+        "tuning": null,
+        "tuning_status": "passed_common_step_rule"
+      },
+      "shape": "figure-eight",
+      "simulated_seconds": 77.0,
+      "stack": "betaflight",
+      "stick_updates": 19251,
+      "tilt_clamp_updates": 0,
+      "tracking_max_m": 0.6886819944208943,
+      "tracking_rms_m": 0.27182538514617066,
+      "wall_seconds": 131.378034232
+    }
+  },
+  {
+    "config": {
+      "controller": {
+        "feedback": "common plant truth in SIL; calibrated motion capture in physical trials",
+        "feedforward": "omega",
+        "feedforward_interface": "normal tilt commands: reference tilt + omega_ff / tuned attitude gain",
+        "feedforward_options": [
+          "off",
+          "omega"
+        ],
+        "feedforward_reference": "PDF commanded-thrust/desired-axis expression; snap derivative holds feedback correction locally fixed; yaw reference is fixed",
+        "frame": "world ENU, body FLU, scalar-first Hamilton quaternion body-to-world",
+        "position_model": "Benchmarks.PositionLoop",
+        "sample_rate_hz": 100,
+        "stick_rate_hz": 250,
+        "tilt_limit_deg": 35,
+        "trajectory_model": "Benchmarks.Trajectory",
+        "translational_correction_fraction": 0.7,
+        "yaw_rate_limit_deg_s": 200
+      },
+      "course": {
+        "altitude_m": 2,
+        "center_enu_m": [
+          0,
+          0
+        ],
+        "height_m": 10,
+        "lap_time_s": 34,
+        "laps": 1,
+        "phase_law": "minimum_jerk_each_lap",
+        "scale": 1,
+        "timing_status": "40-second commissioning reference; measured outcomes are reported separately, not a fastest-speed claim",
+        "width_m": 10,
+        "yaw_rad": 0
+      },
+      "environment": "purt-environment.json",
+      "id": "purt-10x10-z2-offboard-tilt-lead-v3",
+      "qualification": {
+        "attitude_tuning_evidence": "docs/results/tilt-lead/tuning",
+        "attitude_tuning_status": "passed_common_step_rule",
+        "gains_tuning": "equal step-response criterion and documented tuning budget",
+        "native_control_algorithm_changes_allowed": false,
+        "noise_profiles": [
+          "none",
+          "realistic",
+          "harsh"
+        ],
+        "performance_margins_status": "must agree before campaign; PDF numbers are examples",
+        "requires": [
+          "packet lockstep gate",
+          "generated-code oracle check",
+          "ideal-attitude common-plant check",
+          "hover",
+          "0.5 m step",
+          "square",
+          "one figure eight",
+          "native disarm and grounded stopped motors",
+          "noise repeats"
+        ],
+        "seeds_per_profile_min": 5,
+        "status": "matched attitude tuning qualified; speed and noise campaign in progress"
+      },
+      "schema_version": 1,
+      "stacks": {
+        "betaflight": {
+          "angle_feedforward": 0,
+          "angle_limit_deg": 35,
+          "attitude_gain_per_s": 6,
+          "d_max": [
+            0,
+            0,
+            0
+          ],
+          "hover_throttle": 0.6885788423153674,
+          "hover_throttle_status": "mean commanded PWM fraction over 30–35 s of closed-loop native Betaflight hover at 2 m in the shared plant",
+          "mode": "ANGLE",
+          "rc_smoothing": "OFF",
+          "rc_smoothing_status": "fixed for commissioning"
+        },
+        "cognipilot": {
+          "attitude_gain_per_s": 6,
+          "maximum_collective_thrust_n": 41.3749272,
+          "mode": "ATTITUDE",
+          "native_yaw_full_scale_rad_s": 3.5
+        }
+      },
+      "status": "qualification_in_progress",
+      "tracking_margin_m": 0.15,
+      "tuning": null,
+      "vehicle_radius_m": 0.4
+    },
+    "geometry": {
+      "center_tolerance_m": 0.75,
+      "completion_timestamp_s": 55.39,
+      "extents_covered": true,
+      "extra_lap": false,
+      "ordered_quadrants": 4,
+      "passed": true,
+      "returned_to_center": true
+    },
+    "id": "confirm-34-none-3",
+    "passed": true,
+    "report": {
+      "armed_observed": true,
+      "arming_flags": 0,
+      "commanded_accel_ff_peak_rad_s2": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "commanded_rate_ff_peak_rad_s": [
+        0.17331461608409882,
+        0.023316746577620503
+      ],
+      "error": null,
+      "final_armed": false,
+      "final_motors": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "final_position": [
+        -0.007635066010732459,
+        0.006341554223652717,
+        0.0983655583333402
+      ],
+      "firmware_exchanges": 616000,
+      "grounded_stopped_samples": 48825,
+      "hashes": {
+        "config": "e9827e384e4b9aa07905e1d68f3f7851dc973e966da9afa41c1a103519f77720",
+        "firmware": "c9530644680b907053022efa349bd0564701dd09ead526c862ac76d71755423f",
+        "offboard": "220db232fd2cae1744afcfd4eb773d6b2dbe37b97f5f36124849344281ec9a3d",
+        "plant": "284cced3ceec15128886d05753900b8ae47f38570ce0112c50e801356de97654",
+        "plant_description": "fdb12c3379b56d2d18f0ccaab3c62d15d2f97281f55270f37b837ea9c980b91c",
+        "runner": "7c9ade8116c66f1e6e0dad59fdf57bc461a1e9efecd7691c3eee599788e81693"
+      },
+      "lap_end_s": 59.0,
+      "lap_start_s": 25.0,
+      "maximum_tilt_deg": 13.475754257631406,
+      "mode_observed": true,
+      "offboard_updates": 7700,
+      "passed": true,
+      "peak_tilt_lead_rad": [
+        0.028885769347349804,
+        0.003886124429603418
+      ],
+      "qualification": "FastDyn/QEMU ARM BIL; shared generated offboard loop and plant; local-source commissioning run, not physical hardware latency",
+      "samples": 616000,
+      "sensor_profile": {
+        "accel_std_m_s2": 0.0,
+        "attitude_gain_per_s": 6.0,
+        "betaflight_hover_throttle": 0.6885788423153674,
+        "distribution": "12-uniform sum approximation; assumed diagnostic magnitudes, not measured hardware",
+        "execution_backend": "fastdyn-qemu-arm",
+        "feedforward": "omega",
+        "feedforward_interface": "offboard tilt lead omega/K; six normal RC channels; no onboard feed-forward modifications",
+        "gyro_std_rad_s": 0.0,
+        "hover_calibration_status": "mean commanded PWM fraction over 30–35 s of closed-loop native Betaflight hover at 2 m in the shared plant",
+        "imu_hz": 1600,
+        "level": "none",
+        "master_tick_hz": 8000,
+        "motor_vibration": "deterministic two-blade harmonic at 2*1100*normalized_motor rad/s; fixed per-motor and per-axis phase offsets; amplitude 0.25*IMU noise std scaled by motor command, assumed diagnostic model",
+        "position_feedback": "plant truth",
+        "position_loop_hz": 100,
+        "rc_smoothing": "OFF",
+        "seed": 3,
+        "sensor_and_command_ingress": "BF packets at 8000Hz hold 1600Hz IMU; CG reads latest at 1600Hz (up to 0.5ms stick-delivery quantization)",
+        "stick_schedule_hz": 250,
+        "tuning": null,
+        "tuning_status": "passed_common_step_rule"
+      },
+      "shape": "figure-eight",
+      "simulated_seconds": 77.0,
+      "stack": "betaflight",
+      "stick_updates": 19251,
+      "tilt_clamp_updates": 0,
+      "tracking_max_m": 0.6886819944208943,
+      "tracking_rms_m": 0.27182538514617066,
+      "wall_seconds": 133.187754835
+    }
+  },
+  {
+    "config": {
+      "controller": {
+        "feedback": "common plant truth in SIL; calibrated motion capture in physical trials",
+        "feedforward": "omega",
+        "feedforward_interface": "normal tilt commands: reference tilt + omega_ff / tuned attitude gain",
+        "feedforward_options": [
+          "off",
+          "omega"
+        ],
+        "feedforward_reference": "PDF commanded-thrust/desired-axis expression; snap derivative holds feedback correction locally fixed; yaw reference is fixed",
+        "frame": "world ENU, body FLU, scalar-first Hamilton quaternion body-to-world",
+        "position_model": "Benchmarks.PositionLoop",
+        "sample_rate_hz": 100,
+        "stick_rate_hz": 250,
+        "tilt_limit_deg": 35,
+        "trajectory_model": "Benchmarks.Trajectory",
+        "translational_correction_fraction": 0.7,
+        "yaw_rate_limit_deg_s": 200
+      },
+      "course": {
+        "altitude_m": 2,
+        "center_enu_m": [
+          0,
+          0
+        ],
+        "height_m": 10,
+        "lap_time_s": 34,
+        "laps": 1,
+        "phase_law": "minimum_jerk_each_lap",
+        "scale": 1,
+        "timing_status": "40-second commissioning reference; measured outcomes are reported separately, not a fastest-speed claim",
+        "width_m": 10,
+        "yaw_rad": 0
+      },
+      "environment": "purt-environment.json",
+      "id": "purt-10x10-z2-offboard-tilt-lead-v3",
+      "qualification": {
+        "attitude_tuning_evidence": "docs/results/tilt-lead/tuning",
+        "attitude_tuning_status": "passed_common_step_rule",
+        "gains_tuning": "equal step-response criterion and documented tuning budget",
+        "native_control_algorithm_changes_allowed": false,
+        "noise_profiles": [
+          "none",
+          "realistic",
+          "harsh"
+        ],
+        "performance_margins_status": "must agree before campaign; PDF numbers are examples",
+        "requires": [
+          "packet lockstep gate",
+          "generated-code oracle check",
+          "ideal-attitude common-plant check",
+          "hover",
+          "0.5 m step",
+          "square",
+          "one figure eight",
+          "native disarm and grounded stopped motors",
+          "noise repeats"
+        ],
+        "seeds_per_profile_min": 5,
+        "status": "matched attitude tuning qualified; speed and noise campaign in progress"
+      },
+      "schema_version": 1,
+      "stacks": {
+        "betaflight": {
+          "angle_feedforward": 0,
+          "angle_limit_deg": 35,
+          "attitude_gain_per_s": 6,
+          "d_max": [
+            0,
+            0,
+            0
+          ],
+          "hover_throttle": 0.6885788423153674,
+          "hover_throttle_status": "mean commanded PWM fraction over 30–35 s of closed-loop native Betaflight hover at 2 m in the shared plant",
+          "mode": "ANGLE",
+          "rc_smoothing": "OFF",
+          "rc_smoothing_status": "fixed for commissioning"
+        },
+        "cognipilot": {
+          "attitude_gain_per_s": 6,
+          "maximum_collective_thrust_n": 41.3749272,
+          "mode": "ATTITUDE",
+          "native_yaw_full_scale_rad_s": 3.5
+        }
+      },
+      "status": "qualification_in_progress",
+      "tracking_margin_m": 0.15,
+      "tuning": null,
+      "vehicle_radius_m": 0.4
+    },
+    "geometry": {
+      "center_tolerance_m": 0.75,
+      "completion_timestamp_s": 55.39,
+      "extents_covered": true,
+      "extra_lap": false,
+      "ordered_quadrants": 4,
+      "passed": true,
+      "returned_to_center": true
+    },
+    "id": "confirm-34-none-4",
+    "passed": true,
+    "report": {
+      "armed_observed": true,
+      "arming_flags": 0,
+      "commanded_accel_ff_peak_rad_s2": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "commanded_rate_ff_peak_rad_s": [
+        0.17331461608409882,
+        0.023316746577620503
+      ],
+      "error": null,
+      "final_armed": false,
+      "final_motors": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "final_position": [
+        -0.007635066010732459,
+        0.006341554223652717,
+        0.0983655583333402
+      ],
+      "firmware_exchanges": 616000,
+      "grounded_stopped_samples": 48825,
+      "hashes": {
+        "config": "e9827e384e4b9aa07905e1d68f3f7851dc973e966da9afa41c1a103519f77720",
+        "firmware": "c9530644680b907053022efa349bd0564701dd09ead526c862ac76d71755423f",
+        "offboard": "220db232fd2cae1744afcfd4eb773d6b2dbe37b97f5f36124849344281ec9a3d",
+        "plant": "284cced3ceec15128886d05753900b8ae47f38570ce0112c50e801356de97654",
+        "plant_description": "fdb12c3379b56d2d18f0ccaab3c62d15d2f97281f55270f37b837ea9c980b91c",
+        "runner": "7c9ade8116c66f1e6e0dad59fdf57bc461a1e9efecd7691c3eee599788e81693"
+      },
+      "lap_end_s": 59.0,
+      "lap_start_s": 25.0,
+      "maximum_tilt_deg": 13.475754257631406,
+      "mode_observed": true,
+      "offboard_updates": 7700,
+      "passed": true,
+      "peak_tilt_lead_rad": [
+        0.028885769347349804,
+        0.003886124429603418
+      ],
+      "qualification": "FastDyn/QEMU ARM BIL; shared generated offboard loop and plant; local-source commissioning run, not physical hardware latency",
+      "samples": 616000,
+      "sensor_profile": {
+        "accel_std_m_s2": 0.0,
+        "attitude_gain_per_s": 6.0,
+        "betaflight_hover_throttle": 0.6885788423153674,
+        "distribution": "12-uniform sum approximation; assumed diagnostic magnitudes, not measured hardware",
+        "execution_backend": "fastdyn-qemu-arm",
+        "feedforward": "omega",
+        "feedforward_interface": "offboard tilt lead omega/K; six normal RC channels; no onboard feed-forward modifications",
+        "gyro_std_rad_s": 0.0,
+        "hover_calibration_status": "mean commanded PWM fraction over 30–35 s of closed-loop native Betaflight hover at 2 m in the shared plant",
+        "imu_hz": 1600,
+        "level": "none",
+        "master_tick_hz": 8000,
+        "motor_vibration": "deterministic two-blade harmonic at 2*1100*normalized_motor rad/s; fixed per-motor and per-axis phase offsets; amplitude 0.25*IMU noise std scaled by motor command, assumed diagnostic model",
+        "position_feedback": "plant truth",
+        "position_loop_hz": 100,
+        "rc_smoothing": "OFF",
+        "seed": 4,
+        "sensor_and_command_ingress": "BF packets at 8000Hz hold 1600Hz IMU; CG reads latest at 1600Hz (up to 0.5ms stick-delivery quantization)",
+        "stick_schedule_hz": 250,
+        "tuning": null,
+        "tuning_status": "passed_common_step_rule"
+      },
+      "shape": "figure-eight",
+      "simulated_seconds": 77.0,
+      "stack": "betaflight",
+      "stick_updates": 19251,
+      "tilt_clamp_updates": 0,
+      "tracking_max_m": 0.6886819944208943,
+      "tracking_rms_m": 0.27182538514617066,
+      "wall_seconds": 127.408584004
+    }
+  },
+  {
+    "config": {
+      "controller": {
+        "feedback": "common plant truth in SIL; calibrated motion capture in physical trials",
+        "feedforward": "omega",
+        "feedforward_interface": "normal tilt commands: reference tilt + omega_ff / tuned attitude gain",
+        "feedforward_options": [
+          "off",
+          "omega"
+        ],
+        "feedforward_reference": "PDF commanded-thrust/desired-axis expression; snap derivative holds feedback correction locally fixed; yaw reference is fixed",
+        "frame": "world ENU, body FLU, scalar-first Hamilton quaternion body-to-world",
+        "position_model": "Benchmarks.PositionLoop",
+        "sample_rate_hz": 100,
+        "stick_rate_hz": 250,
+        "tilt_limit_deg": 35,
+        "trajectory_model": "Benchmarks.Trajectory",
+        "translational_correction_fraction": 0.7,
+        "yaw_rate_limit_deg_s": 200
+      },
+      "course": {
+        "altitude_m": 2,
+        "center_enu_m": [
+          0,
+          0
+        ],
+        "height_m": 10,
+        "lap_time_s": 34,
+        "laps": 1,
+        "phase_law": "minimum_jerk_each_lap",
+        "scale": 1,
+        "timing_status": "40-second commissioning reference; measured outcomes are reported separately, not a fastest-speed claim",
+        "width_m": 10,
+        "yaw_rad": 0
+      },
+      "environment": "purt-environment.json",
+      "id": "purt-10x10-z2-offboard-tilt-lead-v3",
+      "qualification": {
+        "attitude_tuning_evidence": "docs/results/tilt-lead/tuning",
+        "attitude_tuning_status": "passed_common_step_rule",
+        "gains_tuning": "equal step-response criterion and documented tuning budget",
+        "native_control_algorithm_changes_allowed": false,
+        "noise_profiles": [
+          "none",
+          "realistic",
+          "harsh"
+        ],
+        "performance_margins_status": "must agree before campaign; PDF numbers are examples",
+        "requires": [
+          "packet lockstep gate",
+          "generated-code oracle check",
+          "ideal-attitude common-plant check",
+          "hover",
+          "0.5 m step",
+          "square",
+          "one figure eight",
+          "native disarm and grounded stopped motors",
+          "noise repeats"
+        ],
+        "seeds_per_profile_min": 5,
+        "status": "matched attitude tuning qualified; speed and noise campaign in progress"
+      },
+      "schema_version": 1,
+      "stacks": {
+        "betaflight": {
+          "angle_feedforward": 0,
+          "angle_limit_deg": 35,
+          "attitude_gain_per_s": 6,
+          "d_max": [
+            0,
+            0,
+            0
+          ],
+          "hover_throttle": 0.6885788423153674,
+          "hover_throttle_status": "mean commanded PWM fraction over 30–35 s of closed-loop native Betaflight hover at 2 m in the shared plant",
+          "mode": "ANGLE",
+          "rc_smoothing": "OFF",
+          "rc_smoothing_status": "fixed for commissioning"
+        },
+        "cognipilot": {
+          "attitude_gain_per_s": 6,
+          "maximum_collective_thrust_n": 41.3749272,
+          "mode": "ATTITUDE",
+          "native_yaw_full_scale_rad_s": 3.5
+        }
+      },
+      "status": "qualification_in_progress",
+      "tracking_margin_m": 0.15,
+      "tuning": null,
+      "vehicle_radius_m": 0.4
+    },
+    "geometry": {
+      "center_tolerance_m": 0.75,
+      "completion_timestamp_s": 55.39,
+      "extents_covered": true,
+      "extra_lap": false,
+      "ordered_quadrants": 4,
+      "passed": true,
+      "returned_to_center": true
+    },
+    "id": "confirm-34-none-5",
+    "passed": true,
+    "report": {
+      "armed_observed": true,
+      "arming_flags": 0,
+      "commanded_accel_ff_peak_rad_s2": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "commanded_rate_ff_peak_rad_s": [
+        0.17331461608409882,
+        0.023316746577620503
+      ],
+      "error": null,
+      "final_armed": false,
+      "final_motors": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "final_position": [
+        -0.007635066010732459,
+        0.006341554223652717,
+        0.0983655583333402
+      ],
+      "firmware_exchanges": 616000,
+      "grounded_stopped_samples": 48825,
+      "hashes": {
+        "config": "e9827e384e4b9aa07905e1d68f3f7851dc973e966da9afa41c1a103519f77720",
+        "firmware": "c9530644680b907053022efa349bd0564701dd09ead526c862ac76d71755423f",
+        "offboard": "220db232fd2cae1744afcfd4eb773d6b2dbe37b97f5f36124849344281ec9a3d",
+        "plant": "284cced3ceec15128886d05753900b8ae47f38570ce0112c50e801356de97654",
+        "plant_description": "fdb12c3379b56d2d18f0ccaab3c62d15d2f97281f55270f37b837ea9c980b91c",
+        "runner": "7c9ade8116c66f1e6e0dad59fdf57bc461a1e9efecd7691c3eee599788e81693"
+      },
+      "lap_end_s": 59.0,
+      "lap_start_s": 25.0,
+      "maximum_tilt_deg": 13.475754257631406,
+      "mode_observed": true,
+      "offboard_updates": 7700,
+      "passed": true,
+      "peak_tilt_lead_rad": [
+        0.028885769347349804,
+        0.003886124429603418
+      ],
+      "qualification": "FastDyn/QEMU ARM BIL; shared generated offboard loop and plant; local-source commissioning run, not physical hardware latency",
+      "samples": 616000,
+      "sensor_profile": {
+        "accel_std_m_s2": 0.0,
+        "attitude_gain_per_s": 6.0,
+        "betaflight_hover_throttle": 0.6885788423153674,
+        "distribution": "12-uniform sum approximation; assumed diagnostic magnitudes, not measured hardware",
+        "execution_backend": "fastdyn-qemu-arm",
+        "feedforward": "omega",
+        "feedforward_interface": "offboard tilt lead omega/K; six normal RC channels; no onboard feed-forward modifications",
+        "gyro_std_rad_s": 0.0,
+        "hover_calibration_status": "mean commanded PWM fraction over 30–35 s of closed-loop native Betaflight hover at 2 m in the shared plant",
+        "imu_hz": 1600,
+        "level": "none",
+        "master_tick_hz": 8000,
+        "motor_vibration": "deterministic two-blade harmonic at 2*1100*normalized_motor rad/s; fixed per-motor and per-axis phase offsets; amplitude 0.25*IMU noise std scaled by motor command, assumed diagnostic model",
+        "position_feedback": "plant truth",
+        "position_loop_hz": 100,
+        "rc_smoothing": "OFF",
+        "seed": 5,
+        "sensor_and_command_ingress": "BF packets at 8000Hz hold 1600Hz IMU; CG reads latest at 1600Hz (up to 0.5ms stick-delivery quantization)",
+        "stick_schedule_hz": 250,
+        "tuning": null,
+        "tuning_status": "passed_common_step_rule"
+      },
+      "shape": "figure-eight",
+      "simulated_seconds": 77.0,
+      "stack": "betaflight",
+      "stick_updates": 19251,
+      "tilt_clamp_updates": 0,
+      "tracking_max_m": 0.6886819944208943,
+      "tracking_rms_m": 0.27182538514617066,
+      "wall_seconds": 134.038107401
+    }
+  },
+  {
+    "config": {
+      "controller": {
+        "feedback": "common plant truth in SIL; calibrated motion capture in physical trials",
+        "feedforward": "omega",
+        "feedforward_interface": "normal tilt commands: reference tilt + omega_ff / tuned attitude gain",
+        "feedforward_options": [
+          "off",
+          "omega"
+        ],
+        "feedforward_reference": "PDF commanded-thrust/desired-axis expression; snap derivative holds feedback correction locally fixed; yaw reference is fixed",
+        "frame": "world ENU, body FLU, scalar-first Hamilton quaternion body-to-world",
+        "position_model": "Benchmarks.PositionLoop",
+        "sample_rate_hz": 100,
+        "stick_rate_hz": 250,
+        "tilt_limit_deg": 35,
+        "trajectory_model": "Benchmarks.Trajectory",
+        "translational_correction_fraction": 0.7,
+        "yaw_rate_limit_deg_s": 200
+      },
+      "course": {
+        "altitude_m": 2,
+        "center_enu_m": [
+          0,
+          0
+        ],
+        "height_m": 10,
+        "lap_time_s": 34,
+        "laps": 1,
+        "phase_law": "minimum_jerk_each_lap",
+        "scale": 1,
+        "timing_status": "40-second commissioning reference; measured outcomes are reported separately, not a fastest-speed claim",
+        "width_m": 10,
+        "yaw_rad": 0
+      },
+      "environment": "purt-environment.json",
+      "id": "purt-10x10-z2-offboard-tilt-lead-v3",
+      "qualification": {
+        "attitude_tuning_evidence": "docs/results/tilt-lead/tuning",
+        "attitude_tuning_status": "passed_common_step_rule",
+        "gains_tuning": "equal step-response criterion and documented tuning budget",
+        "native_control_algorithm_changes_allowed": false,
+        "noise_profiles": [
+          "none",
+          "realistic",
+          "harsh"
+        ],
+        "performance_margins_status": "must agree before campaign; PDF numbers are examples",
+        "requires": [
+          "packet lockstep gate",
+          "generated-code oracle check",
+          "ideal-attitude common-plant check",
+          "hover",
+          "0.5 m step",
+          "square",
+          "one figure eight",
+          "native disarm and grounded stopped motors",
+          "noise repeats"
+        ],
+        "seeds_per_profile_min": 5,
+        "status": "matched attitude tuning qualified; speed and noise campaign in progress"
+      },
+      "schema_version": 1,
+      "stacks": {
+        "betaflight": {
+          "angle_feedforward": 0,
+          "angle_limit_deg": 35,
+          "attitude_gain_per_s": 6,
+          "d_max": [
+            0,
+            0,
+            0
+          ],
+          "hover_throttle": 0.6885788423153674,
+          "hover_throttle_status": "mean commanded PWM fraction over 30–35 s of closed-loop native Betaflight hover at 2 m in the shared plant",
+          "mode": "ANGLE",
+          "rc_smoothing": "OFF",
+          "rc_smoothing_status": "fixed for commissioning"
+        },
+        "cognipilot": {
+          "attitude_gain_per_s": 6,
+          "maximum_collective_thrust_n": 41.3749272,
+          "mode": "ATTITUDE",
+          "native_yaw_full_scale_rad_s": 3.5
+        }
+      },
+      "status": "qualification_in_progress",
+      "tracking_margin_m": 0.15,
+      "tuning": null,
+      "vehicle_radius_m": 0.4
+    },
+    "geometry": {
+      "center_tolerance_m": 0.75,
+      "completion_timestamp_s": 55.39,
+      "extents_covered": true,
+      "extra_lap": false,
+      "ordered_quadrants": 4,
+      "passed": true,
+      "returned_to_center": true
+    },
+    "id": "confirm-34-realistic-1",
+    "passed": true,
+    "report": {
+      "armed_observed": true,
+      "arming_flags": 0,
+      "commanded_accel_ff_peak_rad_s2": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "commanded_rate_ff_peak_rad_s": [
+        0.17330136895179749,
+        0.023311598226428032
+      ],
+      "error": null,
+      "final_armed": false,
+      "final_motors": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "final_position": [
+        -0.0001919267950197355,
+        -0.00044398395394299134,
+        0.09836555833332358
+      ],
+      "firmware_exchanges": 616000,
+      "grounded_stopped_samples": 50233,
+      "hashes": {
+        "config": "e9827e384e4b9aa07905e1d68f3f7851dc973e966da9afa41c1a103519f77720",
+        "firmware": "c9530644680b907053022efa349bd0564701dd09ead526c862ac76d71755423f",
+        "offboard": "220db232fd2cae1744afcfd4eb773d6b2dbe37b97f5f36124849344281ec9a3d",
+        "plant": "284cced3ceec15128886d05753900b8ae47f38570ce0112c50e801356de97654",
+        "plant_description": "fdb12c3379b56d2d18f0ccaab3c62d15d2f97281f55270f37b837ea9c980b91c",
+        "runner": "7c9ade8116c66f1e6e0dad59fdf57bc461a1e9efecd7691c3eee599788e81693"
+      },
+      "lap_end_s": 59.0,
+      "lap_start_s": 25.0,
+      "maximum_tilt_deg": 13.473302689844354,
+      "mode_observed": true,
+      "offboard_updates": 7700,
+      "passed": true,
+      "peak_tilt_lead_rad": [
+        0.028883561491966248,
+        0.0038852663710713382
+      ],
+      "qualification": "FastDyn/QEMU ARM BIL; shared generated offboard loop and plant; local-source commissioning run, not physical hardware latency",
+      "samples": 616000,
+      "sensor_profile": {
+        "accel_std_m_s2": 0.03,
+        "attitude_gain_per_s": 6.0,
+        "betaflight_hover_throttle": 0.6885788423153674,
+        "distribution": "12-uniform sum approximation; assumed diagnostic magnitudes, not measured hardware",
+        "execution_backend": "fastdyn-qemu-arm",
+        "feedforward": "omega",
+        "feedforward_interface": "offboard tilt lead omega/K; six normal RC channels; no onboard feed-forward modifications",
+        "gyro_std_rad_s": 0.002,
+        "hover_calibration_status": "mean commanded PWM fraction over 30–35 s of closed-loop native Betaflight hover at 2 m in the shared plant",
+        "imu_hz": 1600,
+        "level": "realistic",
+        "master_tick_hz": 8000,
+        "motor_vibration": "deterministic two-blade harmonic at 2*1100*normalized_motor rad/s; fixed per-motor and per-axis phase offsets; amplitude 0.25*IMU noise std scaled by motor command, assumed diagnostic model",
+        "position_feedback": "plant truth",
+        "position_loop_hz": 100,
+        "rc_smoothing": "OFF",
+        "seed": 1,
+        "sensor_and_command_ingress": "BF packets at 8000Hz hold 1600Hz IMU; CG reads latest at 1600Hz (up to 0.5ms stick-delivery quantization)",
+        "stick_schedule_hz": 250,
+        "tuning": null,
+        "tuning_status": "passed_common_step_rule"
+      },
+      "shape": "figure-eight",
+      "simulated_seconds": 77.0,
+      "stack": "betaflight",
+      "stick_updates": 19251,
+      "tilt_clamp_updates": 0,
+      "tracking_max_m": 0.6895058062490201,
+      "tracking_rms_m": 0.27156952836371306,
+      "wall_seconds": 122.302182667
+    }
+  },
+  {
+    "config": {
+      "controller": {
+        "feedback": "common plant truth in SIL; calibrated motion capture in physical trials",
+        "feedforward": "omega",
+        "feedforward_interface": "normal tilt commands: reference tilt + omega_ff / tuned attitude gain",
+        "feedforward_options": [
+          "off",
+          "omega"
+        ],
+        "feedforward_reference": "PDF commanded-thrust/desired-axis expression; snap derivative holds feedback correction locally fixed; yaw reference is fixed",
+        "frame": "world ENU, body FLU, scalar-first Hamilton quaternion body-to-world",
+        "position_model": "Benchmarks.PositionLoop",
+        "sample_rate_hz": 100,
+        "stick_rate_hz": 250,
+        "tilt_limit_deg": 35,
+        "trajectory_model": "Benchmarks.Trajectory",
+        "translational_correction_fraction": 0.7,
+        "yaw_rate_limit_deg_s": 200
+      },
+      "course": {
+        "altitude_m": 2,
+        "center_enu_m": [
+          0,
+          0
+        ],
+        "height_m": 10,
+        "lap_time_s": 34,
+        "laps": 1,
+        "phase_law": "minimum_jerk_each_lap",
+        "scale": 1,
+        "timing_status": "40-second commissioning reference; measured outcomes are reported separately, not a fastest-speed claim",
+        "width_m": 10,
+        "yaw_rad": 0
+      },
+      "environment": "purt-environment.json",
+      "id": "purt-10x10-z2-offboard-tilt-lead-v3",
+      "qualification": {
+        "attitude_tuning_evidence": "docs/results/tilt-lead/tuning",
+        "attitude_tuning_status": "passed_common_step_rule",
+        "gains_tuning": "equal step-response criterion and documented tuning budget",
+        "native_control_algorithm_changes_allowed": false,
+        "noise_profiles": [
+          "none",
+          "realistic",
+          "harsh"
+        ],
+        "performance_margins_status": "must agree before campaign; PDF numbers are examples",
+        "requires": [
+          "packet lockstep gate",
+          "generated-code oracle check",
+          "ideal-attitude common-plant check",
+          "hover",
+          "0.5 m step",
+          "square",
+          "one figure eight",
+          "native disarm and grounded stopped motors",
+          "noise repeats"
+        ],
+        "seeds_per_profile_min": 5,
+        "status": "matched attitude tuning qualified; speed and noise campaign in progress"
+      },
+      "schema_version": 1,
+      "stacks": {
+        "betaflight": {
+          "angle_feedforward": 0,
+          "angle_limit_deg": 35,
+          "attitude_gain_per_s": 6,
+          "d_max": [
+            0,
+            0,
+            0
+          ],
+          "hover_throttle": 0.6885788423153674,
+          "hover_throttle_status": "mean commanded PWM fraction over 30–35 s of closed-loop native Betaflight hover at 2 m in the shared plant",
+          "mode": "ANGLE",
+          "rc_smoothing": "OFF",
+          "rc_smoothing_status": "fixed for commissioning"
+        },
+        "cognipilot": {
+          "attitude_gain_per_s": 6,
+          "maximum_collective_thrust_n": 41.3749272,
+          "mode": "ATTITUDE",
+          "native_yaw_full_scale_rad_s": 3.5
+        }
+      },
+      "status": "qualification_in_progress",
+      "tracking_margin_m": 0.15,
+      "tuning": null,
+      "vehicle_radius_m": 0.4
+    },
+    "geometry": {
+      "center_tolerance_m": 0.75,
+      "completion_timestamp_s": 55.39,
+      "extents_covered": true,
+      "extra_lap": false,
+      "ordered_quadrants": 4,
+      "passed": true,
+      "returned_to_center": true
+    },
+    "id": "confirm-34-realistic-2",
+    "passed": true,
+    "report": {
+      "armed_observed": true,
+      "arming_flags": 0,
+      "commanded_accel_ff_peak_rad_s2": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "commanded_rate_ff_peak_rad_s": [
+        0.17329426109790802,
+        0.023309551179409027
+      ],
+      "error": null,
+      "final_armed": false,
+      "final_motors": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "final_position": [
+        -0.00911541522411104,
+        -0.0007562516108514952,
+        0.09836555833328647
+      ],
+      "firmware_exchanges": 616000,
+      "grounded_stopped_samples": 42788,
+      "hashes": {
+        "config": "e9827e384e4b9aa07905e1d68f3f7851dc973e966da9afa41c1a103519f77720",
+        "firmware": "c9530644680b907053022efa349bd0564701dd09ead526c862ac76d71755423f",
+        "offboard": "220db232fd2cae1744afcfd4eb773d6b2dbe37b97f5f36124849344281ec9a3d",
+        "plant": "284cced3ceec15128886d05753900b8ae47f38570ce0112c50e801356de97654",
+        "plant_description": "fdb12c3379b56d2d18f0ccaab3c62d15d2f97281f55270f37b837ea9c980b91c",
+        "runner": "7c9ade8116c66f1e6e0dad59fdf57bc461a1e9efecd7691c3eee599788e81693"
+      },
+      "lap_end_s": 59.0,
+      "lap_start_s": 25.0,
+      "maximum_tilt_deg": 13.48097866122249,
+      "mode_observed": true,
+      "offboard_updates": 7700,
+      "passed": true,
+      "peak_tilt_lead_rad": [
+        0.028882376849651337,
+        0.003884925196568171
+      ],
+      "qualification": "FastDyn/QEMU ARM BIL; shared generated offboard loop and plant; local-source commissioning run, not physical hardware latency",
+      "samples": 616000,
+      "sensor_profile": {
+        "accel_std_m_s2": 0.03,
+        "attitude_gain_per_s": 6.0,
+        "betaflight_hover_throttle": 0.6885788423153674,
+        "distribution": "12-uniform sum approximation; assumed diagnostic magnitudes, not measured hardware",
+        "execution_backend": "fastdyn-qemu-arm",
+        "feedforward": "omega",
+        "feedforward_interface": "offboard tilt lead omega/K; six normal RC channels; no onboard feed-forward modifications",
+        "gyro_std_rad_s": 0.002,
+        "hover_calibration_status": "mean commanded PWM fraction over 30–35 s of closed-loop native Betaflight hover at 2 m in the shared plant",
+        "imu_hz": 1600,
+        "level": "realistic",
+        "master_tick_hz": 8000,
+        "motor_vibration": "deterministic two-blade harmonic at 2*1100*normalized_motor rad/s; fixed per-motor and per-axis phase offsets; amplitude 0.25*IMU noise std scaled by motor command, assumed diagnostic model",
+        "position_feedback": "plant truth",
+        "position_loop_hz": 100,
+        "rc_smoothing": "OFF",
+        "seed": 2,
+        "sensor_and_command_ingress": "BF packets at 8000Hz hold 1600Hz IMU; CG reads latest at 1600Hz (up to 0.5ms stick-delivery quantization)",
+        "stick_schedule_hz": 250,
+        "tuning": null,
+        "tuning_status": "passed_common_step_rule"
+      },
+      "shape": "figure-eight",
+      "simulated_seconds": 77.0,
+      "stack": "betaflight",
+      "stick_updates": 19251,
+      "tilt_clamp_updates": 0,
+      "tracking_max_m": 0.6899272864258509,
+      "tracking_rms_m": 0.2721156367231794,
+      "wall_seconds": 122.124946926
+    }
+  },
+  {
+    "config": {
+      "controller": {
+        "feedback": "common plant truth in SIL; calibrated motion capture in physical trials",
+        "feedforward": "omega",
+        "feedforward_interface": "normal tilt commands: reference tilt + omega_ff / tuned attitude gain",
+        "feedforward_options": [
+          "off",
+          "omega"
+        ],
+        "feedforward_reference": "PDF commanded-thrust/desired-axis expression; snap derivative holds feedback correction locally fixed; yaw reference is fixed",
+        "frame": "world ENU, body FLU, scalar-first Hamilton quaternion body-to-world",
+        "position_model": "Benchmarks.PositionLoop",
+        "sample_rate_hz": 100,
+        "stick_rate_hz": 250,
+        "tilt_limit_deg": 35,
+        "trajectory_model": "Benchmarks.Trajectory",
+        "translational_correction_fraction": 0.7,
+        "yaw_rate_limit_deg_s": 200
+      },
+      "course": {
+        "altitude_m": 2,
+        "center_enu_m": [
+          0,
+          0
+        ],
+        "height_m": 10,
+        "lap_time_s": 34,
+        "laps": 1,
+        "phase_law": "minimum_jerk_each_lap",
+        "scale": 1,
+        "timing_status": "40-second commissioning reference; measured outcomes are reported separately, not a fastest-speed claim",
+        "width_m": 10,
+        "yaw_rad": 0
+      },
+      "environment": "purt-environment.json",
+      "id": "purt-10x10-z2-offboard-tilt-lead-v3",
+      "qualification": {
+        "attitude_tuning_evidence": "docs/results/tilt-lead/tuning",
+        "attitude_tuning_status": "passed_common_step_rule",
+        "gains_tuning": "equal step-response criterion and documented tuning budget",
+        "native_control_algorithm_changes_allowed": false,
+        "noise_profiles": [
+          "none",
+          "realistic",
+          "harsh"
+        ],
+        "performance_margins_status": "must agree before campaign; PDF numbers are examples",
+        "requires": [
+          "packet lockstep gate",
+          "generated-code oracle check",
+          "ideal-attitude common-plant check",
+          "hover",
+          "0.5 m step",
+          "square",
+          "one figure eight",
+          "native disarm and grounded stopped motors",
+          "noise repeats"
+        ],
+        "seeds_per_profile_min": 5,
+        "status": "matched attitude tuning qualified; speed and noise campaign in progress"
+      },
+      "schema_version": 1,
+      "stacks": {
+        "betaflight": {
+          "angle_feedforward": 0,
+          "angle_limit_deg": 35,
+          "attitude_gain_per_s": 6,
+          "d_max": [
+            0,
+            0,
+            0
+          ],
+          "hover_throttle": 0.6885788423153674,
+          "hover_throttle_status": "mean commanded PWM fraction over 30–35 s of closed-loop native Betaflight hover at 2 m in the shared plant",
+          "mode": "ANGLE",
+          "rc_smoothing": "OFF",
+          "rc_smoothing_status": "fixed for commissioning"
+        },
+        "cognipilot": {
+          "attitude_gain_per_s": 6,
+          "maximum_collective_thrust_n": 41.3749272,
+          "mode": "ATTITUDE",
+          "native_yaw_full_scale_rad_s": 3.5
+        }
+      },
+      "status": "qualification_in_progress",
+      "tracking_margin_m": 0.15,
+      "tuning": null,
+      "vehicle_radius_m": 0.4
+    },
+    "geometry": {
+      "center_tolerance_m": 0.75,
+      "completion_timestamp_s": 55.39,
+      "extents_covered": true,
+      "extra_lap": false,
+      "ordered_quadrants": 4,
+      "passed": true,
+      "returned_to_center": true
+    },
+    "id": "confirm-34-realistic-3",
+    "passed": true,
+    "report": {
+      "armed_observed": true,
+      "arming_flags": 0,
+      "commanded_accel_ff_peak_rad_s2": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "commanded_rate_ff_peak_rad_s": [
+        0.17332427203655243,
+        0.023311957716941833
+      ],
+      "error": null,
+      "final_armed": false,
+      "final_motors": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "final_position": [
+        -0.009222318046343624,
+        0.0011936391232388738,
+        0.09836555833333444
+      ],
+      "firmware_exchanges": 616000,
+      "grounded_stopped_samples": 46361,
+      "hashes": {
+        "config": "e9827e384e4b9aa07905e1d68f3f7851dc973e966da9afa41c1a103519f77720",
+        "firmware": "c9530644680b907053022efa349bd0564701dd09ead526c862ac76d71755423f",
+        "offboard": "220db232fd2cae1744afcfd4eb773d6b2dbe37b97f5f36124849344281ec9a3d",
+        "plant": "284cced3ceec15128886d05753900b8ae47f38570ce0112c50e801356de97654",
+        "plant_description": "fdb12c3379b56d2d18f0ccaab3c62d15d2f97281f55270f37b837ea9c980b91c",
+        "runner": "7c9ade8116c66f1e6e0dad59fdf57bc461a1e9efecd7691c3eee599788e81693"
+      },
+      "lap_end_s": 59.0,
+      "lap_start_s": 25.0,
+      "maximum_tilt_deg": 13.464430075003412,
+      "mode_observed": true,
+      "offboard_updates": 7700,
+      "passed": true,
+      "peak_tilt_lead_rad": [
+        0.02888737867275874,
+        0.003885326286156973
+      ],
+      "qualification": "FastDyn/QEMU ARM BIL; shared generated offboard loop and plant; local-source commissioning run, not physical hardware latency",
+      "samples": 616000,
+      "sensor_profile": {
+        "accel_std_m_s2": 0.03,
+        "attitude_gain_per_s": 6.0,
+        "betaflight_hover_throttle": 0.6885788423153674,
+        "distribution": "12-uniform sum approximation; assumed diagnostic magnitudes, not measured hardware",
+        "execution_backend": "fastdyn-qemu-arm",
+        "feedforward": "omega",
+        "feedforward_interface": "offboard tilt lead omega/K; six normal RC channels; no onboard feed-forward modifications",
+        "gyro_std_rad_s": 0.002,
+        "hover_calibration_status": "mean commanded PWM fraction over 30–35 s of closed-loop native Betaflight hover at 2 m in the shared plant",
+        "imu_hz": 1600,
+        "level": "realistic",
+        "master_tick_hz": 8000,
+        "motor_vibration": "deterministic two-blade harmonic at 2*1100*normalized_motor rad/s; fixed per-motor and per-axis phase offsets; amplitude 0.25*IMU noise std scaled by motor command, assumed diagnostic model",
+        "position_feedback": "plant truth",
+        "position_loop_hz": 100,
+        "rc_smoothing": "OFF",
+        "seed": 3,
+        "sensor_and_command_ingress": "BF packets at 8000Hz hold 1600Hz IMU; CG reads latest at 1600Hz (up to 0.5ms stick-delivery quantization)",
+        "stick_schedule_hz": 250,
+        "tuning": null,
+        "tuning_status": "passed_common_step_rule"
+      },
+      "shape": "figure-eight",
+      "simulated_seconds": 77.0,
+      "stack": "betaflight",
+      "stick_updates": 19251,
+      "tilt_clamp_updates": 0,
+      "tracking_max_m": 0.6894975069261239,
+      "tracking_rms_m": 0.2715426355847989,
+      "wall_seconds": 133.945668699
+    }
+  },
+  {
+    "config": {
+      "controller": {
+        "feedback": "common plant truth in SIL; calibrated motion capture in physical trials",
+        "feedforward": "omega",
+        "feedforward_interface": "normal tilt commands: reference tilt + omega_ff / tuned attitude gain",
+        "feedforward_options": [
+          "off",
+          "omega"
+        ],
+        "feedforward_reference": "PDF commanded-thrust/desired-axis expression; snap derivative holds feedback correction locally fixed; yaw reference is fixed",
+        "frame": "world ENU, body FLU, scalar-first Hamilton quaternion body-to-world",
+        "position_model": "Benchmarks.PositionLoop",
+        "sample_rate_hz": 100,
+        "stick_rate_hz": 250,
+        "tilt_limit_deg": 35,
+        "trajectory_model": "Benchmarks.Trajectory",
+        "translational_correction_fraction": 0.7,
+        "yaw_rate_limit_deg_s": 200
+      },
+      "course": {
+        "altitude_m": 2,
+        "center_enu_m": [
+          0,
+          0
+        ],
+        "height_m": 10,
+        "lap_time_s": 34,
+        "laps": 1,
+        "phase_law": "minimum_jerk_each_lap",
+        "scale": 1,
+        "timing_status": "40-second commissioning reference; measured outcomes are reported separately, not a fastest-speed claim",
+        "width_m": 10,
+        "yaw_rad": 0
+      },
+      "environment": "purt-environment.json",
+      "id": "purt-10x10-z2-offboard-tilt-lead-v3",
+      "qualification": {
+        "attitude_tuning_evidence": "docs/results/tilt-lead/tuning",
+        "attitude_tuning_status": "passed_common_step_rule",
+        "gains_tuning": "equal step-response criterion and documented tuning budget",
+        "native_control_algorithm_changes_allowed": false,
+        "noise_profiles": [
+          "none",
+          "realistic",
+          "harsh"
+        ],
+        "performance_margins_status": "must agree before campaign; PDF numbers are examples",
+        "requires": [
+          "packet lockstep gate",
+          "generated-code oracle check",
+          "ideal-attitude common-plant check",
+          "hover",
+          "0.5 m step",
+          "square",
+          "one figure eight",
+          "native disarm and grounded stopped motors",
+          "noise repeats"
+        ],
+        "seeds_per_profile_min": 5,
+        "status": "matched attitude tuning qualified; speed and noise campaign in progress"
+      },
+      "schema_version": 1,
+      "stacks": {
+        "betaflight": {
+          "angle_feedforward": 0,
+          "angle_limit_deg": 35,
+          "attitude_gain_per_s": 6,
+          "d_max": [
+            0,
+            0,
+            0
+          ],
+          "hover_throttle": 0.6885788423153674,
+          "hover_throttle_status": "mean commanded PWM fraction over 30–35 s of closed-loop native Betaflight hover at 2 m in the shared plant",
+          "mode": "ANGLE",
+          "rc_smoothing": "OFF",
+          "rc_smoothing_status": "fixed for commissioning"
+        },
+        "cognipilot": {
+          "attitude_gain_per_s": 6,
+          "maximum_collective_thrust_n": 41.3749272,
+          "mode": "ATTITUDE",
+          "native_yaw_full_scale_rad_s": 3.5
+        }
+      },
+      "status": "qualification_in_progress",
+      "tracking_margin_m": 0.15,
+      "tuning": null,
+      "vehicle_radius_m": 0.4
+    },
+    "geometry": {
+      "center_tolerance_m": 0.75,
+      "completion_timestamp_s": 55.39,
+      "extents_covered": true,
+      "extra_lap": false,
+      "ordered_quadrants": 4,
+      "passed": true,
+      "returned_to_center": true
+    },
+    "id": "confirm-34-realistic-4",
+    "passed": true,
+    "report": {
+      "armed_observed": true,
+      "arming_flags": 0,
+      "commanded_accel_ff_peak_rad_s2": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "commanded_rate_ff_peak_rad_s": [
+        0.17331838607788086,
+        0.02332580648362637
+      ],
+      "error": null,
+      "final_armed": false,
+      "final_motors": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "final_position": [
+        -0.006412645965479702,
+        -0.0033228044675376205,
+        0.098365558333328
+      ],
+      "firmware_exchanges": 616000,
+      "grounded_stopped_samples": 48921,
+      "hashes": {
+        "config": "e9827e384e4b9aa07905e1d68f3f7851dc973e966da9afa41c1a103519f77720",
+        "firmware": "c9530644680b907053022efa349bd0564701dd09ead526c862ac76d71755423f",
+        "offboard": "220db232fd2cae1744afcfd4eb773d6b2dbe37b97f5f36124849344281ec9a3d",
+        "plant": "284cced3ceec15128886d05753900b8ae47f38570ce0112c50e801356de97654",
+        "plant_description": "fdb12c3379b56d2d18f0ccaab3c62d15d2f97281f55270f37b837ea9c980b91c",
+        "runner": "7c9ade8116c66f1e6e0dad59fdf57bc461a1e9efecd7691c3eee599788e81693"
+      },
+      "lap_end_s": 59.0,
+      "lap_start_s": 25.0,
+      "maximum_tilt_deg": 13.463430007510416,
+      "mode_observed": true,
+      "offboard_updates": 7700,
+      "passed": true,
+      "peak_tilt_lead_rad": [
+        0.02888639767964681,
+        0.003887634413937727
+      ],
+      "qualification": "FastDyn/QEMU ARM BIL; shared generated offboard loop and plant; local-source commissioning run, not physical hardware latency",
+      "samples": 616000,
+      "sensor_profile": {
+        "accel_std_m_s2": 0.03,
+        "attitude_gain_per_s": 6.0,
+        "betaflight_hover_throttle": 0.6885788423153674,
+        "distribution": "12-uniform sum approximation; assumed diagnostic magnitudes, not measured hardware",
+        "execution_backend": "fastdyn-qemu-arm",
+        "feedforward": "omega",
+        "feedforward_interface": "offboard tilt lead omega/K; six normal RC channels; no onboard feed-forward modifications",
+        "gyro_std_rad_s": 0.002,
+        "hover_calibration_status": "mean commanded PWM fraction over 30–35 s of closed-loop native Betaflight hover at 2 m in the shared plant",
+        "imu_hz": 1600,
+        "level": "realistic",
+        "master_tick_hz": 8000,
+        "motor_vibration": "deterministic two-blade harmonic at 2*1100*normalized_motor rad/s; fixed per-motor and per-axis phase offsets; amplitude 0.25*IMU noise std scaled by motor command, assumed diagnostic model",
+        "position_feedback": "plant truth",
+        "position_loop_hz": 100,
+        "rc_smoothing": "OFF",
+        "seed": 4,
+        "sensor_and_command_ingress": "BF packets at 8000Hz hold 1600Hz IMU; CG reads latest at 1600Hz (up to 0.5ms stick-delivery quantization)",
+        "stick_schedule_hz": 250,
+        "tuning": null,
+        "tuning_status": "passed_common_step_rule"
+      },
+      "shape": "figure-eight",
+      "simulated_seconds": 77.0,
+      "stack": "betaflight",
+      "stick_updates": 19251,
+      "tilt_clamp_updates": 0,
+      "tracking_max_m": 0.6885238199934824,
+      "tracking_rms_m": 0.2715543503519966,
+      "wall_seconds": 126.235193515
+    }
+  },
+  {
+    "config": {
+      "controller": {
+        "feedback": "common plant truth in SIL; calibrated motion capture in physical trials",
+        "feedforward": "omega",
+        "feedforward_interface": "normal tilt commands: reference tilt + omega_ff / tuned attitude gain",
+        "feedforward_options": [
+          "off",
+          "omega"
+        ],
+        "feedforward_reference": "PDF commanded-thrust/desired-axis expression; snap derivative holds feedback correction locally fixed; yaw reference is fixed",
+        "frame": "world ENU, body FLU, scalar-first Hamilton quaternion body-to-world",
+        "position_model": "Benchmarks.PositionLoop",
+        "sample_rate_hz": 100,
+        "stick_rate_hz": 250,
+        "tilt_limit_deg": 35,
+        "trajectory_model": "Benchmarks.Trajectory",
+        "translational_correction_fraction": 0.7,
+        "yaw_rate_limit_deg_s": 200
+      },
+      "course": {
+        "altitude_m": 2,
+        "center_enu_m": [
+          0,
+          0
+        ],
+        "height_m": 10,
+        "lap_time_s": 34,
+        "laps": 1,
+        "phase_law": "minimum_jerk_each_lap",
+        "scale": 1,
+        "timing_status": "40-second commissioning reference; measured outcomes are reported separately, not a fastest-speed claim",
+        "width_m": 10,
+        "yaw_rad": 0
+      },
+      "environment": "purt-environment.json",
+      "id": "purt-10x10-z2-offboard-tilt-lead-v3",
+      "qualification": {
+        "attitude_tuning_evidence": "docs/results/tilt-lead/tuning",
+        "attitude_tuning_status": "passed_common_step_rule",
+        "gains_tuning": "equal step-response criterion and documented tuning budget",
+        "native_control_algorithm_changes_allowed": false,
+        "noise_profiles": [
+          "none",
+          "realistic",
+          "harsh"
+        ],
+        "performance_margins_status": "must agree before campaign; PDF numbers are examples",
+        "requires": [
+          "packet lockstep gate",
+          "generated-code oracle check",
+          "ideal-attitude common-plant check",
+          "hover",
+          "0.5 m step",
+          "square",
+          "one figure eight",
+          "native disarm and grounded stopped motors",
+          "noise repeats"
+        ],
+        "seeds_per_profile_min": 5,
+        "status": "matched attitude tuning qualified; speed and noise campaign in progress"
+      },
+      "schema_version": 1,
+      "stacks": {
+        "betaflight": {
+          "angle_feedforward": 0,
+          "angle_limit_deg": 35,
+          "attitude_gain_per_s": 6,
+          "d_max": [
+            0,
+            0,
+            0
+          ],
+          "hover_throttle": 0.6885788423153674,
+          "hover_throttle_status": "mean commanded PWM fraction over 30–35 s of closed-loop native Betaflight hover at 2 m in the shared plant",
+          "mode": "ANGLE",
+          "rc_smoothing": "OFF",
+          "rc_smoothing_status": "fixed for commissioning"
+        },
+        "cognipilot": {
+          "attitude_gain_per_s": 6,
+          "maximum_collective_thrust_n": 41.3749272,
+          "mode": "ATTITUDE",
+          "native_yaw_full_scale_rad_s": 3.5
+        }
+      },
+      "status": "qualification_in_progress",
+      "tracking_margin_m": 0.15,
+      "tuning": null,
+      "vehicle_radius_m": 0.4
+    },
+    "geometry": {
+      "center_tolerance_m": 0.75,
+      "completion_timestamp_s": 55.38,
+      "extents_covered": true,
+      "extra_lap": false,
+      "ordered_quadrants": 4,
+      "passed": true,
+      "returned_to_center": true
+    },
+    "id": "confirm-34-realistic-5",
+    "passed": true,
+    "report": {
+      "armed_observed": true,
+      "arming_flags": 0,
+      "commanded_accel_ff_peak_rad_s2": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "commanded_rate_ff_peak_rad_s": [
+        0.17331255972385406,
+        0.0233168825507164
+      ],
+      "error": null,
+      "final_armed": false,
+      "final_motors": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "final_position": [
+        -0.012050148894932071,
+        0.004999191288394011,
+        0.0983655583333274
+      ],
+      "firmware_exchanges": 616000,
+      "grounded_stopped_samples": 47705,
+      "hashes": {
+        "config": "e9827e384e4b9aa07905e1d68f3f7851dc973e966da9afa41c1a103519f77720",
+        "firmware": "c9530644680b907053022efa349bd0564701dd09ead526c862ac76d71755423f",
+        "offboard": "220db232fd2cae1744afcfd4eb773d6b2dbe37b97f5f36124849344281ec9a3d",
+        "plant": "284cced3ceec15128886d05753900b8ae47f38570ce0112c50e801356de97654",
+        "plant_description": "fdb12c3379b56d2d18f0ccaab3c62d15d2f97281f55270f37b837ea9c980b91c",
+        "runner": "7c9ade8116c66f1e6e0dad59fdf57bc461a1e9efecd7691c3eee599788e81693"
+      },
+      "lap_end_s": 59.0,
+      "lap_start_s": 25.0,
+      "maximum_tilt_deg": 13.466696409281203,
+      "mode_observed": true,
+      "offboard_updates": 7700,
+      "passed": true,
+      "peak_tilt_lead_rad": [
+        0.028885426620642345,
+        0.0038861470917860665
+      ],
+      "qualification": "FastDyn/QEMU ARM BIL; shared generated offboard loop and plant; local-source commissioning run, not physical hardware latency",
+      "samples": 616000,
+      "sensor_profile": {
+        "accel_std_m_s2": 0.03,
+        "attitude_gain_per_s": 6.0,
+        "betaflight_hover_throttle": 0.6885788423153674,
+        "distribution": "12-uniform sum approximation; assumed diagnostic magnitudes, not measured hardware",
+        "execution_backend": "fastdyn-qemu-arm",
+        "feedforward": "omega",
+        "feedforward_interface": "offboard tilt lead omega/K; six normal RC channels; no onboard feed-forward modifications",
+        "gyro_std_rad_s": 0.002,
+        "hover_calibration_status": "mean commanded PWM fraction over 30–35 s of closed-loop native Betaflight hover at 2 m in the shared plant",
+        "imu_hz": 1600,
+        "level": "realistic",
+        "master_tick_hz": 8000,
+        "motor_vibration": "deterministic two-blade harmonic at 2*1100*normalized_motor rad/s; fixed per-motor and per-axis phase offsets; amplitude 0.25*IMU noise std scaled by motor command, assumed diagnostic model",
+        "position_feedback": "plant truth",
+        "position_loop_hz": 100,
+        "rc_smoothing": "OFF",
+        "seed": 5,
+        "sensor_and_command_ingress": "BF packets at 8000Hz hold 1600Hz IMU; CG reads latest at 1600Hz (up to 0.5ms stick-delivery quantization)",
+        "stick_schedule_hz": 250,
+        "tuning": null,
+        "tuning_status": "passed_common_step_rule"
+      },
+      "shape": "figure-eight",
+      "simulated_seconds": 77.0,
+      "stack": "betaflight",
+      "stick_updates": 19251,
+      "tilt_clamp_updates": 0,
+      "tracking_max_m": 0.6871469250892492,
+      "tracking_rms_m": 0.27180559822322026,
+      "wall_seconds": 119.731081417
+    }
+  },
+  {
+    "config": {
+      "controller": {
+        "feedback": "common plant truth in SIL; calibrated motion capture in physical trials",
+        "feedforward": "omega",
+        "feedforward_interface": "normal tilt commands: reference tilt + omega_ff / tuned attitude gain",
+        "feedforward_options": [
+          "off",
+          "omega"
+        ],
+        "feedforward_reference": "PDF commanded-thrust/desired-axis expression; snap derivative holds feedback correction locally fixed; yaw reference is fixed",
+        "frame": "world ENU, body FLU, scalar-first Hamilton quaternion body-to-world",
+        "position_model": "Benchmarks.PositionLoop",
+        "sample_rate_hz": 100,
+        "stick_rate_hz": 250,
+        "tilt_limit_deg": 35,
+        "trajectory_model": "Benchmarks.Trajectory",
+        "translational_correction_fraction": 0.7,
+        "yaw_rate_limit_deg_s": 200
+      },
+      "course": {
+        "altitude_m": 2,
+        "center_enu_m": [
+          0,
+          0
+        ],
+        "height_m": 10,
+        "lap_time_s": 34,
+        "laps": 1,
+        "phase_law": "minimum_jerk_each_lap",
+        "scale": 1,
+        "timing_status": "40-second commissioning reference; measured outcomes are reported separately, not a fastest-speed claim",
+        "width_m": 10,
+        "yaw_rad": 0
+      },
+      "environment": "purt-environment.json",
+      "id": "purt-10x10-z2-offboard-tilt-lead-v3",
+      "qualification": {
+        "attitude_tuning_evidence": "docs/results/tilt-lead/tuning",
+        "attitude_tuning_status": "passed_common_step_rule",
+        "gains_tuning": "equal step-response criterion and documented tuning budget",
+        "native_control_algorithm_changes_allowed": false,
+        "noise_profiles": [
+          "none",
+          "realistic",
+          "harsh"
+        ],
+        "performance_margins_status": "must agree before campaign; PDF numbers are examples",
+        "requires": [
+          "packet lockstep gate",
+          "generated-code oracle check",
+          "ideal-attitude common-plant check",
+          "hover",
+          "0.5 m step",
+          "square",
+          "one figure eight",
+          "native disarm and grounded stopped motors",
+          "noise repeats"
+        ],
+        "seeds_per_profile_min": 5,
+        "status": "matched attitude tuning qualified; speed and noise campaign in progress"
+      },
+      "schema_version": 1,
+      "stacks": {
+        "betaflight": {
+          "angle_feedforward": 0,
+          "angle_limit_deg": 35,
+          "attitude_gain_per_s": 6,
+          "d_max": [
+            0,
+            0,
+            0
+          ],
+          "hover_throttle": 0.6885788423153674,
+          "hover_throttle_status": "mean commanded PWM fraction over 30–35 s of closed-loop native Betaflight hover at 2 m in the shared plant",
+          "mode": "ANGLE",
+          "rc_smoothing": "OFF",
+          "rc_smoothing_status": "fixed for commissioning"
+        },
+        "cognipilot": {
+          "attitude_gain_per_s": 6,
+          "maximum_collective_thrust_n": 41.3749272,
+          "mode": "ATTITUDE",
+          "native_yaw_full_scale_rad_s": 3.5
+        }
+      },
+      "status": "qualification_in_progress",
+      "tracking_margin_m": 0.15,
+      "tuning": null,
+      "vehicle_radius_m": 0.4
+    },
+    "geometry": {
+      "center_tolerance_m": 0.75,
+      "completion_timestamp_s": 55.39,
+      "extents_covered": true,
+      "extra_lap": false,
+      "ordered_quadrants": 4,
+      "passed": true,
+      "returned_to_center": true
+    },
+    "id": "confirm-34-harsh-1",
+    "passed": true,
+    "report": {
+      "armed_observed": true,
+      "arming_flags": 0,
+      "commanded_accel_ff_peak_rad_s2": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "commanded_rate_ff_peak_rad_s": [
+        0.17351575195789337,
+        0.023329539224505424
+      ],
+      "error": null,
+      "final_armed": false,
+      "final_motors": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "final_position": [
+        0.006444921146015794,
+        -0.004299742394917786,
+        0.09836555833332226
+      ],
+      "firmware_exchanges": 616000,
+      "grounded_stopped_samples": 47571,
+      "hashes": {
+        "config": "e9827e384e4b9aa07905e1d68f3f7851dc973e966da9afa41c1a103519f77720",
+        "firmware": "c9530644680b907053022efa349bd0564701dd09ead526c862ac76d71755423f",
+        "offboard": "220db232fd2cae1744afcfd4eb773d6b2dbe37b97f5f36124849344281ec9a3d",
+        "plant": "284cced3ceec15128886d05753900b8ae47f38570ce0112c50e801356de97654",
+        "plant_description": "fdb12c3379b56d2d18f0ccaab3c62d15d2f97281f55270f37b837ea9c980b91c",
+        "runner": "7c9ade8116c66f1e6e0dad59fdf57bc461a1e9efecd7691c3eee599788e81693"
+      },
+      "lap_end_s": 59.0,
+      "lap_start_s": 25.0,
+      "maximum_tilt_deg": 13.49696108852043,
+      "mode_observed": true,
+      "offboard_updates": 7700,
+      "passed": true,
+      "peak_tilt_lead_rad": [
+        0.028919291992982227,
+        0.0038882565374175706
+      ],
+      "qualification": "FastDyn/QEMU ARM BIL; shared generated offboard loop and plant; local-source commissioning run, not physical hardware latency",
+      "samples": 616000,
+      "sensor_profile": {
+        "accel_std_m_s2": 0.15,
+        "attitude_gain_per_s": 6.0,
+        "betaflight_hover_throttle": 0.6885788423153674,
+        "distribution": "12-uniform sum approximation; assumed diagnostic magnitudes, not measured hardware",
+        "execution_backend": "fastdyn-qemu-arm",
+        "feedforward": "omega",
+        "feedforward_interface": "offboard tilt lead omega/K; six normal RC channels; no onboard feed-forward modifications",
+        "gyro_std_rad_s": 0.01,
+        "hover_calibration_status": "mean commanded PWM fraction over 30–35 s of closed-loop native Betaflight hover at 2 m in the shared plant",
+        "imu_hz": 1600,
+        "level": "harsh",
+        "master_tick_hz": 8000,
+        "motor_vibration": "deterministic two-blade harmonic at 2*1100*normalized_motor rad/s; fixed per-motor and per-axis phase offsets; amplitude 0.25*IMU noise std scaled by motor command, assumed diagnostic model",
+        "position_feedback": "plant truth",
+        "position_loop_hz": 100,
+        "rc_smoothing": "OFF",
+        "seed": 1,
+        "sensor_and_command_ingress": "BF packets at 8000Hz hold 1600Hz IMU; CG reads latest at 1600Hz (up to 0.5ms stick-delivery quantization)",
+        "stick_schedule_hz": 250,
+        "tuning": null,
+        "tuning_status": "passed_common_step_rule"
+      },
+      "shape": "figure-eight",
+      "simulated_seconds": 77.0,
+      "stack": "betaflight",
+      "stick_updates": 19251,
+      "tilt_clamp_updates": 0,
+      "tracking_max_m": 0.6897773143311885,
+      "tracking_rms_m": 0.2703958101942399,
+      "wall_seconds": 131.875843127
+    }
+  },
+  {
+    "config": {
+      "controller": {
+        "feedback": "common plant truth in SIL; calibrated motion capture in physical trials",
+        "feedforward": "omega",
+        "feedforward_interface": "normal tilt commands: reference tilt + omega_ff / tuned attitude gain",
+        "feedforward_options": [
+          "off",
+          "omega"
+        ],
+        "feedforward_reference": "PDF commanded-thrust/desired-axis expression; snap derivative holds feedback correction locally fixed; yaw reference is fixed",
+        "frame": "world ENU, body FLU, scalar-first Hamilton quaternion body-to-world",
+        "position_model": "Benchmarks.PositionLoop",
+        "sample_rate_hz": 100,
+        "stick_rate_hz": 250,
+        "tilt_limit_deg": 35,
+        "trajectory_model": "Benchmarks.Trajectory",
+        "translational_correction_fraction": 0.7,
+        "yaw_rate_limit_deg_s": 200
+      },
+      "course": {
+        "altitude_m": 2,
+        "center_enu_m": [
+          0,
+          0
+        ],
+        "height_m": 10,
+        "lap_time_s": 34,
+        "laps": 1,
+        "phase_law": "minimum_jerk_each_lap",
+        "scale": 1,
+        "timing_status": "40-second commissioning reference; measured outcomes are reported separately, not a fastest-speed claim",
+        "width_m": 10,
+        "yaw_rad": 0
+      },
+      "environment": "purt-environment.json",
+      "id": "purt-10x10-z2-offboard-tilt-lead-v3",
+      "qualification": {
+        "attitude_tuning_evidence": "docs/results/tilt-lead/tuning",
+        "attitude_tuning_status": "passed_common_step_rule",
+        "gains_tuning": "equal step-response criterion and documented tuning budget",
+        "native_control_algorithm_changes_allowed": false,
+        "noise_profiles": [
+          "none",
+          "realistic",
+          "harsh"
+        ],
+        "performance_margins_status": "must agree before campaign; PDF numbers are examples",
+        "requires": [
+          "packet lockstep gate",
+          "generated-code oracle check",
+          "ideal-attitude common-plant check",
+          "hover",
+          "0.5 m step",
+          "square",
+          "one figure eight",
+          "native disarm and grounded stopped motors",
+          "noise repeats"
+        ],
+        "seeds_per_profile_min": 5,
+        "status": "matched attitude tuning qualified; speed and noise campaign in progress"
+      },
+      "schema_version": 1,
+      "stacks": {
+        "betaflight": {
+          "angle_feedforward": 0,
+          "angle_limit_deg": 35,
+          "attitude_gain_per_s": 6,
+          "d_max": [
+            0,
+            0,
+            0
+          ],
+          "hover_throttle": 0.6885788423153674,
+          "hover_throttle_status": "mean commanded PWM fraction over 30–35 s of closed-loop native Betaflight hover at 2 m in the shared plant",
+          "mode": "ANGLE",
+          "rc_smoothing": "OFF",
+          "rc_smoothing_status": "fixed for commissioning"
+        },
+        "cognipilot": {
+          "attitude_gain_per_s": 6,
+          "maximum_collective_thrust_n": 41.3749272,
+          "mode": "ATTITUDE",
+          "native_yaw_full_scale_rad_s": 3.5
+        }
+      },
+      "status": "qualification_in_progress",
+      "tracking_margin_m": 0.15,
+      "tuning": null,
+      "vehicle_radius_m": 0.4
+    },
+    "geometry": {
+      "center_tolerance_m": 0.75,
+      "completion_timestamp_s": 55.38,
+      "extents_covered": true,
+      "extra_lap": false,
+      "ordered_quadrants": 4,
+      "passed": true,
+      "returned_to_center": true
+    },
+    "id": "confirm-34-harsh-2",
+    "passed": false,
+    "report": {
+      "armed_observed": true,
+      "arming_flags": 0,
+      "commanded_accel_ff_peak_rad_s2": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "commanded_rate_ff_peak_rad_s": [
+        0.17351922392845154,
+        0.023336051031947136
+      ],
+      "error": "landing/disarm/motor-stop not verified",
+      "final_armed": true,
+      "final_motors": [
+        0.7626044,
+        0.5104878,
+        0.771817,
+        0.511698
+      ],
+      "final_position": [
+        0.002918179171018727,
+        -0.004831423153680617,
+        0.5840366328503581
+      ],
+      "firmware_exchanges": 616000,
+      "grounded_stopped_samples": 0,
+      "hashes": {
+        "config": "e9827e384e4b9aa07905e1d68f3f7851dc973e966da9afa41c1a103519f77720",
+        "firmware": "c9530644680b907053022efa349bd0564701dd09ead526c862ac76d71755423f",
+        "offboard": "220db232fd2cae1744afcfd4eb773d6b2dbe37b97f5f36124849344281ec9a3d",
+        "plant": "284cced3ceec15128886d05753900b8ae47f38570ce0112c50e801356de97654",
+        "plant_description": "fdb12c3379b56d2d18f0ccaab3c62d15d2f97281f55270f37b837ea9c980b91c",
+        "runner": "7c9ade8116c66f1e6e0dad59fdf57bc461a1e9efecd7691c3eee599788e81693"
+      },
+      "lap_end_s": 59.0,
+      "lap_start_s": 25.0,
+      "maximum_tilt_deg": 13.459509413386636,
+      "mode_observed": true,
+      "offboard_updates": 7700,
+      "passed": false,
+      "peak_tilt_lead_rad": [
+        0.028919870654741924,
+        0.003889341838657856
+      ],
+      "qualification": "FastDyn/QEMU ARM BIL; shared generated offboard loop and plant; local-source commissioning run, not physical hardware latency",
+      "samples": 616000,
+      "sensor_profile": {
+        "accel_std_m_s2": 0.15,
+        "attitude_gain_per_s": 6.0,
+        "betaflight_hover_throttle": 0.6885788423153674,
+        "distribution": "12-uniform sum approximation; assumed diagnostic magnitudes, not measured hardware",
+        "execution_backend": "fastdyn-qemu-arm",
+        "feedforward": "omega",
+        "feedforward_interface": "offboard tilt lead omega/K; six normal RC channels; no onboard feed-forward modifications",
+        "gyro_std_rad_s": 0.01,
+        "hover_calibration_status": "mean commanded PWM fraction over 30–35 s of closed-loop native Betaflight hover at 2 m in the shared plant",
+        "imu_hz": 1600,
+        "level": "harsh",
+        "master_tick_hz": 8000,
+        "motor_vibration": "deterministic two-blade harmonic at 2*1100*normalized_motor rad/s; fixed per-motor and per-axis phase offsets; amplitude 0.25*IMU noise std scaled by motor command, assumed diagnostic model",
+        "position_feedback": "plant truth",
+        "position_loop_hz": 100,
+        "rc_smoothing": "OFF",
+        "seed": 2,
+        "sensor_and_command_ingress": "BF packets at 8000Hz hold 1600Hz IMU; CG reads latest at 1600Hz (up to 0.5ms stick-delivery quantization)",
+        "stick_schedule_hz": 250,
+        "tuning": null,
+        "tuning_status": "passed_common_step_rule"
+      },
+      "shape": "figure-eight",
+      "simulated_seconds": 77.0,
+      "stack": "betaflight",
+      "stick_updates": 19251,
+      "tilt_clamp_updates": 0,
+      "tracking_max_m": 0.688080454410874,
+      "tracking_rms_m": 0.27051150806262475,
+      "wall_seconds": 132.919946609
+    }
+  },
+  {
+    "config": {
+      "controller": {
+        "feedback": "common plant truth in SIL; calibrated motion capture in physical trials",
+        "feedforward": "omega",
+        "feedforward_interface": "normal tilt commands: reference tilt + omega_ff / tuned attitude gain",
+        "feedforward_options": [
+          "off",
+          "omega"
+        ],
+        "feedforward_reference": "PDF commanded-thrust/desired-axis expression; snap derivative holds feedback correction locally fixed; yaw reference is fixed",
+        "frame": "world ENU, body FLU, scalar-first Hamilton quaternion body-to-world",
+        "position_model": "Benchmarks.PositionLoop",
+        "sample_rate_hz": 100,
+        "stick_rate_hz": 250,
+        "tilt_limit_deg": 35,
+        "trajectory_model": "Benchmarks.Trajectory",
+        "translational_correction_fraction": 0.7,
+        "yaw_rate_limit_deg_s": 200
+      },
+      "course": {
+        "altitude_m": 2,
+        "center_enu_m": [
+          0,
+          0
+        ],
+        "height_m": 10,
+        "lap_time_s": 34,
+        "laps": 1,
+        "phase_law": "minimum_jerk_each_lap",
+        "scale": 1,
+        "timing_status": "40-second commissioning reference; measured outcomes are reported separately, not a fastest-speed claim",
+        "width_m": 10,
+        "yaw_rad": 0
+      },
+      "environment": "purt-environment.json",
+      "id": "purt-10x10-z2-offboard-tilt-lead-v3",
+      "qualification": {
+        "attitude_tuning_evidence": "docs/results/tilt-lead/tuning",
+        "attitude_tuning_status": "passed_common_step_rule",
+        "gains_tuning": "equal step-response criterion and documented tuning budget",
+        "native_control_algorithm_changes_allowed": false,
+        "noise_profiles": [
+          "none",
+          "realistic",
+          "harsh"
+        ],
+        "performance_margins_status": "must agree before campaign; PDF numbers are examples",
+        "requires": [
+          "packet lockstep gate",
+          "generated-code oracle check",
+          "ideal-attitude common-plant check",
+          "hover",
+          "0.5 m step",
+          "square",
+          "one figure eight",
+          "native disarm and grounded stopped motors",
+          "noise repeats"
+        ],
+        "seeds_per_profile_min": 5,
+        "status": "matched attitude tuning qualified; speed and noise campaign in progress"
+      },
+      "schema_version": 1,
+      "stacks": {
+        "betaflight": {
+          "angle_feedforward": 0,
+          "angle_limit_deg": 35,
+          "attitude_gain_per_s": 6,
+          "d_max": [
+            0,
+            0,
+            0
+          ],
+          "hover_throttle": 0.6885788423153674,
+          "hover_throttle_status": "mean commanded PWM fraction over 30–35 s of closed-loop native Betaflight hover at 2 m in the shared plant",
+          "mode": "ANGLE",
+          "rc_smoothing": "OFF",
+          "rc_smoothing_status": "fixed for commissioning"
+        },
+        "cognipilot": {
+          "attitude_gain_per_s": 6,
+          "maximum_collective_thrust_n": 41.3749272,
+          "mode": "ATTITUDE",
+          "native_yaw_full_scale_rad_s": 3.5
+        }
+      },
+      "status": "qualification_in_progress",
+      "tracking_margin_m": 0.15,
+      "tuning": null,
+      "vehicle_radius_m": 0.4
+    },
+    "geometry": {
+      "center_tolerance_m": 0.75,
+      "completion_timestamp_s": 55.39,
+      "extents_covered": true,
+      "extra_lap": false,
+      "ordered_quadrants": 4,
+      "passed": true,
+      "returned_to_center": true
+    },
+    "id": "confirm-34-harsh-3",
+    "passed": true,
+    "report": {
+      "armed_observed": true,
+      "arming_flags": 0,
+      "commanded_accel_ff_peak_rad_s2": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "commanded_rate_ff_peak_rad_s": [
+        0.17348843812942505,
+        0.023333249613642693
+      ],
+      "error": null,
+      "final_armed": false,
+      "final_motors": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "final_position": [
+        -0.004285027008212941,
+        -0.010960157874388974,
+        0.09836555833333176
+      ],
+      "firmware_exchanges": 616000,
+      "grounded_stopped_samples": 48473,
+      "hashes": {
+        "config": "e9827e384e4b9aa07905e1d68f3f7851dc973e966da9afa41c1a103519f77720",
+        "firmware": "c9530644680b907053022efa349bd0564701dd09ead526c862ac76d71755423f",
+        "offboard": "220db232fd2cae1744afcfd4eb773d6b2dbe37b97f5f36124849344281ec9a3d",
+        "plant": "284cced3ceec15128886d05753900b8ae47f38570ce0112c50e801356de97654",
+        "plant_description": "fdb12c3379b56d2d18f0ccaab3c62d15d2f97281f55270f37b837ea9c980b91c",
+        "runner": "7c9ade8116c66f1e6e0dad59fdf57bc461a1e9efecd7691c3eee599788e81693"
+      },
+      "lap_end_s": 59.0,
+      "lap_start_s": 25.0,
+      "maximum_tilt_deg": 13.47070391133752,
+      "mode_observed": true,
+      "offboard_updates": 7700,
+      "passed": true,
+      "peak_tilt_lead_rad": [
+        0.028914739688237507,
+        0.0038888749356071153
+      ],
+      "qualification": "FastDyn/QEMU ARM BIL; shared generated offboard loop and plant; local-source commissioning run, not physical hardware latency",
+      "samples": 616000,
+      "sensor_profile": {
+        "accel_std_m_s2": 0.15,
+        "attitude_gain_per_s": 6.0,
+        "betaflight_hover_throttle": 0.6885788423153674,
+        "distribution": "12-uniform sum approximation; assumed diagnostic magnitudes, not measured hardware",
+        "execution_backend": "fastdyn-qemu-arm",
+        "feedforward": "omega",
+        "feedforward_interface": "offboard tilt lead omega/K; six normal RC channels; no onboard feed-forward modifications",
+        "gyro_std_rad_s": 0.01,
+        "hover_calibration_status": "mean commanded PWM fraction over 30–35 s of closed-loop native Betaflight hover at 2 m in the shared plant",
+        "imu_hz": 1600,
+        "level": "harsh",
+        "master_tick_hz": 8000,
+        "motor_vibration": "deterministic two-blade harmonic at 2*1100*normalized_motor rad/s; fixed per-motor and per-axis phase offsets; amplitude 0.25*IMU noise std scaled by motor command, assumed diagnostic model",
+        "position_feedback": "plant truth",
+        "position_loop_hz": 100,
+        "rc_smoothing": "OFF",
+        "seed": 3,
+        "sensor_and_command_ingress": "BF packets at 8000Hz hold 1600Hz IMU; CG reads latest at 1600Hz (up to 0.5ms stick-delivery quantization)",
+        "stick_schedule_hz": 250,
+        "tuning": null,
+        "tuning_status": "passed_common_step_rule"
+      },
+      "shape": "figure-eight",
+      "simulated_seconds": 77.0,
+      "stack": "betaflight",
+      "stick_updates": 19251,
+      "tilt_clamp_updates": 0,
+      "tracking_max_m": 0.6938177223795859,
+      "tracking_rms_m": 0.2704625694718853,
+      "wall_seconds": 130.768001995
+    }
+  },
+  {
+    "config": {
+      "controller": {
+        "feedback": "common plant truth in SIL; calibrated motion capture in physical trials",
+        "feedforward": "omega",
+        "feedforward_interface": "normal tilt commands: reference tilt + omega_ff / tuned attitude gain",
+        "feedforward_options": [
+          "off",
+          "omega"
+        ],
+        "feedforward_reference": "PDF commanded-thrust/desired-axis expression; snap derivative holds feedback correction locally fixed; yaw reference is fixed",
+        "frame": "world ENU, body FLU, scalar-first Hamilton quaternion body-to-world",
+        "position_model": "Benchmarks.PositionLoop",
+        "sample_rate_hz": 100,
+        "stick_rate_hz": 250,
+        "tilt_limit_deg": 35,
+        "trajectory_model": "Benchmarks.Trajectory",
+        "translational_correction_fraction": 0.7,
+        "yaw_rate_limit_deg_s": 200
+      },
+      "course": {
+        "altitude_m": 2,
+        "center_enu_m": [
+          0,
+          0
+        ],
+        "height_m": 10,
+        "lap_time_s": 34,
+        "laps": 1,
+        "phase_law": "minimum_jerk_each_lap",
+        "scale": 1,
+        "timing_status": "40-second commissioning reference; measured outcomes are reported separately, not a fastest-speed claim",
+        "width_m": 10,
+        "yaw_rad": 0
+      },
+      "environment": "purt-environment.json",
+      "id": "purt-10x10-z2-offboard-tilt-lead-v3",
+      "qualification": {
+        "attitude_tuning_evidence": "docs/results/tilt-lead/tuning",
+        "attitude_tuning_status": "passed_common_step_rule",
+        "gains_tuning": "equal step-response criterion and documented tuning budget",
+        "native_control_algorithm_changes_allowed": false,
+        "noise_profiles": [
+          "none",
+          "realistic",
+          "harsh"
+        ],
+        "performance_margins_status": "must agree before campaign; PDF numbers are examples",
+        "requires": [
+          "packet lockstep gate",
+          "generated-code oracle check",
+          "ideal-attitude common-plant check",
+          "hover",
+          "0.5 m step",
+          "square",
+          "one figure eight",
+          "native disarm and grounded stopped motors",
+          "noise repeats"
+        ],
+        "seeds_per_profile_min": 5,
+        "status": "matched attitude tuning qualified; speed and noise campaign in progress"
+      },
+      "schema_version": 1,
+      "stacks": {
+        "betaflight": {
+          "angle_feedforward": 0,
+          "angle_limit_deg": 35,
+          "attitude_gain_per_s": 6,
+          "d_max": [
+            0,
+            0,
+            0
+          ],
+          "hover_throttle": 0.6885788423153674,
+          "hover_throttle_status": "mean commanded PWM fraction over 30–35 s of closed-loop native Betaflight hover at 2 m in the shared plant",
+          "mode": "ANGLE",
+          "rc_smoothing": "OFF",
+          "rc_smoothing_status": "fixed for commissioning"
+        },
+        "cognipilot": {
+          "attitude_gain_per_s": 6,
+          "maximum_collective_thrust_n": 41.3749272,
+          "mode": "ATTITUDE",
+          "native_yaw_full_scale_rad_s": 3.5
+        }
+      },
+      "status": "qualification_in_progress",
+      "tracking_margin_m": 0.15,
+      "tuning": null,
+      "vehicle_radius_m": 0.4
+    },
+    "geometry": {
+      "center_tolerance_m": 0.75,
+      "completion_timestamp_s": 55.38,
+      "extents_covered": true,
+      "extra_lap": false,
+      "ordered_quadrants": 4,
+      "passed": true,
+      "returned_to_center": true
+    },
+    "id": "confirm-34-harsh-4",
+    "passed": true,
+    "report": {
+      "armed_observed": true,
+      "arming_flags": 0,
+      "commanded_accel_ff_peak_rad_s2": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "commanded_rate_ff_peak_rad_s": [
+        0.17353901267051697,
+        0.0233820378780365
+      ],
+      "error": null,
+      "final_armed": false,
+      "final_motors": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "final_position": [
+        -0.008516702909731135,
+        -0.003836844100708909,
+        0.0983655583333193
+      ],
+      "firmware_exchanges": 616000,
+      "grounded_stopped_samples": 49817,
+      "hashes": {
+        "config": "e9827e384e4b9aa07905e1d68f3f7851dc973e966da9afa41c1a103519f77720",
+        "firmware": "c9530644680b907053022efa349bd0564701dd09ead526c862ac76d71755423f",
+        "offboard": "220db232fd2cae1744afcfd4eb773d6b2dbe37b97f5f36124849344281ec9a3d",
+        "plant": "284cced3ceec15128886d05753900b8ae47f38570ce0112c50e801356de97654",
+        "plant_description": "fdb12c3379b56d2d18f0ccaab3c62d15d2f97281f55270f37b837ea9c980b91c",
+        "runner": "7c9ade8116c66f1e6e0dad59fdf57bc461a1e9efecd7691c3eee599788e81693"
+      },
+      "lap_end_s": 59.0,
+      "lap_start_s": 25.0,
+      "maximum_tilt_deg": 13.455504092504874,
+      "mode_observed": true,
+      "offboard_updates": 7700,
+      "passed": true,
+      "peak_tilt_lead_rad": [
+        0.028923168778419495,
+        0.003897006313006083
+      ],
+      "qualification": "FastDyn/QEMU ARM BIL; shared generated offboard loop and plant; local-source commissioning run, not physical hardware latency",
+      "samples": 616000,
+      "sensor_profile": {
+        "accel_std_m_s2": 0.15,
+        "attitude_gain_per_s": 6.0,
+        "betaflight_hover_throttle": 0.6885788423153674,
+        "distribution": "12-uniform sum approximation; assumed diagnostic magnitudes, not measured hardware",
+        "execution_backend": "fastdyn-qemu-arm",
+        "feedforward": "omega",
+        "feedforward_interface": "offboard tilt lead omega/K; six normal RC channels; no onboard feed-forward modifications",
+        "gyro_std_rad_s": 0.01,
+        "hover_calibration_status": "mean commanded PWM fraction over 30–35 s of closed-loop native Betaflight hover at 2 m in the shared plant",
+        "imu_hz": 1600,
+        "level": "harsh",
+        "master_tick_hz": 8000,
+        "motor_vibration": "deterministic two-blade harmonic at 2*1100*normalized_motor rad/s; fixed per-motor and per-axis phase offsets; amplitude 0.25*IMU noise std scaled by motor command, assumed diagnostic model",
+        "position_feedback": "plant truth",
+        "position_loop_hz": 100,
+        "rc_smoothing": "OFF",
+        "seed": 4,
+        "sensor_and_command_ingress": "BF packets at 8000Hz hold 1600Hz IMU; CG reads latest at 1600Hz (up to 0.5ms stick-delivery quantization)",
+        "stick_schedule_hz": 250,
+        "tuning": null,
+        "tuning_status": "passed_common_step_rule"
+      },
+      "shape": "figure-eight",
+      "simulated_seconds": 77.0,
+      "stack": "betaflight",
+      "stick_updates": 19251,
+      "tilt_clamp_updates": 0,
+      "tracking_max_m": 0.6860569875050504,
+      "tracking_rms_m": 0.27065841270662516,
+      "wall_seconds": 132.358016683
+    }
+  },
+  {
+    "config": {
+      "controller": {
+        "feedback": "common plant truth in SIL; calibrated motion capture in physical trials",
+        "feedforward": "omega",
+        "feedforward_interface": "normal tilt commands: reference tilt + omega_ff / tuned attitude gain",
+        "feedforward_options": [
+          "off",
+          "omega"
+        ],
+        "feedforward_reference": "PDF commanded-thrust/desired-axis expression; snap derivative holds feedback correction locally fixed; yaw reference is fixed",
+        "frame": "world ENU, body FLU, scalar-first Hamilton quaternion body-to-world",
+        "position_model": "Benchmarks.PositionLoop",
+        "sample_rate_hz": 100,
+        "stick_rate_hz": 250,
+        "tilt_limit_deg": 35,
+        "trajectory_model": "Benchmarks.Trajectory",
+        "translational_correction_fraction": 0.7,
+        "yaw_rate_limit_deg_s": 200
+      },
+      "course": {
+        "altitude_m": 2,
+        "center_enu_m": [
+          0,
+          0
+        ],
+        "height_m": 10,
+        "lap_time_s": 34,
+        "laps": 1,
+        "phase_law": "minimum_jerk_each_lap",
+        "scale": 1,
+        "timing_status": "40-second commissioning reference; measured outcomes are reported separately, not a fastest-speed claim",
+        "width_m": 10,
+        "yaw_rad": 0
+      },
+      "environment": "purt-environment.json",
+      "id": "purt-10x10-z2-offboard-tilt-lead-v3",
+      "qualification": {
+        "attitude_tuning_evidence": "docs/results/tilt-lead/tuning",
+        "attitude_tuning_status": "passed_common_step_rule",
+        "gains_tuning": "equal step-response criterion and documented tuning budget",
+        "native_control_algorithm_changes_allowed": false,
+        "noise_profiles": [
+          "none",
+          "realistic",
+          "harsh"
+        ],
+        "performance_margins_status": "must agree before campaign; PDF numbers are examples",
+        "requires": [
+          "packet lockstep gate",
+          "generated-code oracle check",
+          "ideal-attitude common-plant check",
+          "hover",
+          "0.5 m step",
+          "square",
+          "one figure eight",
+          "native disarm and grounded stopped motors",
+          "noise repeats"
+        ],
+        "seeds_per_profile_min": 5,
+        "status": "matched attitude tuning qualified; speed and noise campaign in progress"
+      },
+      "schema_version": 1,
+      "stacks": {
+        "betaflight": {
+          "angle_feedforward": 0,
+          "angle_limit_deg": 35,
+          "attitude_gain_per_s": 6,
+          "d_max": [
+            0,
+            0,
+            0
+          ],
+          "hover_throttle": 0.6885788423153674,
+          "hover_throttle_status": "mean commanded PWM fraction over 30–35 s of closed-loop native Betaflight hover at 2 m in the shared plant",
+          "mode": "ANGLE",
+          "rc_smoothing": "OFF",
+          "rc_smoothing_status": "fixed for commissioning"
+        },
+        "cognipilot": {
+          "attitude_gain_per_s": 6,
+          "maximum_collective_thrust_n": 41.3749272,
+          "mode": "ATTITUDE",
+          "native_yaw_full_scale_rad_s": 3.5
+        }
+      },
+      "status": "qualification_in_progress",
+      "tracking_margin_m": 0.15,
+      "tuning": null,
+      "vehicle_radius_m": 0.4
+    },
+    "geometry": {
+      "center_tolerance_m": 0.75,
+      "completion_timestamp_s": 55.39,
+      "extents_covered": true,
+      "extra_lap": false,
+      "ordered_quadrants": 4,
+      "passed": true,
+      "returned_to_center": true
+    },
+    "id": "confirm-34-harsh-5",
+    "passed": false,
+    "report": {
+      "armed_observed": true,
+      "arming_flags": 0,
+      "commanded_accel_ff_peak_rad_s2": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "commanded_rate_ff_peak_rad_s": [
+        0.17356029152870178,
+        0.023353753611445427
+      ],
+      "error": "landing/disarm/motor-stop not verified",
+      "final_armed": true,
+      "final_motors": [
+        0.72892594,
+        0.5495585,
+        0.7306375,
+        0.5549005
+      ],
+      "final_position": [
+        0.0018099252974592788,
+        -0.0051658711023593274,
+        0.6092920034965418
+      ],
+      "firmware_exchanges": 616000,
+      "grounded_stopped_samples": 0,
+      "hashes": {
+        "config": "e9827e384e4b9aa07905e1d68f3f7851dc973e966da9afa41c1a103519f77720",
+        "firmware": "c9530644680b907053022efa349bd0564701dd09ead526c862ac76d71755423f",
+        "offboard": "220db232fd2cae1744afcfd4eb773d6b2dbe37b97f5f36124849344281ec9a3d",
+        "plant": "284cced3ceec15128886d05753900b8ae47f38570ce0112c50e801356de97654",
+        "plant_description": "fdb12c3379b56d2d18f0ccaab3c62d15d2f97281f55270f37b837ea9c980b91c",
+        "runner": "7c9ade8116c66f1e6e0dad59fdf57bc461a1e9efecd7691c3eee599788e81693"
+      },
+      "lap_end_s": 59.0,
+      "lap_start_s": 25.0,
+      "maximum_tilt_deg": 13.460016483401256,
+      "mode_observed": true,
+      "offboard_updates": 7700,
+      "passed": false,
+      "peak_tilt_lead_rad": [
+        0.02892671525478363,
+        0.003892292268574238
+      ],
+      "qualification": "FastDyn/QEMU ARM BIL; shared generated offboard loop and plant; local-source commissioning run, not physical hardware latency",
+      "samples": 616000,
+      "sensor_profile": {
+        "accel_std_m_s2": 0.15,
+        "attitude_gain_per_s": 6.0,
+        "betaflight_hover_throttle": 0.6885788423153674,
+        "distribution": "12-uniform sum approximation; assumed diagnostic magnitudes, not measured hardware",
+        "execution_backend": "fastdyn-qemu-arm",
+        "feedforward": "omega",
+        "feedforward_interface": "offboard tilt lead omega/K; six normal RC channels; no onboard feed-forward modifications",
+        "gyro_std_rad_s": 0.01,
+        "hover_calibration_status": "mean commanded PWM fraction over 30–35 s of closed-loop native Betaflight hover at 2 m in the shared plant",
+        "imu_hz": 1600,
+        "level": "harsh",
+        "master_tick_hz": 8000,
+        "motor_vibration": "deterministic two-blade harmonic at 2*1100*normalized_motor rad/s; fixed per-motor and per-axis phase offsets; amplitude 0.25*IMU noise std scaled by motor command, assumed diagnostic model",
+        "position_feedback": "plant truth",
+        "position_loop_hz": 100,
+        "rc_smoothing": "OFF",
+        "seed": 5,
+        "sensor_and_command_ingress": "BF packets at 8000Hz hold 1600Hz IMU; CG reads latest at 1600Hz (up to 0.5ms stick-delivery quantization)",
+        "stick_schedule_hz": 250,
+        "tuning": null,
+        "tuning_status": "passed_common_step_rule"
+      },
+      "shape": "figure-eight",
+      "simulated_seconds": 77.0,
+      "stack": "betaflight",
+      "stick_updates": 19251,
+      "tilt_clamp_updates": 0,
+      "tracking_max_m": 0.6846004432273858,
+      "tracking_rms_m": 0.272806892847215,
+      "wall_seconds": 126.532154538
+    }
   }
 ]
