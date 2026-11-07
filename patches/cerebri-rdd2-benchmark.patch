@@ -1142,7 +1142,7 @@ index b00a950..7c60466 100644
 +    }
 +}
 diff --git a/xtask/src/shared_memory.rs b/xtask/src/shared_memory.rs
-index f5c82b8..2002247 100644
+index f5c82b8..52c7405 100644
 --- a/xtask/src/shared_memory.rs
 +++ b/xtask/src/shared_memory.rs
 @@ -12,7 +12,7 @@ use synapse_fbs::topic;
@@ -1193,7 +1193,46 @@ index f5c82b8..2002247 100644
              ptr::copy_nonoverlapping(&inputs.gnss_fix, ptr::addr_of_mut!((*shared).gnss_fix), 1);
              ptr::copy_nonoverlapping(
                  &inputs.waypoint_plan,
-@@ -249,7 +258,11 @@ impl Transport {
+@@ -205,17 +214,25 @@ impl Transport {
+         unsafe { &*ptr::addr_of!((*shared).input_sequence) }
+             .store(self.sequence, Ordering::Release);
+ 
+-        let deadline = Instant::now() + timeout;
++        let started = Instant::now();
++        let deadline = started + timeout;
+         let mut spins = 0_u32;
+         while unsafe { &*ptr::addr_of!((*shared).response_sequence) }.load(Ordering::Acquire)
+             != self.sequence
+         {
+             spins = spins.wrapping_add(1);
+             if spins.is_multiple_of(65_536) {
++                // A response can arrive between the loop condition and this
++                // deadline check. Recheck before classifying a stalled exchange.
+                 if Instant::now() >= deadline {
++                    if unsafe { &*ptr::addr_of!((*shared).response_sequence) }
++                        .load(Ordering::Acquire) == self.sequence {
++                        break;
++                    }
+                     bail!(
+-                        "timed out waiting for shared-memory response {}",
+-                        self.sequence
++                        "timed out waiting for shared-memory response {} after {:?}; observed response {}",
++                        self.sequence, started.elapsed(),
++                        unsafe { &*ptr::addr_of!((*shared).response_sequence) }.load(Ordering::Acquire)
+                     );
+                 }
+                 // Mostly-hot spinning keeps exchange latency low; this
+@@ -227,6 +244,9 @@ impl Transport {
+             }
+         }
+ 
++        if started.elapsed() >= Duration::from_secs(2) {
++            eprintln!("lockstep host wait recovered: sequence={} wall_wait={:?}; simulated time was not advanced during wait", self.sequence, started.elapsed());
++        }
+         let mut pwm = topic::PwmSignalOutputsData::default();
+         let mut health = topic::VehicleHealthData::default();
+         let mut odometry = topic::OdometryEstimateData::default();
+@@ -249,7 +269,11 @@ impl Transport {
                  1,
              );
          }
@@ -1205,7 +1244,7 @@ index f5c82b8..2002247 100644
              motor_command: protocol::motor_output(&pwm.0)?,
              flight_state: protocol::flight_state(&health.0)?,
              odometry_estimate: odometry,
-@@ -265,7 +278,7 @@ impl Drop for Transport {
+@@ -265,7 +289,7 @@ impl Drop for Transport {
      }
  }
  
@@ -1214,7 +1253,7 @@ index f5c82b8..2002247 100644
  
  #[cfg(test)]
  mod tests {
-@@ -274,7 +287,7 @@ mod tests {
+@@ -274,7 +298,7 @@ mod tests {
  
      #[test]
      fn layout_matches_firmware_abi() {
@@ -1223,7 +1262,7 @@ index f5c82b8..2002247 100644
          assert_eq!(align_of::<SharedLayout>(), 8);
          assert_eq!(offset_of!(SharedLayout, inertial_sample), 16);
          assert_eq!(offset_of!(SharedLayout, manual_control), 56);
-@@ -288,6 +301,8 @@ mod tests {
+@@ -288,6 +312,8 @@ mod tests {
          assert_eq!(offset_of!(SharedLayout, odometry_estimate), 856);
          assert_eq!(offset_of!(SharedLayout, planner_reference), 1088);
          assert_eq!(offset_of!(SharedLayout, mission_status), 1144);
@@ -1232,7 +1271,7 @@ index f5c82b8..2002247 100644
      }
  
      #[test]
-@@ -396,14 +411,14 @@ mod tests {
+@@ -396,14 +422,14 @@ mod tests {
              .shared()
              .magic
              .store(RDD2_LOCKSTEP_MAGIC, Ordering::Release);
@@ -4756,7 +4795,7 @@ diff --git a/xtask/src/shared_sil.rs b/xtask/src/shared_sil.rs
 new file mode 100644
 --- /dev/null
 +++ b/xtask/src/shared_sil.rs
-@@ -0,0 +1,1233 @@
+@@ -0,0 +1,1234 @@
 +//! Real firmware, one generated position loop, one timed course, one FMI plant.
 +use crate::{
 +    benchmark::{FlightStackAdapter, PilotCommand, SensorFrame, SyntheticGnss},
@@ -5489,7 +5528,8 @@ new file mode 100644
 +                            square_plan: None,
 +                            reference: None,
 +                        },
-+                        Duration::from_secs(if tick == 5 { 30 } else { 2 }),
++                        // Host liveness watchdog, not a firmware deadline: tolerate VM scheduling stalls.
++                        Duration::from_secs(30),
 +                    )?;
 +                    motors = response.motors;
 +                    armed = response.diagnostics.flight_state.armed;
@@ -6190,7 +6230,7 @@ diff --git a/xtask/src/speed_sweep.rs b/xtask/src/speed_sweep.rs
 new file mode 100644
 --- /dev/null
 +++ b/xtask/src/speed_sweep.rs
-@@ -0,0 +1,372 @@
+@@ -0,0 +1,396 @@
 +//! Fixed-accuracy speed sweep with retained failures and five-seed confirmation.
 +use anyhow::{Context, Result, ensure};
 +use serde_json::{Value, json};
@@ -6242,6 +6282,17 @@ new file mode 100644
 +        json!({"ordered_quadrants":gate,"returned_to_center":returned,"extra_lap":extra,"extents_covered":extent,"center_tolerance_m":0.75,"completion_timestamp_s":finish,"passed":gate==4&&returned&&extent&&!extra}),
 +    )
 +}
++fn valid_flight_outcome(report: &Value, expected_end: f64) -> bool {
++    let error = report["error"].as_str();
++    if error.is_some_and(|e| e.starts_with("PURT envelope abort") || e.starts_with("tilt abort")) {
++        return true; // A measured safety-envelope violation is a flight failure.
++    }
++    let known_gate = error.is_none() || error.is_some_and(|e|
++        e == "no valid armed self-level flight" || e == "landing/disarm/motor-stop not verified"
++        || e == "commissioning accuracy threshold exceeded" || e.starts_with("tilt command reached clamp"));
++    known_gate && report["simulated_seconds"].as_f64().is_some_and(|t|
++        t.is_finite() && (t - expected_end).abs() <= 0.011)
++}
 +fn flight(
 +    a: &[OsString],
 +    cfg: &Value,
@@ -6285,7 +6336,8 @@ new file mode 100644
 +        25.,
 +        25. + cfg["course"]["lap_time_s"].as_f64().context("lap")?,
 +    )?;
-+    let record = json!({"id":id,"passed":status.success()&&geo["passed"]==true,"geometry":geo,"report":report,"config":cfg});
++    let complete = valid_flight_outcome(&report, 43. + cfg["course"]["lap_time_s"].as_f64().context("lap")?);
++    let record = json!({"id":id,"passed":complete&&status.success()&&report["passed"]==true&&geo["passed"]==true,"valid_flight_outcome":complete,"classification":if complete {"flight_outcome"} else {"incomplete_execution"},"geometry":geo,"report":report,"config":cfg});
 +    fs::write(
 +        out.join("speed-report.json"),
 +        serde_json::to_vec_pretty(&record)?,
@@ -6302,6 +6354,10 @@ new file mode 100644
 +        "{id}: {} RMS {} max {}",
 +        record["passed"], report["tracking_rms_m"], report["tracking_max_m"]
 +    );
++    if !complete {
++        fs::write(root.join("blocked.json"), serde_json::to_vec_pretty(&json!({"status":"blocked_incomplete_execution","attempt":id,"report":out.join("report.json"),"reason":"Incomplete execution must be diagnosed and rerun; it is not a speed boundary","error":report["error"]}))?)?;
++        anyhow::bail!("incomplete execution in {id}; diagnostic retained; no speed boundary inferred");
++    }
 +    Ok(record)
 +}
 +fn save(root: &Path, all: &[Value]) -> Result<()> {
@@ -6425,6 +6481,14 @@ new file mode 100644
 +#[cfg(test)]
 +mod tests {
 +    use super::*;
++    #[test]
++    fn incomplete_execution_is_not_a_speed_boundary() {
++        assert!(!valid_flight_outcome(&json!({"error":"response timeout","simulated_seconds":39.63925}),78.));
++        assert!(!valid_flight_outcome(&json!({"error":null,"simulated_seconds":39.63925}),78.));
++        assert!(valid_flight_outcome(&json!({"error":"landing/disarm/motor-stop not verified","simulated_seconds":78.,"passed":false}),78.));
++        assert!(valid_flight_outcome(&json!({"error":"tilt abort 46 deg","simulated_seconds":30.,"passed":false}),78.));
++        assert!(valid_flight_outcome(&json!({"error":null,"simulated_seconds":78.,"passed":true}),78.));
++    }
 +    #[test]
 +    fn geometry_rejects_hover_and_half_course() {
 +        let path = std::env::temp_dir().join(format!("adr-geometry-{}.csv", std::process::id()));

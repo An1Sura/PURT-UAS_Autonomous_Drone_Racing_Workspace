@@ -64,3 +64,5 @@ The trajectory, geometry, controller algebra and proof statements are unchanged.
 This is not a formal proof of the new firmware scheduling behavior or of flight
 performance; those require the separately queued experiment and readback.
 
+
+November 6 timeout hardening: the benchmark patch changes host wall-clock waiting and speed-result classification only. Source checksums were refreshed; no new mathematical or firmware proof is claimed. Native host tests: 55 passed, 2 ignored.

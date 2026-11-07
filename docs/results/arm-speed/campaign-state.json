@@ -1,5 +1,5 @@
 {
-  "recorded_at": "2026-11-06T20:33:49.842Z",
+  "recorded_at": "2026-11-07T06:34:09.313Z",
   "qualification": "Published snapshot, not live VM status",
   "betaflight": {
     "status": "completed_no_qualified_candidate",
@@ -13,7 +13,9 @@
   },
   "cognipilot": {
     "status": "running",
-    "note": "39-second run passed; 35-second run incomplete due to shared-memory response timeout, not a demonstrated tracking limit. ARM qualification remains pending."
+    "campaign": "arm-speed-cognipilot-hardened-20261106",
+    "runner_sha256": "f2ef29affdaa7ec6c92e281357e115dcb3d6801ca390765fd5f76e0992a53b92",
+    "note": "Fresh search after host watchdog hardening. Original 35 s exact repeat passed with RMS 0.251667 m and verified landing; no fastest qualification yet. Legacy search stopped after its active flight."
   },
   "protocol_study": {
     "status": "diagnostic_passed_confirmation_pending",
