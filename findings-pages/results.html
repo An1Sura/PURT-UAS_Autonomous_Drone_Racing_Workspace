@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Explore the results</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to the content</a>
+<header class="top">
+  <nav aria-label="Pages">
+    <a href="index.html">The answer so far</a>
+    <a href="results.html" aria-current="page">Explore the results</a>
+    <a href="why.html">Why one might be faster</a>
+    <a href="plan.html">Plan and risks</a>
+  </nav>
+</header>
+
+<main id="main">
+  <h1>What did the flights show?</h1>
+
+  <div class="answer">
+    <p>Betaflight's shortest confirmed lap is 33 seconds, counting tracking only.</p>
+    <p>This is provisional, because Betaflight has flown with tilt lead on only. The result sits close to the limit, and a small change to the 0.75 m limit changes it. CogniPilot has only two completed flights to compare.</p>
+  </div>
+
+  <h2>How does error change with lap time?</h2>
+  <p>Shorter laps produce larger errors. Each mark below is one flight. Marks at one lap time are spread sideways so you can see them. Select a mark to see its details.</p>
+
+  <div class="panel">
+    <div class="controls">
+      <div>
+        <label for="gate">Largest error limit: <span id="gate-value"></span> m</label>
+        <input type="range" id="gate" min="0.70" max="0.80" step="0.005" value="0.75">
+      </div>
+      <div>
+        <label for="noise">Show noise</label>
+        <select id="noise">
+          <option value="all">All noise levels</option>
+          <option value="none">None</option>
+          <option value="realistic">Realistic</option>
+          <option value="harsh">Harsh</option>
+        </select>
+      </div>
+      <div>
+        <label for="landing">Scoring</label>
+        <select id="landing">
+          <option value="track">Tracking only</option>
+          <option value="full">Tracking and landing</option>
+        </select>
+      </div>
+    </div>
+
+    <p class="big" id="verdict" aria-live="polite"></p>
+    <p id="verdict-note"></p>
+    <p class="muted small">The slider shows how sensitive the result is. The rule itself stays at 0.75 m.</p>
+
+    <svg id="chart" viewBox="0 0 860 420" role="img" aria-label="Largest error against lap time. The table below holds the same data."></svg>
+    <ul class="legend">
+      <li><span class="bad">---</span> Error limit</li>
+      <li>Circle: Betaflight, met every check</li>
+      <li>Square: Betaflight, tracked well but did not land</li>
+      <li>Cross: Betaflight, missed a tracking limit</li>
+      <li>Diamond: CogniPilot, one flight</li>
+    </ul>
+    <p id="detail" aria-live="polite"><strong>Selected flight:</strong> none. Select a mark or a flight name.</p>
+  </div>
+
+  <h2>How did each lap time do?</h2>
+  <div class="table-wrap">
+    <table>
+      <caption>Betaflight, 15-run confirmations and single search flights. Tilt lead on.</caption>
+      <thead><tr><th>Lap time</th><th class="num">Flights</th><th class="num">Met tracking limits</th><th class="num">Landed</th><th class="num">Worst largest error</th></tr></thead>
+      <tbody id="summary"></tbody>
+    </table>
+  </div>
+
+  <h2>What did each flight record?</h2>
+  <div class="controls">
+    <div>
+      <label for="filter-lap">Lap time</label>
+      <select id="filter-lap"><option value="all">All</option></select>
+    </div>
+    <div>
+      <label for="filter-result">Result</label>
+      <select id="filter-result">
+        <option value="all">All</option>
+        <option value="ok">Met every check</option>
+        <option value="land">Did not land</option>
+        <option value="track">Missed a tracking limit</option>
+      </select>
+    </div>
+  </div>
+  <p id="count" class="muted" aria-live="polite"></p>
+  <div class="table-wrap">
+    <table>
+      <caption>All 66 Betaflight flights. Typical error is RMS.</caption>
+      <thead><tr><th>Flight</th><th class="num">Lap (s)</th><th>Noise</th><th class="num">Seed</th><th class="num">Typical error (m)</th><th class="num">Largest error (m)</th><th class="num">Peak tilt (deg)</th><th>Result</th></tr></thead>
+      <tbody id="flights"></tbody>
+    </table>
+  </div>
+
+  <h2>Where do these numbers come from?</h2>
+  <p>Betaflight numbers come from <code>docs/results/arm-speed/betaflight-attempts.json</code>. CogniPilot numbers come from the reports in <code>docs/results/arm-speed/cognipilot-39s</code> and <code>cognipilot-35s-repeat</code>.</p>
+  <p>Betaflight has no flights with tilt lead off on this test bed. CogniPilot's results may not include its best setting.</p>
+</main>
+
+<footer>Data from the repository as of 2026-11-09. Simulation only.</footer>
+
+<script src="data.js"></script>
+<script>
+  const NS = "http://www.w3.org/2000/svg";
+  const chart = document.getElementById("chart");
+  const gateInput = document.getElementById("gate");
+  const noiseInput = document.getElementById("noise");
+  const landingInput = document.getElementById("landing");
+  const detail = document.getElementById("detail");
+
+  const box = { left: 64, right: 840, top: 16, bottom: 368 };
+  const xMin = 29, xMax = 41, yMin = 0.45, yMax = 0.9;
+  const x = (lap) => box.left + (lap - xMin) / (xMax - xMin) * (box.right - box.left);
+  const y = (err) => box.bottom - (err - yMin) / (yMax - yMin) * (box.bottom - box.top);
+
+  function element(name, attrs, parent, text) {
+    const node = document.createElementNS(NS, name);
+    for (const key in attrs) node.setAttribute(key, attrs[key]);
+    if (text !== undefined) node.textContent = text;
+    (parent || chart).appendChild(node);
+    return node;
+  }
+
+  function outcome(flight) {
+    if (!tracked(flight, MAX_LIMIT)) return "track";
+    return flight.landed ? "ok" : "land";
+  }
+
+  const outcomeText = {
+    ok: "Met every check",
+    land: "Tracked well, still armed at end",
+    track: "Missed a tracking limit"
+  };
+
+  function select(flight, stack) {
+    detail.innerHTML = "";
+    const label = document.createElement("strong");
+    label.textContent = "Selected flight: ";
+    detail.appendChild(label);
+    const text = stack === "cp"
+      ? `${flight.id}. Lap ${flight.lap} s. Typical error ${flight.rms.toFixed(4)} m. Largest error ${flight.max.toFixed(4)} m. ${flight.note}`
+      : `${flight.id}. Lap ${flight.lap} s. Noise ${flight.noise}, seed ${flight.seed}. Typical error ${flight.rms.toFixed(4)} m. Largest error ${flight.max.toFixed(4)} m. Peak tilt ${flight.tilt.toFixed(1)} degrees. ${outcomeText[outcome(flight)]}.`;
+    detail.appendChild(document.createTextNode(text));
+  }
+
+  function jitter(flight) {
+    const offset = { none: -0.22, realistic: 0, harsh: 0.22 }[flight.noise];
+    return offset + (flight.seed - 3) * 0.035;
+  }
+
+  function draw() {
+    const gate = Number(gateInput.value);
+    chart.textContent = "";
+
+    for (let err = 0.5; err <= 0.9001; err += 0.1) {
+      element("line", { class: "grid", x1: box.left, x2: box.right, y1: y(err), y2: y(err) });
+      element("text", { x: box.left - 10, y: y(err) + 4, "text-anchor": "end" }, chart, err.toFixed(1));
+    }
+    for (let lap = 30; lap <= 40; lap += 2) {
+      element("line", { class: "grid", x1: x(lap), x2: x(lap), y1: box.top, y2: box.bottom });
+      element("text", { x: x(lap), y: box.bottom + 20, "text-anchor": "middle" }, chart, String(lap));
+    }
+    element("line", { class: "axis", x1: box.left, x2: box.right, y1: box.bottom, y2: box.bottom });
+    element("line", { class: "axis", x1: box.left, x2: box.left, y1: box.top, y2: box.bottom });
+    element("text", { x: (box.left + box.right) / 2, y: 412, "text-anchor": "middle" }, chart, "Planned lap time (seconds)");
+    element("text", { transform: "rotate(-90)", x: -(box.top + box.bottom) / 2, y: 16, "text-anchor": "middle" }, chart, "Largest error (metres)");
+
+    element("line", { class: "gate", x1: box.left, x2: box.right, y1: y(gate), y2: y(gate) });
+
+    const noise = noiseInput.value;
+    for (const flight of BETAFLIGHT) {
+      if (noise !== "all" && flight.noise !== noise) continue;
+      const px = x(flight.lap + jitter(flight));
+      const py = y(flight.max);
+      const state = outcome(flight);
+      let mark;
+      if (state === "track") {
+        mark = element("g", { class: "bf-fail" });
+        element("line", { x1: px - 6, x2: px + 6, y1: py - 6, y2: py + 6 }, mark);
+        element("line", { x1: px - 6, x2: px + 6, y1: py + 6, y2: py - 6 }, mark);
+      } else if (state === "land") {
+        mark = element("rect", { class: "bf-land", x: px - 5, y: py - 5, width: 10, height: 10 });
+      } else {
+        mark = element("circle", { class: "bf-ok", cx: px, cy: py, r: 4.5 });
+      }
+      element("title", {}, mark, flight.id);
+      const hit = element("circle", { class: "hit", cx: px, cy: py, r: 10, fill: "transparent" });
+      element("title", {}, hit, flight.id);
+      hit.addEventListener("click", () => select(flight, "bf"));
+    }
+
+    for (const flight of COGNIPILOT) {
+      const px = x(flight.lap);
+      const py = y(flight.max);
+      const mark = element("polygon", { class: "cp", points: `${px},${py - 8} ${px + 8},${py} ${px},${py + 8} ${px - 8},${py}` });
+      element("title", {}, mark, flight.id);
+      const hit = element("circle", { class: "hit", cx: px, cy: py, r: 11, fill: "transparent" });
+      element("title", {}, hit, flight.id);
+      hit.addEventListener("click", () => select(flight, "cp"));
+    }
+
+    document.getElementById("gate-value").textContent = gate.toFixed(3);
+    updateVerdict(gate);
+  }
+
+  function updateVerdict(gate) {
+    const needLanding = landingInput.value === "full";
+    const lap = shortestConfirmed(gate, needLanding);
+    const verdict = document.getElementById("verdict");
+    const note = document.getElementById("verdict-note");
+    verdict.textContent = lap ? `Betaflight shortest confirmed lap: ${lap} s` : "Betaflight has no confirmed lap";
+
+    const parts = [];
+    if (needLanding) parts.push("Each lap time we confirmed had at least one flight that did not land.");
+    const single32 = BETAFLIGHT.find((f) => f.id === "refine-32");
+    if (!needLanding && tracked(single32, gate)) {
+      parts.push("One flight at 32 s meets this limit, but 32 s was never tested 15 times, so it is not confirmed.");
+    }
+    if (!needLanding && gate < 0.733) {
+      parts.push("At this limit, at least one flight at 33 s misses. The result moves to a longer lap.");
+    }
+    if (parts.length === 0) parts.push("At this limit, 33 s is the shortest lap with all 15 runs inside the limits.");
+    note.textContent = parts.join(" ");
+  }
+
+  function fillSummary() {
+    const body = document.getElementById("summary");
+    for (const lap of [...new Set(BETAFLIGHT.map((f) => f.lap))].sort((a, b) => a - b)) {
+      const confirmSet = BETAFLIGHT.filter((f) => f.lap === lap && f.phase === "confirm");
+      const set = confirmSet.length ? confirmSet : BETAFLIGHT.filter((f) => f.lap === lap);
+      const tableRow = document.createElement("tr");
+      const trackedCount = set.filter((f) => tracked(f, MAX_LIMIT)).length;
+      const landedText = confirmSet.length ? String(set.filter((f) => f.landed).length) : "Not scored";
+      const worst = Math.max(...set.map((f) => f.max));
+      for (const [value, numeric] of [[`${lap} s`, false], [String(set.length), true], [String(trackedCount), true], [landedText, true], [worst.toFixed(4) + " m", true]]) {
+        const cell = document.createElement("td");
+        if (numeric) cell.className = "num";
+        cell.textContent = value;
+        tableRow.appendChild(cell);
+      }
+      body.appendChild(tableRow);
+    }
+  }
+
+  function fillFlights() {
+    const lapFilter = document.getElementById("filter-lap").value;
+    const resultFilter = document.getElementById("filter-result").value;
+    const body = document.getElementById("flights");
+    body.textContent = "";
+    const shown = BETAFLIGHT.filter((f) => (lapFilter === "all" || String(f.lap) === lapFilter) && (resultFilter === "all" || outcome(f) === resultFilter));
+    for (const flight of shown) {
+      const tableRow = document.createElement("tr");
+      const nameCell = document.createElement("td");
+      const nameButton = document.createElement("button");
+      nameButton.type = "button";
+      nameButton.className = "link-button";
+      nameButton.textContent = flight.id;
+      nameButton.addEventListener("click", () => {
+        select(flight, "bf");
+        detail.scrollIntoView({ block: "center" });
+      });
+      nameCell.appendChild(nameButton);
+      tableRow.appendChild(nameCell);
+      for (const [value, numeric] of [[flight.lap, true], [flight.noise, false], [flight.seed, true], [flight.rms.toFixed(4), true], [flight.max.toFixed(4), true], [flight.tilt.toFixed(1), true], [outcomeText[outcome(flight)], false]]) {
+        const cell = document.createElement("td");
+        if (numeric) cell.className = "num";
+        cell.textContent = value;
+        tableRow.appendChild(cell);
+      }
+      body.appendChild(tableRow);
+    }
+    document.getElementById("count").textContent = `Showing ${shown.length} of ${BETAFLIGHT.length} flights.`;
+  }
+
+  const lapSelect = document.getElementById("filter-lap");
+  for (const lap of [...new Set(BETAFLIGHT.map((f) => f.lap))].sort((a, b) => a - b)) {
+    const option = document.createElement("option");
+    option.value = String(lap);
+    option.textContent = `${lap} s`;
+    lapSelect.appendChild(option);
+  }
+
+  gateInput.addEventListener("input", draw);
+  noiseInput.addEventListener("change", draw);
+  landingInput.addEventListener("change", draw);
+  lapSelect.addEventListener("change", fillFlights);
+  document.getElementById("filter-result").addEventListener("change", fillFlights);
+
+  draw();
+  fillSummary();
+  fillFlights();
+</script>
+</body>
+</html>

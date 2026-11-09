@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Is CogniPilot faster than Betaflight?</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to the content</a>
+<header class="top">
+  <nav aria-label="Pages">
+    <a href="index.html" aria-current="page">The answer so far</a>
+    <a href="results.html">Explore the results</a>
+    <a href="why.html">Why one might be faster</a>
+    <a href="plan.html">Plan and risks</a>
+  </nav>
+</header>
+
+<main id="main">
+  <h1>Is CogniPilot faster than Betaflight?</h1>
+
+  <div class="answer">
+    <p>We do not know yet.</p>
+    <p>The tests that would answer this question are not finished. Betaflight has a provisional time of 33 seconds. CogniPilot has no full test result under the same rule.</p>
+  </div>
+
+  <h2>What do we know so far?</h2>
+  <div class="cards">
+    <section class="panel">
+      <h3>Betaflight</h3>
+      <p class="big">33 s</p>
+      <p>Provisional. It has flown with tilt lead on only. All 15 runs met the tracking limits at 33 s. Two of the 15 did not land.</p>
+    </section>
+    <section class="panel">
+      <h3>CogniPilot</h3>
+      <p class="big">35 s, once</p>
+      <p>One flight passed at 35 s, and one passed at 39 s. Neither is a 15-run test. A newer test series exists, but nobody has read its results.</p>
+    </section>
+    <section class="panel">
+      <h3>Direct comparison</h3>
+      <p class="big">Too close to call</p>
+      <p>At 35 s, CogniPilot's largest error was 0.638 m and Betaflight's was 0.652 m. That is one flight each, and it is not enough to decide.</p>
+    </section>
+  </div>
+
+  <p>We expect a tie at 33 seconds when tilt lead is on. This is an estimate, not a measurement. Tilt lead off could change the result, and that test has not been flown.</p>
+
+  <h2>What does "faster" mean here?</h2>
+  <p>It means the shortest <strong>planned</strong> lap that a drone's flight software can follow while staying within limits. It is not a race time, and it is not how fast a computer runs.</p>
+  <p>Both stacks fly the same 47-metre figure-eight in a computer simulation. A lap time counts only if all 15 test runs meet every limit:</p>
+  <ul>
+    <li>The typical error stays below 0.35 m.</li>
+    <li>The largest error stays below 0.75 m.</li>
+    <li>The drone never reaches its tilt limit.</li>
+    <li>The drone covers the whole course in the right order.</li>
+  </ul>
+  <p>Each stack uses the better of two settings: tilt lead on or tilt lead off. Equal times are a tie. We report landing separately.</p>
+
+  <h2>Does landing change the answer?</h2>
+  <p>Yes. Choose a way of scoring to see Betaflight's result.</p>
+  <div class="panel">
+    <div class="controls" role="group" aria-label="Scoring method">
+      <button type="button" id="score-track" aria-pressed="true">Tracking only</button>
+      <button type="button" id="score-full" aria-pressed="false">Tracking and landing</button>
+    </div>
+    <p class="big" id="score-result" aria-live="polite"></p>
+    <p id="score-note"></p>
+  </div>
+  <p>Separating landing helps Betaflight, which otherwise has no qualifying time. The choice of the better lead setting probably helps CogniPilot. The talk will state both effects.</p>
+
+  <h2>What are the limits of these results?</h2>
+  <ul>
+    <li>Every result comes from a simulation. None of it describes real hardware timing.</li>
+    <li>"Betaflight" here is a proposed port to this chip, running with a simulation adapter.</li>
+    <li>The noise levels are assumed. They are not measured from a real drone.</li>
+    <li>Results apply only to the lap times we tested.</li>
+  </ul>
+
+  <h2>Where can I go next?</h2>
+  <div class="cards">
+    <div class="panel"><a class="card-link" href="results.html">Explore the results</a><p>See all 66 Betaflight flights. Change the error limit and see what happens.</p></div>
+    <div class="panel"><a class="card-link" href="why.html">Why one might be faster</a><p>See what the recordings can and cannot tell us, and what "8 kHz" really means.</p></div>
+    <div class="panel"><a class="card-link" href="plan.html">Plan and risks</a><p>Check whether the work fits in the week. See the open problems.</p></div>
+  </div>
+
+  <h2>What do these words mean?</h2>
+  <details><summary>Stack</summary><p>The flight software on the drone. Here, the stacks are CogniPilot and Betaflight.</p></details>
+  <details><summary>Typical error (RMS)</summary><p>A kind of average of how far the drone was from where it should have been at each moment. RMS stands for root mean square.</p></details>
+  <details><summary>Largest error</summary><p>The farthest the drone got from where it should have been at any one moment. A drone that is on the path but late still counts as being in error.</p></details>
+  <details><summary>Tilt lead</summary><p>An extra tilt command that tries to start a turn slightly early. It can be on or off.</p></details>
+  <details><summary>Gain K</summary><p>A setting for how strongly the drone corrects its tilt. Both stacks use K = 6 per second.</p></details>
+  <details><summary>Confirmation</summary><p>A set of 15 runs at one lap time, using three noise levels and five random seeds. The five no-noise runs give the same result, so there are 11 distinct flights.</p></details>
+  <details><summary>Provisional</summary><p>A result that could still change, because a required test has not been done.</p></details>
+
+  <h2>How did we write these pages?</h2>
+  <p>We wrote these pages using the four principles of plain language in ISO 24495-1:2023:</p>
+  <ul>
+    <li><strong>Relevant:</strong> each page starts with the answer readers came for.</li>
+    <li><strong>Findable:</strong> headings are questions, and every page has the same menu.</li>
+    <li><strong>Understandable:</strong> sentences are short, and technical words are explained above.</li>
+    <li><strong>Usable:</strong> each chart has a table with the same data, and readers can test the numbers themselves.</li>
+  </ul>
+  <p class="muted small">This describes how we wrote these pages. Nobody has audited them against the standard.</p>
+</main>
+
+<footer>Data from the repository as of 2026-11-09. Simulation only.</footer>
+
+<script src="data.js"></script>
+<script>
+  const track = document.getElementById("score-track");
+  const full = document.getElementById("score-full");
+  const result = document.getElementById("score-result");
+  const note = document.getElementById("score-note");
+
+  function show(needLanding) {
+    track.setAttribute("aria-pressed", String(!needLanding));
+    full.setAttribute("aria-pressed", String(needLanding));
+    const lap = shortestConfirmed(MAX_LIMIT, needLanding);
+    result.textContent = lap ? `Betaflight: ${lap} s (provisional)` : "Betaflight: no qualifying time";
+    note.textContent = needLanding
+      ? "At every lap time we tested 15 times (33, 34, 35 and 40 s), at least one flight ended still armed in harsh noise."
+      : "All 15 runs at 33 s met the tracking limits. Landing is reported separately: 13 of 15 runs landed.";
+  }
+
+  track.addEventListener("click", () => show(false));
+  full.addEventListener("click", () => show(true));
+  show(false);
+</script>
+</body>
+</html>

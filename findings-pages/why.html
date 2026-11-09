@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Why one might be faster</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to the content</a>
+<header class="top">
+  <nav aria-label="Pages">
+    <a href="index.html">The answer so far</a>
+    <a href="results.html">Explore the results</a>
+    <a href="why.html" aria-current="page">Why one might be faster</a>
+    <a href="plan.html">Plan and risks</a>
+  </nav>
+</header>
+
+<main id="main">
+  <h1>Why might one stack be faster?</h1>
+
+  <div class="answer">
+    <p>We can show where the two stacks differ. We cannot yet show why.</p>
+    <p>The recordings show the tilt each drone was told to reach and the tilt it reached. They do not show what happened inside the flight software.</p>
+  </div>
+
+  <h2>What does "8 kHz versus 1.6 kHz" really mean?</h2>
+  <p>It does not mean Betaflight senses or controls five times faster. It is how often the simulator exchanges messages with each stack. Select a row to see what it means.</p>
+
+  <div class="panel">
+    <div class="controls" role="group" aria-label="Timing row">
+      <button type="button" data-row="0" aria-pressed="true">Betaflight messages</button>
+      <button type="button" data-row="1" aria-pressed="false">CogniPilot messages</button>
+      <button type="button" data-row="2" aria-pressed="false">New sensor data</button>
+      <button type="button" data-row="3" aria-pressed="false">Betaflight control</button>
+      <button type="button" data-row="4" aria-pressed="false">CogniPilot control</button>
+    </div>
+    <svg id="timeline" viewBox="0 0 860 280" role="img" aria-label="Timing marks over ten milliseconds. The table below holds the same data."></svg>
+    <p id="row-text" aria-live="polite"></p>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <caption>What runs how often in these simulations</caption>
+      <thead><tr><th>What</th><th>Betaflight</th><th>CogniPilot</th></tr></thead>
+      <tbody>
+        <tr><td>Messages with the simulator</td><td>8,000 per second</td><td>1,600 per second</td></tr>
+        <tr><td>New motion sensor data</td><td>1,600 per second</td><td>1,600 per second</td></tr>
+        <tr><td>Control and motor updates</td><td>500 per second</td><td>Not recorded</td></tr>
+        <tr><td>Stick commands</td><td>250 per second</td><td>250 per second</td></tr>
+        <tr><td>Position feedback</td><td>100 per second</td><td>100 per second</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>The 500 per second figure comes from internal Betaflight snapshots of two flights. Betaflight ran at that rate with the PWM motor protocol, which was our test setting. A different protocol might allow faster updates, but we have not confirmed that.</p>
+  <p>The message difference could change timing by up to about 0.5 milliseconds. The drone takes about 167 milliseconds to respond to a tilt command at K = 6/s. So the message difference is about 0.3 percent of that time. It is a limit we must disclose, not a likely explanation.</p>
+
+  <h2>What can the recordings tell us?</h2>
+  <p>Choose a type of claim to see which statements we can make.</p>
+  <div class="controls" role="group" aria-label="Evidence level">
+    <button type="button" data-level="observed" aria-pressed="true">We observed this</button>
+    <button type="button" data-level="consistent" aria-pressed="false">This could fit</button>
+    <button type="button" data-level="unknown" aria-pressed="false">We have not measured this</button>
+  </div>
+  <div class="panel"><ul id="claims" aria-live="polite"></ul></div>
+
+  <h2>Which recordings can we use?</h2>
+  <p>Only one matched pair has both commanded and actual tilt. It is a 40-second lap with no noise and tilt lead on. It uses the same firmware as the campaigns, but with different runner programs.</p>
+  <div class="table-wrap">
+    <table>
+      <caption>What each recording contains</caption>
+      <thead><tr><th>Recording</th><th>Actual tilt</th><th>Commanded tilt</th><th>Gyro or rate commands</th></tr></thead>
+      <tbody>
+        <tr><td>40 s pair (<code>tilt-lead/fastdyn</code>)</td><td>Yes</td><td>Yes</td><td>No</td></tr>
+        <tr><td>Betaflight 33 s</td><td>Yes</td><td>No</td><td>No</td></tr>
+        <tr><td>CogniPilot 39 s</td><td>Yes</td><td>No</td><td>No</td></tr>
+        <tr><td>CogniPilot 35 s repeat</td><td>Report only</td><td>No</td><td>No</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>We also need to check whether the unread CogniPilot results kept commanded tilt for each flight. We cannot see them from here.</p>
+
+  <h2>Is the same gain fair to both stacks?</h2>
+  <p>Using K = 6/s for both is the same rule. It does not produce the same response. In the earlier, non-ARM test:</p>
+
+  <div class="panel">
+    <div class="controls" role="group" aria-label="Measure">
+      <button type="button" data-metric="rise" aria-pressed="true">Rise time</button>
+      <button type="button" data-metric="over" aria-pressed="false">Overshoot</button>
+    </div>
+    <svg id="bars" viewBox="0 0 860 150" role="img" aria-label="Bars comparing the two stacks. The numbers appear beside the bars."></svg>
+    <p id="metric-text" aria-live="polite"></p>
+  </div>
+  <p>Nobody has retested K = 6/s on this test bed. Changing it would need a rebuild and a full rerun for both stacks, so we keep it and say so.</p>
+
+  <h2>What would explain the result?</h2>
+  <p>We can compare three things without new firmware:</p>
+  <ol>
+    <li>Each stack against an ideal attitude response.</li>
+    <li>Tilt lead on against tilt lead off for each stack.</li>
+    <li>Commanded tilt against actual tilt, from the 40 s pair.</li>
+  </ol>
+  <p>Separating the estimator, filters and control loop would need new measurements inside the firmware. That would change the firmware and force a rerun of every test, so it is not part of this week's work.</p>
+</main>
+
+<footer>Data from the repository as of 2026-11-09. Simulation only.</footer>
+
+<script src="data.js"></script>
+<script>
+  const NS = "http://www.w3.org/2000/svg";
+  const timeline = document.getElementById("timeline");
+
+  const ROWS = [
+    { name: "Betaflight messages", period: 0.125, cls: "tick-bf", text: "The simulator exchanges 8,000 messages per second with Betaflight. Many of these repeat the same sensor reading." },
+    { name: "CogniPilot messages", period: 0.625, cls: "tick-cp", text: "The simulator exchanges 1,600 messages per second with CogniPilot. Each message matches a new sensor reading." },
+    { name: "New sensor data", period: 0.625, cls: "tick-imu", text: "Both stacks receive new motion sensor data 1,600 times per second. On this measure, they are equal." },
+    { name: "Betaflight control", period: 2, cls: "tick-ctrl", text: "Betaflight's control and motor update ran 500 times per second with the PWM setting. That is slower than its new sensor data arrives." },
+    { name: "CogniPilot control", period: null, cls: "", text: "No committed recording states how often CogniPilot updates its control and motors. We mark this as unknown until we read it back." }
+  ];
+
+  const SVG_LEFT = 170, SVG_RIGHT = 840, TOP = 32, ROW_HEIGHT = 44, WINDOW = 10;
+  let activeRow = 0;
+
+  function node(root, name, attrs, text) {
+    const item = document.createElementNS(NS, name);
+    for (const key in attrs) item.setAttribute(key, attrs[key]);
+    if (text !== undefined) item.textContent = text;
+    root.appendChild(item);
+    return item;
+  }
+
+  function drawTimeline() {
+    timeline.textContent = "";
+    const toX = (ms) => SVG_LEFT + ms / WINDOW * (SVG_RIGHT - SVG_LEFT);
+    for (let ms = 0; ms <= WINDOW; ms += 2) {
+      node(timeline, "text", { x: toX(ms), y: 18, "text-anchor": "middle" }, `${ms} ms`);
+    }
+    ROWS.forEach((row, index) => {
+      const yPos = TOP + index * ROW_HEIGHT + 22;
+      if (index === activeRow) {
+        node(timeline, "rect", { class: "focus-band", x: 0, y: TOP + index * ROW_HEIGHT, width: 860, height: ROW_HEIGHT });
+      }
+      node(timeline, "text", { x: 8, y: yPos + 5 }, row.name);
+      node(timeline, "line", { class: "row-line", x1: SVG_LEFT, x2: SVG_RIGHT, y1: yPos, y2: yPos });
+      if (row.period === null) {
+        node(timeline, "text", { x: (SVG_LEFT + SVG_RIGHT) / 2, y: yPos - 4, "text-anchor": "middle" }, "Not recorded");
+        return;
+      }
+      const count = Math.round(WINDOW / row.period);
+      for (let step = 0; step <= count; step += 1) {
+        const xPos = toX(step * row.period);
+        node(timeline, "line", { class: row.cls, x1: xPos, x2: xPos, y1: yPos - 12, y2: yPos + 12 });
+      }
+    });
+    document.getElementById("row-text").textContent = ROWS[activeRow].text;
+  }
+
+  function pressGroup(selector, target) {
+    document.querySelectorAll(selector).forEach((button) => {
+      button.setAttribute("aria-pressed", String(button === target));
+    });
+  }
+
+  document.querySelectorAll("[data-row]").forEach((button) => {
+    button.addEventListener("click", () => {
+      activeRow = Number(button.dataset.row);
+      pressGroup("[data-row]", button);
+      drawTimeline();
+    });
+  });
+
+  const CLAIMS = {
+    observed: [
+      "How close each flight stayed to the planned path.",
+      "At 40 s with no noise, CogniPilot's largest error was 0.492 m and Betaflight's was 0.507 m.",
+      "The stacks responded differently to tilt steps in the earlier, non-ARM tests.",
+      "The 40 s pair recorded commanded and actual tilt. We can calculate the delay from it, but we have not done so yet."
+    ],
+    consistent: [
+      "If CogniPilot responds faster at the same gain, tilt lead may over-correct for it. We have not tested this.",
+      "The shared position control loop may cause most of the error, so the stack choice may matter little. A rerun would check this.",
+      "Betaflight's slower loop rate may cost it some accuracy. One flight with a faster protocol showed no gain, and that flight's real loop rate was never checked."
+    ],
+    unknown: [
+      "How much of any delay comes from the estimator, the filters or the rate loop.",
+      "How often CogniPilot updates its control and motors.",
+      "Why Betaflight did better on the older board at the same settings.",
+      "Anything about hardware timing, because every result comes from simulation."
+    ]
+  };
+
+  function showClaims(level) {
+    const list = document.getElementById("claims");
+    list.textContent = "";
+    for (const claim of CLAIMS[level]) {
+      const item = document.createElement("li");
+      item.textContent = claim;
+      list.appendChild(item);
+    }
+  }
+
+  document.querySelectorAll("[data-level]").forEach((button) => {
+    button.addEventListener("click", () => {
+      pressGroup("[data-level]", button);
+      showClaims(button.dataset.level);
+    });
+  });
+
+  const METRICS = {
+    rise: { max: 0.4, values: { Betaflight: 0.31, CogniPilot: 0.263 }, format: (v) => `about ${v.toFixed(2)} s`, text: "Rise time is how long the drone takes to reach most of a commanded tilt. Shorter means a faster response. CogniPilot's rise time at K = 6/s is shorter." },
+    over: { max: 25, values: { Betaflight: 19.94, CogniPilot: 0 }, format: (v) => `up to ${v.toFixed(2)} percent`, text: "Overshoot is how far the drone goes past the commanded tilt. The limit is 20 percent. Betaflight is within 0.06 percentage points of that limit." }
+  };
+
+  function drawBars(metricName) {
+    const metric = METRICS[metricName];
+    const bars = document.getElementById("bars");
+    bars.textContent = "";
+    Object.entries(metric.values).forEach(([name, value], index) => {
+      const yPos = 18 + index * 60;
+      node(bars, "text", { x: 8, y: yPos + 22 }, name);
+      node(bars, "rect", { class: index === 0 ? "bf-ok" : "cp", x: 120, y: yPos, width: Math.max(2, value / metric.max * 500), height: 34 });
+      node(bars, "text", { x: 130 + value / metric.max * 500, y: yPos + 22 }, metric.format(value));
+    });
+    document.getElementById("metric-text").textContent = metric.text;
+  }
+
+  document.querySelectorAll("[data-metric]").forEach((button) => {
+    button.addEventListener("click", () => {
+      pressGroup("[data-metric]", button);
+      drawBars(button.dataset.metric);
+    });
+  });
+
+  drawTimeline();
+  showClaims("observed");
+  drawBars("rise");
+</script>
+</body>
+</html>

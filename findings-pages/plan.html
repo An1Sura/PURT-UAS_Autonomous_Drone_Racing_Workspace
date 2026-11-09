@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Plan and risks</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to the content</a>
+<header class="top">
+  <nav aria-label="Pages">
+    <a href="index.html">The answer so far</a>
+    <a href="results.html">Explore the results</a>
+    <a href="why.html">Why one might be faster</a>
+    <a href="plan.html" aria-current="page">Plan and risks</a>
+  </nav>
+</header>
+
+<main id="main">
+  <h1>Can we finish in time, and what could go wrong?</h1>
+
+  <div class="answer">
+    <p>The computing work fits in the week, if we follow an ordered plan.</p>
+    <p>The larger risks are the unknown state of the virtual machine, stalled flights, and the time needed to analyse and publish. The first step is to write down the rule before reading any new results.</p>
+  </div>
+
+  <h2>Does the flying fit in the week?</h2>
+  <p>Change the numbers to test the plan. The starting values are our planning estimates. Uptime and failure rate are assumptions.</p>
+
+  <div class="panel">
+    <div class="controls">
+      <div><label for="modes">CogniPilot lead settings</label><select id="modes"><option value="1">One</option><option value="2" selected>Both</option></select></div>
+      <div><label for="screen">Search flights per setting</label><input id="screen" type="number" min="1" max="20" value="6"></div>
+      <div><label for="sets">15-run sets per setting</label><input id="sets" type="number" min="1" max="6" value="1"></div>
+      <div><label for="fail">Flights that stall (%)</label><input id="fail" type="number" min="0" max="40" value="5"></div>
+      <div><label for="uptime">Computer available (%)</label><input id="uptime" type="number" min="10" max="100" value="60"></div>
+      <div><label for="recovery">After a stall</label><select id="recovery"><option value="retry">Retry that flight</option><option value="restart">Restart the search (current code)</option></select></div>
+    </div>
+    <p class="big" id="fit" aria-live="polite"></p>
+    <div class="meter" aria-hidden="true"><span id="meter"></span></div>
+    <p id="breakdown"></p>
+    <p class="muted small">CogniPilot uses 6.825 seconds of real time per simulated second, for a 33 s lap plus 43 s of mission, and an assumed 60 s of start and stop. Betaflight uses 133 s per flight for 37 flights. Time available is 87 hours, Monday 21:00 to Friday noon.</p>
+  </div>
+
+  <h2>What are the open problems?</h2>
+  <p>A blocker stops us from making the claim. A major problem weakens it. A nit is a small correction.</p>
+  <div class="controls" role="group" aria-label="Severity">
+    <button type="button" data-sev="All" aria-pressed="true">All</button>
+    <button type="button" data-sev="Blocker" aria-pressed="false">Blockers</button>
+    <button type="button" data-sev="Major" aria-pressed="false">Major</button>
+    <button type="button" data-sev="Nit" aria-pressed="false">Nits</button>
+  </div>
+  <p id="risk-count" class="muted" aria-live="polite"></p>
+  <div id="risks"></div>
+
+  <h2>What will we say if the work is not finished?</h2>
+  <p>Choose what might happen by the deadline.</p>
+  <div class="panel">
+    <label for="outcome">By Friday, we have:</label>
+    <select id="outcome"></select>
+    <p class="big" id="outcome-winner" aria-live="polite"></p>
+    <p id="outcome-text"></p>
+  </div>
+
+  <h2>What happens each day?</h2>
+  <ol>
+    <li><strong>Monday night to Tuesday morning:</strong> commit the rule. Copy everything off the virtual machine. Measure how often flights stall.</li>
+    <li><strong>Tuesday:</strong> fly Betaflight with lead off. Rerun Betaflight at 32 s and 33 s on the same runner. Calculate the lag from the 40 s pair. Decide whether CogniPilot flights are working.</li>
+    <li><strong>Tuesday night to Thursday:</strong> fly CogniPilot with lead off, then lead on. Run 15 confirmations at the shortest lap time that passes.</li>
+    <li><strong>Friday:</strong> stop new flights at noon. Score the results.</li>
+    <li><strong>Saturday and Sunday:</strong> update the documents and the replay. Check the published pages. Prepare the slides.</li>
+  </ol>
+
+  <h2>What still needs a decision?</h2>
+  <ul>
+    <li>What wording do we use so our result agrees with the qualification document?</li>
+    <li>Should a short test with the OneShot125 motor protocol be included? It could only downgrade a win to "marginal".</li>
+    <li>Should a tie count as "not faster"? The review recommends yes.</li>
+    <li>What margin makes a win "marginal"? The review suggests a win that flips if the 0.75 m limit moves by 0.02 m.</li>
+  </ul>
+</main>
+
+<footer>Data from the repository as of 2026-11-09. Simulation only.</footer>
+
+<script src="data.js"></script>
+<script>
+  const get = (id) => document.getElementById(id);
+  const FLIGHT_S = 6.825 * (33 + 43) + 60;
+  const BF_HOURS = (37 * 133) / 3600;
+  const AVAILABLE_H = 87;
+
+  function clamp(value, low, high) {
+    if (Number.isNaN(value)) return low;
+    return Math.min(high, Math.max(low, value));
+  }
+
+  function expectedAttempts(flights, failRate, restart) {
+    if (failRate === 0) return flights;
+    if (restart) return (Math.pow(1 - failRate, -flights) - 1) / failRate;
+    return flights / (1 - failRate);
+  }
+
+  function updateFit() {
+    const modes = Number(get("modes").value);
+    const screen = clamp(Number(get("screen").value), 1, 20);
+    const sets = clamp(Number(get("sets").value), 1, 6);
+    const failRate = clamp(Number(get("fail").value), 0, 40) / 100;
+    const uptime = clamp(Number(get("uptime").value), 10, 100) / 100;
+    const restart = get("recovery").value === "restart";
+
+    const perMode = screen + 15 * sets;
+    const attempts = modes * expectedAttempts(perMode, failRate, restart);
+    const needed = (attempts * FLIGHT_S) / 3600 + BF_HOURS;
+    const available = AVAILABLE_H * uptime;
+    const ratio = needed / available;
+
+    get("fit").textContent = needed <= available
+      ? `Fits: about ${needed.toFixed(1)} of ${available.toFixed(0)} hours`
+      : `Does not fit: about ${needed.toFixed(1)} of ${available.toFixed(0)} hours`;
+
+    const meter = get("meter");
+    meter.style.width = `${Math.min(100, ratio * 100)}%`;
+    meter.className = needed <= available ? "" : "over";
+
+    get("breakdown").textContent = `CogniPilot: about ${Math.round(attempts)} flights, including reruns. That takes about ${((attempts * FLIGHT_S) / 3600).toFixed(1)} hours. Betaflight adds ${BF_HOURS.toFixed(1)} hours. This does not include analysis, writing or publishing.`;
+  }
+
+  ["modes", "screen", "sets", "fail", "uptime", "recovery"].forEach((id) => {
+    get(id).addEventListener("input", updateFit);
+    get(id).addEventListener("change", updateFit);
+  });
+
+  function showRisks(severity) {
+    const box = get("risks");
+    box.textContent = "";
+    const shown = RISKS.filter((risk) => severity === "All" || risk.sev === severity);
+    for (const risk of shown) {
+      const card = document.createElement("section");
+      card.className = `panel risk ${risk.sev}`;
+      const tag = document.createElement("div");
+      tag.className = "tag";
+      tag.textContent = risk.sev;
+      const title = document.createElement("h3");
+      title.textContent = risk.title;
+      const text = document.createElement("p");
+      text.textContent = risk.text;
+      const action = document.createElement("p");
+      const strong = document.createElement("strong");
+      strong.textContent = "What to do: ";
+      action.append(strong, risk.action);
+      card.append(tag, title, text, action);
+      box.appendChild(card);
+    }
+    get("risk-count").textContent = `Showing ${shown.length} of ${RISKS.length} problems.`;
+  }
+
+  document.querySelectorAll("[data-sev]").forEach((button) => {
+    button.addEventListener("click", () => {
+      document.querySelectorAll("[data-sev]").forEach((other) => other.setAttribute("aria-pressed", String(other === button)));
+      showRisks(button.dataset.sev);
+    });
+  });
+
+  const outcome = get("outcome");
+  for (const [key, value] of Object.entries(OUTCOMES)) {
+    const option = document.createElement("option");
+    option.value = key;
+    option.textContent = value.label;
+    outcome.appendChild(option);
+  }
+
+  function showOutcome() {
+    const key = outcome.value;
+    get("outcome-winner").textContent = key === "all" ? "We can name a result." : "We do not name a winner.";
+    get("outcome-text").textContent = OUTCOMES[key].say;
+  }
+  outcome.addEventListener("change", showOutcome);
+
+  updateFit();
+  showRisks("All");
+  showOutcome();
+</script>
+</body>
+</html>
