@@ -1,0 +1,1 @@
+{"recorded_at_unix_s":1794187751,"provenance":{"board":"MR_VMU_TROPIC","mcu":"MIMXRT1064","cpu":"Cortex-M7","source_run":"arm-speed-cognipilot-hardened-20261106/confirm-33-realistic-1","qualification":"33 s shortest 15/15-confirmed reference in tested omega grid; ARM tuning prerequisites and hardware timing remain unqualified"}}

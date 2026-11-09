@@ -1,5 +1,5 @@
 {
-  "recorded_at": "2026-11-07T06:34:09.313Z",
+  "recorded_at": "2026-11-09T23:04:27.131Z",
   "qualification": "Published snapshot, not live VM status",
   "betaflight": {
     "status": "completed_no_qualified_candidate",
@@ -12,10 +12,13 @@
     "runner_sha256": "7c9ade8116c66f1e6e0dad59fdf57bc461a1e9efecd7691c3eee599788e81693"
   },
   "cognipilot": {
-    "status": "running",
-    "campaign": "arm-speed-cognipilot-hardened-20261106",
-    "runner_sha256": "f2ef29affdaa7ec6c92e281357e115dcb3d6801ca390765fd5f76e0992a53b92",
-    "note": "Fresh search after host watchdog hardening. Original 35 s exact repeat passed with RMS 0.251667 m and verified landing; no fastest qualification yet. Legacy search stopped after its active flight."
+    "status": "completed",
+    "selected_lap_s": 33,
+    "confirmation_passes": 15,
+    "confirmation_runs": 15,
+    "completed_attempts": 42,
+    "passed_attempts": 27,
+    "note": "Shortest confirmed omega reference in tested grid; 32 s passed 2/15. ARM tuning prerequisites and physical timing remain unqualified."
   },
   "protocol_study": {
     "status": "diagnostic_passed_confirmation_pending",
