@@ -1,6 +1,15 @@
-// Values copied from docs/results/arm-speed/betaflight-attempts.json and
-// rounded to the places shown. Each row is [typical error, maximum error, tilt].
-// "landed" is false only where the report ended with the drone still armed.
+// Values copied from the repository and rounded to the places shown:
+//   Betaflight: docs/results/arm-speed/betaflight-attempts.json (66 flights, runner 7c9ade, PWM)
+//   CogniPilot: docs/results/arm-speed/cognipilot-summary.json (42 flights, runner f2ef29)
+//   Attitude lag: docs/results/arm-speed/attitude-lag-33s.json (tools/attitude-lag.mjs)
+//   Protocol pair: docs/results/arm-speed/betaflight-pwm-paired-35s and betaflight-oneshot35
+// Each row is [typical error, maximum error, peak tilt]. Every flight on both stacks had
+// zero tilt clamps and passed the course-geometry check. "landed" is false only where the
+// report ended with the drone still armed; null means not scored.
+
+const RMS_LIMIT = 0.35;
+const MAX_LIMIT = 0.75;
+const DATA_DATE = "2026-11-12";
 
 const CONFIRM = {
   33: { none: [0.2893, 0.7312, 14.17], realistic: [[0.2889, 0.7282, 14.17], [0.2887, 0.7289, 14.17], [0.2887, 0.7295, 14.17], [0.2889, 0.7283, 14.14], [0.2890, 0.7284, 14.14]], harsh: [[0.2876, 0.7291, 14.18], [0.2882, 0.7280, 14.15], [0.2874, 0.7329, 14.18], [0.2884, 0.7255, 14.15], [0.2891, 0.7236, 14.13]], landFail: [2, 3] },
@@ -9,78 +18,128 @@ const CONFIRM = {
   40: { none: [0.1946, 0.5071, 10.15], realistic: [[0.1946, 0.5053, 10.13], [0.1943, 0.5038, 10.13], [0.1950, 0.5076, 10.12], [0.1942, 0.5032, 10.14], [0.1949, 0.5034, 10.13]], harsh: [[0.1952, 0.5121, 10.10], [0.1945, 0.5072, 10.13], [0.1987, 0.5158, 10.14], [0.1943, 0.5065, 10.15], [0.1969, 0.5013, 10.10]], landFail: [3] }
 };
 
-const RMS_LIMIT = 0.35;
-const MAX_LIMIT = 0.75;
-
-function row(id, lap, noise, seed, values, phase, landed) {
-  return { id, lap, noise, seed, rms: values[0], max: values[1], tilt: values[2], phase, landed };
+function row(stack, id, lap, noise, seed, values, phase, lead, landed) {
+  return { stack, id, lap, noise, seed, rms: values[0], max: values[1], tilt: values[2], phase, lead, landed };
 }
+const bf = (id, lap, noise, seed, values, phase, landed) => row("bf", id, lap, noise, seed, values, phase, "on", landed);
+const cp = (id, lap, noise, seed, values, phase, lead, landed) => row("cp", id, lap, noise, seed, values, phase, lead, landed);
 
 const BETAFLIGHT = [
-  row("coarse-40", 40, "realistic", 1, [0.1946, 0.5053, 10.13], "search", true),
-  row("coarse-35", 35, "realistic", 1, [0.2560, 0.6520, 12.83], "search", true),
-  row("coarse-30", 30, "realistic", 1, [0.3507, 0.8675, 16.57], "search", null),
-  row("refine-34", 34, "realistic", 1, [0.2716, 0.6895, 13.47], "search", true),
-  row("refine-33", 33, "realistic", 1, [0.2889, 0.7282, 14.17], "search", true),
-  row("refine-32", 32, "realistic", 1, [0.3076, 0.7714, 14.91], "search", null)
+  bf("coarse-40", 40, "realistic", 1, [0.1946, 0.5053, 10.13], "search", true),
+  bf("coarse-35", 35, "realistic", 1, [0.2560, 0.6520, 12.83], "search", true),
+  bf("coarse-30", 30, "realistic", 1, [0.3507, 0.8675, 16.57], "search", null),
+  bf("refine-34", 34, "realistic", 1, [0.2716, 0.6895, 13.47], "search", true),
+  bf("refine-33", 33, "realistic", 1, [0.2889, 0.7282, 14.17], "search", true),
+  bf("refine-32", 32, "realistic", 1, [0.3076, 0.7714, 14.91], "search", null)
 ];
-
 for (const lap of [33, 34, 35, 40]) {
   const set = CONFIRM[lap];
-  for (let seed = 1; seed <= 5; seed += 1) {
-    BETAFLIGHT.push(row(`confirm-${lap}-none-${seed}`, lap, "none", seed, set.none, "confirm", true));
-  }
-  set.realistic.forEach((values, index) => {
-    BETAFLIGHT.push(row(`confirm-${lap}-realistic-${index + 1}`, lap, "realistic", index + 1, values, "confirm", true));
-  });
-  set.harsh.forEach((values, index) => {
-    const seed = index + 1;
-    BETAFLIGHT.push(row(`confirm-${lap}-harsh-${seed}`, lap, "harsh", seed, values, "confirm", !set.landFail.includes(seed)));
-  });
+  for (let seed = 1; seed <= 5; seed += 1) BETAFLIGHT.push(bf(`confirm-${lap}-none-${seed}`, lap, "none", seed, set.none, "confirm", true));
+  set.realistic.forEach((v, i) => BETAFLIGHT.push(bf(`confirm-${lap}-realistic-${i + 1}`, lap, "realistic", i + 1, v, "confirm", true)));
+  set.harsh.forEach((v, i) => BETAFLIGHT.push(bf(`confirm-${lap}-harsh-${i + 1}`, lap, "harsh", i + 1, v, "confirm", !set.landFail.includes(i + 1))));
 }
 
-// CogniPilot flights published in the repository. Each is one flight.
+// Generated from cognipilot-summary.json with jq; exact report values, rounded.
 const COGNIPILOT = [
-  { id: "cognipilot-39s", lap: 39, rms: 0.2037, max: 0.5198, note: "One flight. It passed and landed." },
-  { id: "cognipilot-35s-repeat", lap: 35, rms: 0.2517, max: 0.6380, note: "One flight, realistic noise, seed 1. It passed and landed." }
+  cp("coarse-40", 40, "realistic", 1, [0.1942, 0.4959, 10.16], "search", "on", true),
+  cp("coarse-35", 35, "realistic", 1, [0.2517, 0.638, 12.88], "search", "on", true),
+  cp("coarse-30", 30, "realistic", 1, [0.3416, 0.8405, 16.68], "search", "on", true),
+  cp("refine-34", 34, "realistic", 1, [0.2661, 0.6728, 13.53], "search", "on", true),
+  cp("refine-33", 33, "realistic", 1, [0.2825, 0.7094, 14.25], "search", "on", true),
+  cp("refine-32", 32, "realistic", 1, [0.3003, 0.7495, 14.99], "search", "on", true),
+  cp("refine-31", 31, "realistic", 1, [0.3201, 0.7939, 15.81], "search", "on", true),
+  cp("confirm-32-none-1", 32, "none", 1, [0.2996, 0.7519, 15.03], "confirm", "on", true),
+  cp("confirm-32-none-2", 32, "none", 2, [0.2996, 0.7519, 15.03], "confirm", "on", true),
+  cp("confirm-32-none-3", 32, "none", 3, [0.2996, 0.7519, 15.03], "confirm", "on", true),
+  cp("confirm-32-none-4", 32, "none", 4, [0.2996, 0.7519, 15.03], "confirm", "on", true),
+  cp("confirm-32-none-5", 32, "none", 5, [0.2996, 0.7519, 15.03], "confirm", "on", true),
+  cp("confirm-32-realistic-1", 32, "realistic", 1, [0.3003, 0.7495, 14.99], "confirm", "on", true),
+  cp("confirm-32-realistic-2", 32, "realistic", 2, [0.3008, 0.7522, 15.01], "confirm", "on", true),
+  cp("confirm-32-realistic-3", 32, "realistic", 3, [0.3007, 0.7522, 15.01], "confirm", "on", true),
+  cp("confirm-32-realistic-4", 32, "realistic", 4, [0.3005, 0.7521, 14.99], "confirm", "on", true),
+  cp("confirm-32-realistic-5", 32, "realistic", 5, [0.301, 0.7549, 15.01], "confirm", "on", true),
+  cp("confirm-32-harsh-1", 32, "harsh", 1, [0.2991, 0.7424, 14.98], "confirm", "on", true),
+  cp("confirm-32-harsh-2", 32, "harsh", 2, [0.3014, 0.7568, 15.01], "confirm", "on", true),
+  cp("confirm-32-harsh-3", 32, "harsh", 3, [0.3015, 0.7525, 14.99], "confirm", "on", true),
+  cp("confirm-32-harsh-4", 32, "harsh", 4, [0.3005, 0.7518, 15.01], "confirm", "on", true),
+  cp("confirm-32-harsh-5", 32, "harsh", 5, [0.3008, 0.7562, 15.02], "confirm", "on", true),
+  cp("confirm-33-none-1", 33, "none", 1, [0.2815, 0.7112, 14.27], "confirm", "on", true),
+  cp("confirm-33-none-2", 33, "none", 2, [0.2815, 0.7112, 14.27], "confirm", "on", true),
+  cp("confirm-33-none-3", 33, "none", 3, [0.2815, 0.7112, 14.27], "confirm", "on", true),
+  cp("confirm-33-none-4", 33, "none", 4, [0.2815, 0.7112, 14.27], "confirm", "on", true),
+  cp("confirm-33-none-5", 33, "none", 5, [0.2815, 0.7112, 14.27], "confirm", "on", true),
+  cp("confirm-33-realistic-1", 33, "realistic", 1, [0.2825, 0.7094, 14.25], "confirm", "on", true),
+  cp("confirm-33-realistic-2", 33, "realistic", 2, [0.2832, 0.7129, 14.23], "confirm", "on", true),
+  cp("confirm-33-realistic-3", 33, "realistic", 3, [0.2832, 0.7126, 14.25], "confirm", "on", true),
+  cp("confirm-33-realistic-4", 33, "realistic", 4, [0.2832, 0.7123, 14.25], "confirm", "on", true),
+  cp("confirm-33-realistic-5", 33, "realistic", 5, [0.2829, 0.7137, 14.24], "confirm", "on", true),
+  cp("confirm-33-harsh-1", 33, "harsh", 1, [0.2814, 0.7037, 14.24], "confirm", "on", true),
+  cp("confirm-33-harsh-2", 33, "harsh", 2, [0.2831, 0.7164, 14.24], "confirm", "on", true),
+  cp("confirm-33-harsh-3", 33, "harsh", 3, [0.2837, 0.7131, 14.25], "confirm", "on", true),
+  cp("confirm-33-harsh-4", 33, "harsh", 4, [0.2825, 0.7102, 14.23], "confirm", "on", true),
+  cp("confirm-33-harsh-5", 33, "harsh", 5, [0.2827, 0.7155, 14.26], "confirm", "on", true),
+  cp("off-33-realistic-1", 33, "realistic", 1, [0.1873, 0.4751, 15.2], "comparator", "off", true),
+  cp("off-33-realistic-2", 33, "realistic", 2, [0.1876, 0.4777, 15.2], "comparator", "off", true),
+  cp("off-33-realistic-3", 33, "realistic", 3, [0.1876, 0.4776, 15.2], "comparator", "off", true),
+  cp("off-33-realistic-4", 33, "realistic", 4, [0.1873, 0.4772, 15.21], "comparator", "off", true),
+  cp("off-33-realistic-5", 33, "realistic", 5, [0.1877, 0.4796, 15.21], "comparator", "off", true)
 ];
 
-const CONFIRMED_LAPS = [33, 34, 35, 40];
+const FLIGHTS = [...BETAFLIGHT, ...COGNIPILOT];
+const STACK_NAME = { bf: "Betaflight", cp: "CogniPilot" };
 
 function tracked(f, gate) {
   return f.rms < RMS_LIMIT && f.max < gate;
 }
 
-function shortestConfirmed(gate, needLanding) {
-  for (const lap of CONFIRMED_LAPS) {
-    const set = BETAFLIGHT.filter((f) => f.phase === "confirm" && f.lap === lap);
-    if (set.every((f) => tracked(f, gate) && (!needLanding || f.landed))) return lap;
+// Shortest lap whose full 15-run confirmation passes, for one stack and lead setting.
+function shortestConfirmed(stack, gate, needLanding, lead = "on") {
+  const sets = FLIGHTS.filter((f) => f.stack === stack && f.lead === lead && f.phase === "confirm");
+  const laps = [...new Set(sets.map((f) => f.lap))].sort((a, b) => a - b);
+  for (const lap of laps) {
+    const set = sets.filter((f) => f.lap === lap);
+    if (set.length === 15 && set.every((f) => tracked(f, gate) && (!needLanding || f.landed))) return lap;
   }
   return null;
 }
 
+// docs/results/arm-speed/attitude-lag-33s.json, summary block (33 s flights).
+const LAG = [
+  { stack: "bf", lead: "on", flights: 16, cmdRoll: [162, 168], cmdPitch: [150, 190], refRoll: [2, 2], refPitch: [2, 42], gain: [0.998, 1.032], resid: [0.042, 0.15], max: [0.7236, 0.7329] },
+  { stack: "cp", lead: "on", flights: 16, cmdRoll: [172, 178], cmdPitch: [172, 192], refRoll: [12, 18], refPitch: [22, 42], gain: [0.992, 1.008], resid: [0.011, 0.043], max: [0.7037, 0.7164] },
+  { stack: "cp", lead: "off", flights: 5, cmdRoll: [172, 172], cmdPitch: [172, 178], refRoll: [172, 172], refPitch: [172, 178], gain: [0.997, 1.001], resid: [0.011, 0.013], max: [0.4751, 0.4796] }
+];
+// Betaflight minus CogniPilot maximum error at 33 s, matched noise and seed (metres).
+const MATCHED_33 = [
+  ["harsh-1", 0.0254], ["harsh-2", 0.0115], ["harsh-3", 0.0198], ["harsh-4", 0.0154], ["harsh-5", 0.0081],
+  ["none-1 to 5", 0.0200], ["realistic-1", 0.0188], ["realistic-2", 0.0160], ["realistic-3", 0.0169], ["realistic-4", 0.0160], ["realistic-5", 0.0147]
+];
+
+// Same firmware, plant, offboard library and runner 8781a1; only the motor protocol differs.
+const PROTOCOL_PAIR = {
+  setting: "35 s lap, harsh noise, seed 2, lead on",
+  pwm: { period_us: 2000, rate_hz: 500, rms: 0.2547, max: 0.6515, landed: false, note: "Still armed at 0.60 m; yaw integral 227; still yawing at -33 deg/s at the end" },
+  oneshot: { period_us: 500, rate_hz: 2000, rms: 0.2557, max: 0.6567, landed: true, note: "Grounded, disarmed, motors stopped" }
+};
+
 const RISKS = [
-  { sev: "Blocker", title: "The rule is not written down yet", text: "We already know Betaflight's results. We have not read the newest CogniPilot results. If we set the rule after reading them, nobody can trust it.", action: "Commit the rule before opening those results." },
-  { sev: "Blocker", title: "Our own documents forbid this claim", text: "The qualification document says a failed landing does not count, and says not to report 33 s as a confirmed reliable speed.", action: "Report two results: a tracking result and a full-mission result. Say \"under this stated rule\" in the headline." },
-  { sev: "Blocker", title: "Betaflight has flown only one lead setting here", text: "The rule uses the better of tilt lead on and off. Betaflight has never flown with lead off on this test bed.", action: "Fly Betaflight with lead off. This takes about 47 minutes." },
-  { sev: "Blocker", title: "A CogniPilot win could be dismissed", text: "Betaflight's control loop ran 500 times a second because of a setting we chose. It is also a proposed port, and it did better on an older board at the same settings.", action: "Show every rate separately, and state how Betaflight was set up." },
-  { sev: "Blocker", title: "Logs cannot name a cause", text: "The logs do not record gyro readings, rate commands or the estimator. They can show where the response differs. They cannot show why.", action: "Say \"where the difference appears\". Do not say \"because of\"." },
-  { sev: "Blocker", title: "One computer holds the unread results", text: "The virtual machine holds the only copy of the unread results and the editable source. Its search also cannot resume, so a stalled flight restarts the whole search.", action: "Copy everything off first. Then measure how often flights stall." },
-  { sev: "Major", title: "A tie is likely with lead on", text: "Estimates put CogniPilot close to the 0.75 m limit at 32 s. A tie at 33 s is the likely lead-on result. These are estimates, not measurements.", action: "Write the tie sentence now. Do not add a tie-breaker later." },
-  { sev: "Major", title: "Lead off is unknown and could mislead", text: "CogniPilot tracked better with lead off in the earlier, non-ARM runs. Those runs may not carry over, and the reason is not checked.", action: "Fly it, and report it as a separate result." },
-  { sev: "Major", title: "The same gain does not mean the same response", text: "Both stacks use K = 6/s. At that gain, Betaflight overshoots by up to 19.94 percent, close to the 20 percent limit. CogniPilot does not overshoot.", action: "Keep K = 6/s and say it was not retested on this test bed." },
-  { sev: "Major", title: "The search code uses the old rule", text: "The current search counts a landing failure as a failed lap time, so it may stop too early.", action: "Score stored results again under the new rule. Fly extra flights only where needed." },
-  { sev: "Major", title: "The two campaigns used different runner programs", text: "Betaflight used one version of the program that runs the test. CogniPilot's newest campaign used another.", action: "Rerun Betaflight at 32 s and 33 s on the same version. This takes about 35 minutes." },
-  { sev: "Major", title: "\"Faster\" will be misheard", text: "People may think we mean a faster computer or a race lap. We mean the shortest planned lap each stack can follow within the limits.", action: "Open the talk with one sentence that defines it." },
-  { sev: "Major", title: "15 runs are not 15 separate tests", text: "The five no-noise runs give the same result. That leaves 11 distinct flights. The noise levels are also assumed, not measured.", action: "Say \"11 distinct flights across assumed noise levels\"." },
-  { sev: "Major", title: "Stalled flights must not count as failures", text: "A flight that stalls tells us nothing about speed. It is neither a pass nor a fail.", action: "Rerun it, keep the record, and publish the number of stalls." },
-  { sev: "Nit", title: "One small gap is not a finding", text: "At 35 s the two stacks differ by 0.004 m in typical error. CogniPilot flew that lap once.", action: "Do not present this gap as a result." },
-  { sev: "Nit", title: "31 s was never flown", text: "The search stops at the first failed lap time, so it never tried 31 s for Betaflight.", action: "Say \"shortest passing 33 s, failed at 32 s, within the times tested\"." }
+  { sev: "Blocker", status: "open", title: "Lead off decides the result, and it is not flown", text: "With lead on, both stacks tie at 33 s. CogniPilot's five lead-off flights at 33 s had 0.48 m worst error, so shorter laps look possible. Betaflight has never flown lead off on this test bed.", action: "Run both lead-off searches under the committed rule in speed-rule.json." },
+  { sev: "Blocker", status: "open", title: "Betaflight's landing failures may come from our setup", text: "One matched pair at 35 s changed only the motor protocol. PWM ran the loop at 500 Hz and did not land. OneShot125 ran it at 2000 Hz and landed. Tracking was almost the same.", action: "Do not present CogniPilot's better landing as a stack strength. Decide Betaflight's protocol before the lead-off flights." },
+  { sev: "Major", status: "open", title: "The two campaigns used different runner programs", text: "Betaflight used runner 7c9ade and CogniPilot used f2ef29.", action: "Rerun Betaflight at 32 s and 33 s on f2ef29 and compare the numbers (rule: runner_parity)." },
+  { sev: "Major", status: "open", title: "Our documents still forbid this claim", text: "docs/simulation-qualification.md counts landing as a gate and says not to report 33 s as a confirmed speed.", action: "Use the two named results from the rule: a tracking result and a full-mission result. Update that document with the result." },
+  { sev: "Major", status: "open", title: "The same gain does not mean the same step response", text: "Both stacks use K = 6/s. In the earlier non-ARM test, Betaflight overshot by up to 19.94 percent and CogniPilot did not. K = 6/s was not retested on this test bed.", action: "Keep K = 6/s and say it was not retested." },
+  { sev: "Major", status: "open", title: "The search code uses the old rule", text: "The runner counts a landing failure as a failed lap time, so it can stop too early.", action: "Follow the rule: treat landing-only failures as tracking passes and continue the search by hand." },
+  { sev: "Major", status: "open", title: "\"Faster\" will be misheard", text: "We mean the shortest planned lap each stack can follow within the limits. Not computer speed or a race lap.", action: "Open the talk with the one-sentence definition from the rule." },
+  { sev: "Major", status: "open", title: "15 runs are not 15 separate tests", text: "The five no-noise runs give the same result, so there are 11 distinct flights. The noise levels are assumed.", action: "Say \"11 distinct flights across assumed noise levels\"." },
+  { sev: "Blocker", status: "resolved", title: "The rule was not written down", text: "The rule is now in docs/results/arm-speed/speed-rule.json. It says openly that lead-on results were known when it was written.", action: "Cite its commit in every result." },
+  { sev: "Blocker", status: "resolved", title: "CogniPilot had no result under the rule", text: "CogniPilot's lead-on campaign finished: 33 s passed 15 of 15, and 32 s passed 2 of 15.", action: "None." },
+  { sev: "Blocker", status: "resolved", title: "One computer held the only copy of the data", text: "The raw flights, rerun programs and FastDyn source bundles are now in the raw-data-nov-20261110 release and copied to this Mac, with checksums verified.", action: "None." },
+  { sev: "Blocker", status: "resolved", title: "Logs could not show where the stacks differ", text: "All 33 s flights recorded commanded and actual tilt. The lag analysis is in attitude-lag-33s.json. It still cannot name a cause inside the firmware.", action: "Say \"where the difference appears\", not \"because of\"." },
+  { sev: "Nit", status: "open", title: "32 s was close for CogniPilot", text: "CogniPilot's 32 s search flight passed at 0.7495 m. Twelve of its 15 confirmations failed by 2 to 7 mm.", action: "Show the margin. Do not move the 0.75 m limit." }
 ];
 
 const OUTCOMES = {
-  none: { label: "No new CogniPilot results", say: "Betaflight has a provisional tracking result of 33 s. We have one paired flight at 35 s. The answer is unresolved. We show the 40 s comparison and the plan." },
-  screen: { label: "Search finished, confirmation partial", say: "We show the range of lap times for each stack and setting, and mark each as not confirmed. We do not name a winner." },
-  one: { label: "One lead setting confirmed", say: "We answer for that setting only. We mark the other setting as still to do." },
-  all: { label: "All tests confirmed", say: "We show a table of both stacks and both settings. We name a tie or a winner using the committed rule. We show landing in a separate table." }
+  now: { label: "Today: lead on only", winner: "Tie at 33 s", say: "With tilt lead on, both stacks pass 33 s on all 15 runs and fail at 32 s. Under the rule, that is indistinguishable at 1 s resolution. CogniPilot's worst error is 8 to 25 mm lower in every matched flight." },
+  cpoff: { label: "CogniPilot lead off confirmed below 33 s, Betaflight lead off not", winner: "No winner yet", say: "We show CogniPilot's lead-off result as one cell and mark Betaflight's lead-off cell as not flown. The rule needs both stacks' better setting." },
+  all: { label: "All four cells confirmed", winner: "Rule decides", say: "We show the two-by-two table. The shorter of each stack's two settings is its score. Equal scores are a tie. Landing appears in a separate table." }
 };

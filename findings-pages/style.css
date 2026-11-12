@@ -201,3 +201,9 @@ details { border-top: 1px solid var(--line); padding: 0.5rem 0; }
 summary { cursor: pointer; font-weight: 600; }
 
 footer { max-width: 62rem; margin: 0 auto; padding: 0 1rem 2rem; color: var(--soft); font-size: 0.9rem; }
+
+/* Added 2026-11-12: CogniPilot outcomes, lead-off marks and resolved risks. */
+.cp-off { fill: none; stroke: var(--good); stroke-width: 2.5; }
+.cp-fail { fill: none; stroke: var(--bad); stroke-width: 2.5; }
+.risk.resolved { opacity: 0.7; }
+.risk.resolved .tag::after { content: " · resolved"; }

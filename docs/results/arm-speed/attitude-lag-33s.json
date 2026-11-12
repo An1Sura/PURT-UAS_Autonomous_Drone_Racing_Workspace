@@ -1,0 +1,1810 @@
+{
+ "qualification": "Analysis of recorded simulation trajectories only. Pure delay plus gain is an aggregate fit of the whole attitude path; it does not separate estimator, filters or rate control and makes no hardware timing claim. Euler roll/pitch are compared with commanded tilt, an approximation near 14 degrees of tilt.",
+ "method": "Lap window from each report. Actual attitude at 100 Hz; commanded and reference tilt at 250 Hz, held between updates. Delay searched from -100 to 600 ms in 2 ms steps; least-squares gain per delay; minimum residual selected. Effective resolution is about 4 ms (stick period).",
+ "source": {
+  "release": "raw-data-nov-20261110",
+  "asset": "flight-campaigns.tar.gz",
+  "asset_sha256": "b95b5f33e1c990b320272c23308ff0e50d15862be1a79a71a67a351bbb6ee593",
+  "tool": "tools/attitude-lag.mjs"
+ },
+ "lap_s": 33,
+ "note_on_rms": "Recomputed maximum error equals each report exactly; this tool does not restate RMS. Use report values.",
+ "summary": [
+  {
+   "stack": "betaflight",
+   "lead": "omega",
+   "flights": 16,
+   "command_to_actual_delay_ms": {
+    "roll": [
+     162,
+     168
+    ],
+    "pitch": [
+     150,
+     190
+    ]
+   },
+   "reference_to_actual_delay_ms": {
+    "roll": [
+     2,
+     2
+    ],
+    "pitch": [
+     2,
+     42
+    ]
+   },
+   "command_gain": [
+    0.998,
+    1.0317
+   ],
+   "roll_fit_residual_deg": [
+    0.042,
+    0.15
+   ],
+   "tracking_max_m": [
+    0.7236166298080206,
+    0.7329010586107922
+   ]
+  },
+  {
+   "stack": "cognipilot",
+   "lead": "omega",
+   "flights": 16,
+   "command_to_actual_delay_ms": {
+    "roll": [
+     172,
+     178
+    ],
+    "pitch": [
+     172,
+     192
+    ]
+   },
+   "reference_to_actual_delay_ms": {
+    "roll": [
+     12,
+     18
+    ],
+    "pitch": [
+     22,
+     42
+    ]
+   },
+   "command_gain": [
+    0.992,
+    1.0077
+   ],
+   "roll_fit_residual_deg": [
+    0.011,
+    0.043
+   ],
+   "tracking_max_m": [
+    0.7036862276624724,
+    0.716444782039302
+   ]
+  },
+  {
+   "stack": "cognipilot",
+   "lead": "off",
+   "flights": 5,
+   "command_to_actual_delay_ms": {
+    "roll": [
+     172,
+     172
+    ],
+    "pitch": [
+     172,
+     178
+    ]
+   },
+   "reference_to_actual_delay_ms": {
+    "roll": [
+     172,
+     172
+    ],
+    "pitch": [
+     172,
+     178
+    ]
+   },
+   "command_gain": [
+    0.997,
+    1.0006
+   ],
+   "roll_fit_residual_deg": [
+    0.011,
+    0.013
+   ],
+   "tracking_max_m": [
+    0.47512482894300306,
+    0.47957853046247945
+   ]
+  }
+ ],
+ "matched_pairs": [
+  {
+   "id": "confirm-33-harsh-1",
+   "betaflight_max_m": 0.7291073913522232,
+   "cognipilot_max_m": 0.7036862276624724,
+   "difference_m": 0.025421
+  },
+  {
+   "id": "confirm-33-harsh-2",
+   "betaflight_max_m": 0.7279693152302197,
+   "cognipilot_max_m": 0.716444782039302,
+   "difference_m": 0.011525
+  },
+  {
+   "id": "confirm-33-harsh-3",
+   "betaflight_max_m": 0.7329010586107922,
+   "cognipilot_max_m": 0.713084720624016,
+   "difference_m": 0.019816
+  },
+  {
+   "id": "confirm-33-harsh-4",
+   "betaflight_max_m": 0.7255450978696045,
+   "cognipilot_max_m": 0.7101695189327994,
+   "difference_m": 0.015376
+  },
+  {
+   "id": "confirm-33-harsh-5",
+   "betaflight_max_m": 0.7236166298080206,
+   "cognipilot_max_m": 0.7154839165412787,
+   "difference_m": 0.008133
+  },
+  {
+   "id": "confirm-33-none-1",
+   "betaflight_max_m": 0.7312078333795764,
+   "cognipilot_max_m": 0.7111548319305009,
+   "difference_m": 0.020053
+  },
+  {
+   "id": "confirm-33-none-2",
+   "betaflight_max_m": 0.7312078333795764,
+   "cognipilot_max_m": 0.7111548319305009,
+   "difference_m": 0.020053
+  },
+  {
+   "id": "confirm-33-none-3",
+   "betaflight_max_m": 0.7312078333795764,
+   "cognipilot_max_m": 0.7111548319305009,
+   "difference_m": 0.020053
+  },
+  {
+   "id": "confirm-33-none-4",
+   "betaflight_max_m": 0.7312078333795764,
+   "cognipilot_max_m": 0.7111548319305009,
+   "difference_m": 0.020053
+  },
+  {
+   "id": "confirm-33-none-5",
+   "betaflight_max_m": 0.7312078333795764,
+   "cognipilot_max_m": 0.7111548319305009,
+   "difference_m": 0.020053
+  },
+  {
+   "id": "confirm-33-realistic-1",
+   "betaflight_max_m": 0.7281646867027759,
+   "cognipilot_max_m": 0.7094143462205521,
+   "difference_m": 0.01875
+  },
+  {
+   "id": "confirm-33-realistic-2",
+   "betaflight_max_m": 0.728881972551075,
+   "cognipilot_max_m": 0.7129144900361992,
+   "difference_m": 0.015967
+  },
+  {
+   "id": "confirm-33-realistic-3",
+   "betaflight_max_m": 0.7294988853070727,
+   "cognipilot_max_m": 0.7125554525376115,
+   "difference_m": 0.016943
+  },
+  {
+   "id": "confirm-33-realistic-4",
+   "betaflight_max_m": 0.7282971993025119,
+   "cognipilot_max_m": 0.7123058069797579,
+   "difference_m": 0.015991
+  },
+  {
+   "id": "confirm-33-realistic-5",
+   "betaflight_max_m": 0.7283749012079139,
+   "cognipilot_max_m": 0.7136984259797949,
+   "difference_m": 0.014676
+  }
+ ],
+ "flights": [
+  {
+   "stack": "betaflight",
+   "campaign": "arm-speed-bf-omega-20261106",
+   "id": "confirm-33-harsh-1",
+   "lead": "omega",
+   "noise": "harsh",
+   "seed": 1,
+   "report_passed": true,
+   "report_tracking_rms_m": 0.2876331465737454,
+   "report_tracking_max_m": 0.7291073913522232,
+   "recomputed_max_m": 0.729107,
+   "samples": 3301,
+   "runner_sha256": "7c9ade8116c66f1e6e0dad59fdf57bc461a1e9efecd7691c3eee599788e81693",
+   "firmware_sha256": "c9530644680b907053022efa349bd0564701dd09ead526c862ac76d71755423f",
+   "axes": {
+    "roll": {
+     "command_to_actual": {
+      "delay_ms": 168,
+      "gain": 0.9983,
+      "residual_deg": 0.083
+     },
+     "reference_to_actual": {
+      "delay_ms": 2,
+      "gain": 0.9701,
+      "residual_deg": 0.117
+     },
+     "tilt_error_vs_reference_rms_deg": 0.216
+    },
+    "pitch": {
+     "command_to_actual": {
+      "delay_ms": 150,
+      "gain": 1.0218,
+      "residual_deg": 0.087
+     },
+     "reference_to_actual": {
+      "delay_ms": 2,
+      "gain": 1.0048,
+      "residual_deg": 0.087
+     },
+     "tilt_error_vs_reference_rms_deg": 0.088
+    }
+   }
+  },
+  {
+   "stack": "betaflight",
+   "campaign": "arm-speed-bf-omega-20261106",
+   "id": "confirm-33-harsh-2",
+   "lead": "omega",
+   "noise": "harsh",
+   "seed": 2,
+   "report_passed": false,
+   "report_tracking_rms_m": 0.28823641008578643,
+   "report_tracking_max_m": 0.7279693152302197,
+   "recomputed_max_m": 0.727969,
+   "samples": 3301,
+   "runner_sha256": "7c9ade8116c66f1e6e0dad59fdf57bc461a1e9efecd7691c3eee599788e81693",
+   "firmware_sha256": "c9530644680b907053022efa349bd0564701dd09ead526c862ac76d71755423f",
+   "axes": {
+    "roll": {
+     "command_to_actual": {
+      "delay_ms": 168,
+      "gain": 0.9983,
+      "residual_deg": 0.083
+     },
+     "reference_to_actual": {
+      "delay_ms": 2,
+      "gain": 0.97,
+      "residual_deg": 0.12
+     },
+     "tilt_error_vs_reference_rms_deg": 0.217
+    },
+    "pitch": {
+     "command_to_actual": {
+      "delay_ms": 168,
+      "gain": 1.0208,
+      "residual_deg": 0.048
+     },
+     "reference_to_actual": {
+      "delay_ms": 12,
+      "gain": 1.0043,
+      "residual_deg": 0.046
+     },
+     "tilt_error_vs_reference_rms_deg": 0.048
+    }
+   }
+  },
+  {
+   "stack": "betaflight",
+   "campaign": "arm-speed-bf-omega-20261106",
+   "id": "confirm-33-harsh-3",
+   "lead": "omega",
+   "noise": "harsh",
+   "seed": 3,
+   "report_passed": false,
+   "report_tracking_rms_m": 0.28738416020417396,
+   "report_tracking_max_m": 0.7329010586107922,
+   "recomputed_max_m": 0.732901,
+   "samples": 3301,
+   "runner_sha256": "7c9ade8116c66f1e6e0dad59fdf57bc461a1e9efecd7691c3eee599788e81693",
+   "firmware_sha256": "c9530644680b907053022efa349bd0564701dd09ead526c862ac76d71755423f",
+   "axes": {
+    "roll": {
+     "command_to_actual": {
+      "delay_ms": 162,
+      "gain": 1.0002,
+      "residual_deg": 0.148
+     },
+     "reference_to_actual": {
+      "delay_ms": 2,
+      "gain": 0.9718,
+      "residual_deg": 0.169
+     },
+     "tilt_error_vs_reference_rms_deg": 0.24
+    },
+    "pitch": {
+     "command_to_actual": {
+      "delay_ms": 168,
+      "gain": 1.0126,
+      "residual_deg": 0.051
+     },
+     "reference_to_actual": {
+      "delay_ms": 18,
+      "gain": 0.9966,
+      "residual_deg": 0.048
+     },
+     "tilt_error_vs_reference_rms_deg": 0.05
+    }
+   }
+  },
+  {
+   "stack": "betaflight",
+   "campaign": "arm-speed-bf-omega-20261106",
+   "id": "confirm-33-harsh-4",
+   "lead": "omega",
+   "noise": "harsh",
+   "seed": 4,
+   "report_passed": true,
+   "report_tracking_rms_m": 0.2883930503130234,
+   "report_tracking_max_m": 0.7255450978696045,
+   "recomputed_max_m": 0.725545,
+   "samples": 3301,
+   "runner_sha256": "7c9ade8116c66f1e6e0dad59fdf57bc461a1e9efecd7691c3eee599788e81693",
+   "firmware_sha256": "c9530644680b907053022efa349bd0564701dd09ead526c862ac76d71755423f",
+   "axes": {
+    "roll": {
+     "command_to_actual": {
+      "delay_ms": 168,
+      "gain": 0.998,
+      "residual_deg": 0.08
+     },
+     "reference_to_actual": {
+      "delay_ms": 2,
+      "gain": 0.9694,
+      "residual_deg": 0.118
+     },
+     "tilt_error_vs_reference_rms_deg": 0.219
+    },
+    "pitch": {
+     "command_to_actual": {
+      "delay_ms": 190,
+      "gain": 1.0144,
+      "residual_deg": 0.138
+     },
+     "reference_to_actual": {
+      "delay_ms": 42,
+      "gain": 0.9989,
+      "residual_deg": 0.137
+     },
+     "tilt_error_vs_reference_rms_deg": 0.14
+    }
+   }
+  },
+  {
+   "stack": "betaflight",
+   "campaign": "arm-speed-bf-omega-20261106",
+   "id": "confirm-33-harsh-5",
+   "lead": "omega",
+   "noise": "harsh",
+   "seed": 5,
+   "report_passed": true,
+   "report_tracking_rms_m": 0.2891038147849917,
+   "report_tracking_max_m": 0.7236166298080206,
+   "recomputed_max_m": 0.723617,
+   "samples": 3301,
+   "runner_sha256": "7c9ade8116c66f1e6e0dad59fdf57bc461a1e9efecd7691c3eee599788e81693",
+   "firmware_sha256": "c9530644680b907053022efa349bd0564701dd09ead526c862ac76d71755423f",
+   "axes": {
+    "roll": {
+     "command_to_actual": {
+      "delay_ms": 168,
+      "gain": 0.9981,
+      "residual_deg": 0.15
+     },
+     "reference_to_actual": {
+      "delay_ms": 2,
+      "gain": 0.9696,
+      "residual_deg": 0.167
+     },
+     "tilt_error_vs_reference_rms_deg": 0.247
+    },
+    "pitch": {
+     "command_to_actual": {
+      "delay_ms": 178,
+      "gain": 1.0317,
+      "residual_deg": 0.061
+     },
+     "reference_to_actual": {
+      "delay_ms": 38,
+      "gain": 1.0153,
+      "residual_deg": 0.06
+     },
+     "tilt_error_vs_reference_rms_deg": 0.068
+    }
+   }
+  },
+  {
+   "stack": "betaflight",
+   "campaign": "arm-speed-bf-omega-20261106",
+   "id": "confirm-33-none-1",
+   "lead": "omega",
+   "noise": "none",
+   "seed": 1,
+   "report_passed": true,
+   "report_tracking_rms_m": 0.2892642953654114,
+   "report_tracking_max_m": 0.7312078333795764,
+   "recomputed_max_m": 0.731208,
+   "samples": 3301,
+   "runner_sha256": "7c9ade8116c66f1e6e0dad59fdf57bc461a1e9efecd7691c3eee599788e81693",
+   "firmware_sha256": "c9530644680b907053022efa349bd0564701dd09ead526c862ac76d71755423f",
+   "axes": {
+    "roll": {
+     "command_to_actual": {
+      "delay_ms": 168,
+      "gain": 0.9987,
+      "residual_deg": 0.046
+     },
+     "reference_to_actual": {
+      "delay_ms": 2,
+      "gain": 0.9701,
+      "residual_deg": 0.097
+     },
+     "tilt_error_vs_reference_rms_deg": 0.204
+    },
+    "pitch": {
+     "command_to_actual": {
+      "delay_ms": 158,
+      "gain": 1.0278,
+      "residual_deg": 0.067
+     },
+     "reference_to_actual": {
+      "delay_ms": 12,
+      "gain": 1.0109,
+      "residual_deg": 0.068
+     },
+     "tilt_error_vs_reference_rms_deg": 0.071
+    }
+   }
+  },
+  {
+   "stack": "betaflight",
+   "campaign": "arm-speed-bf-omega-20261106",
+   "id": "confirm-33-none-2",
+   "lead": "omega",
+   "noise": "none",
+   "seed": 2,
+   "report_passed": true,
+   "report_tracking_rms_m": 0.2892642953654114,
+   "report_tracking_max_m": 0.7312078333795764,
+   "recomputed_max_m": 0.731208,
+   "samples": 3301,
+   "runner_sha256": "7c9ade8116c66f1e6e0dad59fdf57bc461a1e9efecd7691c3eee599788e81693",
+   "firmware_sha256": "c9530644680b907053022efa349bd0564701dd09ead526c862ac76d71755423f",
+   "axes": {
+    "roll": {
+     "command_to_actual": {
+      "delay_ms": 168,
+      "gain": 0.9987,
+      "residual_deg": 0.046
+     },
+     "reference_to_actual": {
+      "delay_ms": 2,
+      "gain": 0.9701,
+      "residual_deg": 0.097
+     },
+     "tilt_error_vs_reference_rms_deg": 0.204
+    },
+    "pitch": {
+     "command_to_actual": {
+      "delay_ms": 158,
+      "gain": 1.0278,
+      "residual_deg": 0.067
+     },
+     "reference_to_actual": {
+      "delay_ms": 12,
+      "gain": 1.0109,
+      "residual_deg": 0.068
+     },
+     "tilt_error_vs_reference_rms_deg": 0.071
+    }
+   }
+  },
+  {
+   "stack": "betaflight",
+   "campaign": "arm-speed-bf-omega-20261106",
+   "id": "confirm-33-none-3",
+   "lead": "omega",
+   "noise": "none",
+   "seed": 3,
+   "report_passed": true,
+   "report_tracking_rms_m": 0.2892642953654114,
+   "report_tracking_max_m": 0.7312078333795764,
+   "recomputed_max_m": 0.731208,
+   "samples": 3301,
+   "runner_sha256": "7c9ade8116c66f1e6e0dad59fdf57bc461a1e9efecd7691c3eee599788e81693",
+   "firmware_sha256": "c9530644680b907053022efa349bd0564701dd09ead526c862ac76d71755423f",
+   "axes": {
+    "roll": {
+     "command_to_actual": {
+      "delay_ms": 168,
+      "gain": 0.9987,
+      "residual_deg": 0.046
+     },
+     "reference_to_actual": {
+      "delay_ms": 2,
+      "gain": 0.9701,
+      "residual_deg": 0.097
+     },
+     "tilt_error_vs_reference_rms_deg": 0.204
+    },
+    "pitch": {
+     "command_to_actual": {
+      "delay_ms": 158,
+      "gain": 1.0278,
+      "residual_deg": 0.067
+     },
+     "reference_to_actual": {
+      "delay_ms": 12,
+      "gain": 1.0109,
+      "residual_deg": 0.068
+     },
+     "tilt_error_vs_reference_rms_deg": 0.071
+    }
+   }
+  },
+  {
+   "stack": "betaflight",
+   "campaign": "arm-speed-bf-omega-20261106",
+   "id": "confirm-33-none-4",
+   "lead": "omega",
+   "noise": "none",
+   "seed": 4,
+   "report_passed": true,
+   "report_tracking_rms_m": 0.2892642953654114,
+   "report_tracking_max_m": 0.7312078333795764,
+   "recomputed_max_m": 0.731208,
+   "samples": 3301,
+   "runner_sha256": "7c9ade8116c66f1e6e0dad59fdf57bc461a1e9efecd7691c3eee599788e81693",
+   "firmware_sha256": "c9530644680b907053022efa349bd0564701dd09ead526c862ac76d71755423f",
+   "axes": {
+    "roll": {
+     "command_to_actual": {
+      "delay_ms": 168,
+      "gain": 0.9987,
+      "residual_deg": 0.046
+     },
+     "reference_to_actual": {
+      "delay_ms": 2,
+      "gain": 0.9701,
+      "residual_deg": 0.097
+     },
+     "tilt_error_vs_reference_rms_deg": 0.204
+    },
+    "pitch": {
+     "command_to_actual": {
+      "delay_ms": 158,
+      "gain": 1.0278,
+      "residual_deg": 0.067
+     },
+     "reference_to_actual": {
+      "delay_ms": 12,
+      "gain": 1.0109,
+      "residual_deg": 0.068
+     },
+     "tilt_error_vs_reference_rms_deg": 0.071
+    }
+   }
+  },
+  {
+   "stack": "betaflight",
+   "campaign": "arm-speed-bf-omega-20261106",
+   "id": "confirm-33-none-5",
+   "lead": "omega",
+   "noise": "none",
+   "seed": 5,
+   "report_passed": true,
+   "report_tracking_rms_m": 0.2892642953654114,
+   "report_tracking_max_m": 0.7312078333795764,
+   "recomputed_max_m": 0.731208,
+   "samples": 3301,
+   "runner_sha256": "7c9ade8116c66f1e6e0dad59fdf57bc461a1e9efecd7691c3eee599788e81693",
+   "firmware_sha256": "c9530644680b907053022efa349bd0564701dd09ead526c862ac76d71755423f",
+   "axes": {
+    "roll": {
+     "command_to_actual": {
+      "delay_ms": 168,
+      "gain": 0.9987,
+      "residual_deg": 0.046
+     },
+     "reference_to_actual": {
+      "delay_ms": 2,
+      "gain": 0.9701,
+      "residual_deg": 0.097
+     },
+     "tilt_error_vs_reference_rms_deg": 0.204
+    },
+    "pitch": {
+     "command_to_actual": {
+      "delay_ms": 158,
+      "gain": 1.0278,
+      "residual_deg": 0.067
+     },
+     "reference_to_actual": {
+      "delay_ms": 12,
+      "gain": 1.0109,
+      "residual_deg": 0.068
+     },
+     "tilt_error_vs_reference_rms_deg": 0.071
+    }
+   }
+  },
+  {
+   "stack": "betaflight",
+   "campaign": "arm-speed-bf-omega-20261106",
+   "id": "confirm-33-realistic-1",
+   "lead": "omega",
+   "noise": "realistic",
+   "seed": 1,
+   "report_passed": true,
+   "report_tracking_rms_m": 0.288854195596469,
+   "report_tracking_max_m": 0.7281646867027759,
+   "recomputed_max_m": 0.728165,
+   "samples": 3301,
+   "runner_sha256": "7c9ade8116c66f1e6e0dad59fdf57bc461a1e9efecd7691c3eee599788e81693",
+   "firmware_sha256": "c9530644680b907053022efa349bd0564701dd09ead526c862ac76d71755423f",
+   "axes": {
+    "roll": {
+     "command_to_actual": {
+      "delay_ms": 168,
+      "gain": 0.9985,
+      "residual_deg": 0.047
+     },
+     "reference_to_actual": {
+      "delay_ms": 2,
+      "gain": 0.97,
+      "residual_deg": 0.097
+     },
+     "tilt_error_vs_reference_rms_deg": 0.205
+    },
+    "pitch": {
+     "command_to_actual": {
+      "delay_ms": 152,
+      "gain": 1.0283,
+      "residual_deg": 0.042
+     },
+     "reference_to_actual": {
+      "delay_ms": 8,
+      "gain": 1.0114,
+      "residual_deg": 0.044
+     },
+     "tilt_error_vs_reference_rms_deg": 0.048
+    }
+   }
+  },
+  {
+   "stack": "betaflight",
+   "campaign": "arm-speed-bf-omega-20261106",
+   "id": "confirm-33-realistic-2",
+   "lead": "omega",
+   "noise": "realistic",
+   "seed": 2,
+   "report_passed": true,
+   "report_tracking_rms_m": 0.28869112647531303,
+   "report_tracking_max_m": 0.728881972551075,
+   "recomputed_max_m": 0.728882,
+   "samples": 3301,
+   "runner_sha256": "7c9ade8116c66f1e6e0dad59fdf57bc461a1e9efecd7691c3eee599788e81693",
+   "firmware_sha256": "c9530644680b907053022efa349bd0564701dd09ead526c862ac76d71755423f",
+   "axes": {
+    "roll": {
+     "command_to_actual": {
+      "delay_ms": 168,
+      "gain": 0.9987,
+      "residual_deg": 0.049
+     },
+     "reference_to_actual": {
+      "delay_ms": 2,
+      "gain": 0.9702,
+      "residual_deg": 0.099
+     },
+     "tilt_error_vs_reference_rms_deg": 0.205
+    },
+    "pitch": {
+     "command_to_actual": {
+      "delay_ms": 168,
+      "gain": 1.0275,
+      "residual_deg": 0.056
+     },
+     "reference_to_actual": {
+      "delay_ms": 12,
+      "gain": 1.0107,
+      "residual_deg": 0.057
+     },
+     "tilt_error_vs_reference_rms_deg": 0.06
+    }
+   }
+  },
+  {
+   "stack": "betaflight",
+   "campaign": "arm-speed-bf-omega-20261106",
+   "id": "confirm-33-realistic-3",
+   "lead": "omega",
+   "noise": "realistic",
+   "seed": 3,
+   "report_passed": true,
+   "report_tracking_rms_m": 0.2887026053483199,
+   "report_tracking_max_m": 0.7294988853070727,
+   "recomputed_max_m": 0.729499,
+   "samples": 3301,
+   "runner_sha256": "7c9ade8116c66f1e6e0dad59fdf57bc461a1e9efecd7691c3eee599788e81693",
+   "firmware_sha256": "c9530644680b907053022efa349bd0564701dd09ead526c862ac76d71755423f",
+   "axes": {
+    "roll": {
+     "command_to_actual": {
+      "delay_ms": 162,
+      "gain": 0.9991,
+      "residual_deg": 0.042
+     },
+     "reference_to_actual": {
+      "delay_ms": 2,
+      "gain": 0.9706,
+      "residual_deg": 0.096
+     },
+     "tilt_error_vs_reference_rms_deg": 0.201
+    },
+    "pitch": {
+     "command_to_actual": {
+      "delay_ms": 168,
+      "gain": 1.0256,
+      "residual_deg": 0.063
+     },
+     "reference_to_actual": {
+      "delay_ms": 12,
+      "gain": 1.0089,
+      "residual_deg": 0.064
+     },
+     "tilt_error_vs_reference_rms_deg": 0.066
+    }
+   }
+  },
+  {
+   "stack": "betaflight",
+   "campaign": "arm-speed-bf-omega-20261106",
+   "id": "confirm-33-realistic-4",
+   "lead": "omega",
+   "noise": "realistic",
+   "seed": 4,
+   "report_passed": true,
+   "report_tracking_rms_m": 0.2889114215826787,
+   "report_tracking_max_m": 0.7282971993025119,
+   "recomputed_max_m": 0.728297,
+   "samples": 3301,
+   "runner_sha256": "7c9ade8116c66f1e6e0dad59fdf57bc461a1e9efecd7691c3eee599788e81693",
+   "firmware_sha256": "c9530644680b907053022efa349bd0564701dd09ead526c862ac76d71755423f",
+   "axes": {
+    "roll": {
+     "command_to_actual": {
+      "delay_ms": 168,
+      "gain": 0.9986,
+      "residual_deg": 0.052
+     },
+     "reference_to_actual": {
+      "delay_ms": 2,
+      "gain": 0.9701,
+      "residual_deg": 0.1
+     },
+     "tilt_error_vs_reference_rms_deg": 0.206
+    },
+    "pitch": {
+     "command_to_actual": {
+      "delay_ms": 168,
+      "gain": 1.0273,
+      "residual_deg": 0.07
+     },
+     "reference_to_actual": {
+      "delay_ms": 18,
+      "gain": 1.0106,
+      "residual_deg": 0.071
+     },
+     "tilt_error_vs_reference_rms_deg": 0.074
+    }
+   }
+  },
+  {
+   "stack": "betaflight",
+   "campaign": "arm-speed-bf-omega-20261106",
+   "id": "confirm-33-realistic-5",
+   "lead": "omega",
+   "noise": "realistic",
+   "seed": 5,
+   "report_passed": true,
+   "report_tracking_rms_m": 0.2889615899046076,
+   "report_tracking_max_m": 0.7283749012079139,
+   "recomputed_max_m": 0.728375,
+   "samples": 3301,
+   "runner_sha256": "7c9ade8116c66f1e6e0dad59fdf57bc461a1e9efecd7691c3eee599788e81693",
+   "firmware_sha256": "c9530644680b907053022efa349bd0564701dd09ead526c862ac76d71755423f",
+   "axes": {
+    "roll": {
+     "command_to_actual": {
+      "delay_ms": 168,
+      "gain": 0.9988,
+      "residual_deg": 0.057
+     },
+     "reference_to_actual": {
+      "delay_ms": 2,
+      "gain": 0.9702,
+      "residual_deg": 0.101
+     },
+     "tilt_error_vs_reference_rms_deg": 0.206
+    },
+    "pitch": {
+     "command_to_actual": {
+      "delay_ms": 168,
+      "gain": 1.0298,
+      "residual_deg": 0.047
+     },
+     "reference_to_actual": {
+      "delay_ms": 18,
+      "gain": 1.013,
+      "residual_deg": 0.049
+     },
+     "tilt_error_vs_reference_rms_deg": 0.054
+    }
+   }
+  },
+  {
+   "stack": "betaflight",
+   "campaign": "arm-speed-bf-omega-20261106",
+   "id": "refine-33",
+   "lead": "omega",
+   "noise": "realistic",
+   "seed": 1,
+   "report_passed": true,
+   "report_tracking_rms_m": 0.288854195596469,
+   "report_tracking_max_m": 0.7281646867027759,
+   "recomputed_max_m": 0.728165,
+   "samples": 3301,
+   "runner_sha256": "7c9ade8116c66f1e6e0dad59fdf57bc461a1e9efecd7691c3eee599788e81693",
+   "firmware_sha256": "c9530644680b907053022efa349bd0564701dd09ead526c862ac76d71755423f",
+   "axes": {
+    "roll": {
+     "command_to_actual": {
+      "delay_ms": 168,
+      "gain": 0.9985,
+      "residual_deg": 0.047
+     },
+     "reference_to_actual": {
+      "delay_ms": 2,
+      "gain": 0.97,
+      "residual_deg": 0.097
+     },
+     "tilt_error_vs_reference_rms_deg": 0.205
+    },
+    "pitch": {
+     "command_to_actual": {
+      "delay_ms": 152,
+      "gain": 1.0283,
+      "residual_deg": 0.042
+     },
+     "reference_to_actual": {
+      "delay_ms": 8,
+      "gain": 1.0114,
+      "residual_deg": 0.044
+     },
+     "tilt_error_vs_reference_rms_deg": 0.048
+    }
+   }
+  },
+  {
+   "stack": "cognipilot",
+   "campaign": "arm-speed-cognipilot-hardened-20261106",
+   "id": "confirm-33-harsh-1",
+   "lead": "omega",
+   "noise": "harsh",
+   "seed": 1,
+   "report_passed": true,
+   "report_tracking_rms_m": 0.28142250022203097,
+   "report_tracking_max_m": 0.7036862276624724,
+   "recomputed_max_m": 0.703686,
+   "samples": 3301,
+   "runner_sha256": "f2ef29affdaa7ec6c92e281357e115dcb3d6801ca390765fd5f76e0992a53b92",
+   "firmware_sha256": "443e6f743daf2d42b9c0256e599cd56c156d3dbc48f68f64527ce2115fe33c94",
+   "axes": {
+    "roll": {
+     "command_to_actual": {
+      "delay_ms": 172,
+      "gain": 0.9985,
+      "residual_deg": 0.025
+     },
+     "reference_to_actual": {
+      "delay_ms": 12,
+      "gain": 0.9715,
+      "residual_deg": 0.076
+     },
+     "tilt_error_vs_reference_rms_deg": 0.198
+    },
+    "pitch": {
+     "command_to_actual": {
+      "delay_ms": 182,
+      "gain": 1.0019,
+      "residual_deg": 0.026
+     },
+     "reference_to_actual": {
+      "delay_ms": 32,
+      "gain": 0.9863,
+      "residual_deg": 0.033
+     },
+     "tilt_error_vs_reference_rms_deg": 0.046
+    }
+   }
+  },
+  {
+   "stack": "cognipilot",
+   "campaign": "arm-speed-cognipilot-hardened-20261106",
+   "id": "confirm-33-harsh-2",
+   "lead": "omega",
+   "noise": "harsh",
+   "seed": 2,
+   "report_passed": true,
+   "report_tracking_rms_m": 0.28312017013609075,
+   "report_tracking_max_m": 0.716444782039302,
+   "recomputed_max_m": 0.716445,
+   "samples": 3301,
+   "runner_sha256": "f2ef29affdaa7ec6c92e281357e115dcb3d6801ca390765fd5f76e0992a53b92",
+   "firmware_sha256": "443e6f743daf2d42b9c0256e599cd56c156d3dbc48f68f64527ce2115fe33c94",
+   "axes": {
+    "roll": {
+     "command_to_actual": {
+      "delay_ms": 172,
+      "gain": 0.996,
+      "residual_deg": 0.041
+     },
+     "reference_to_actual": {
+      "delay_ms": 12,
+      "gain": 0.9688,
+      "residual_deg": 0.093
+     },
+     "tilt_error_vs_reference_rms_deg": 0.22
+    },
+    "pitch": {
+     "command_to_actual": {
+      "delay_ms": 192,
+      "gain": 1.0015,
+      "residual_deg": 0.023
+     },
+     "reference_to_actual": {
+      "delay_ms": 42,
+      "gain": 0.9862,
+      "residual_deg": 0.03
+     },
+     "tilt_error_vs_reference_rms_deg": 0.048
+    }
+   }
+  },
+  {
+   "stack": "cognipilot",
+   "campaign": "arm-speed-cognipilot-hardened-20261106",
+   "id": "confirm-33-harsh-3",
+   "lead": "omega",
+   "noise": "harsh",
+   "seed": 3,
+   "report_passed": true,
+   "report_tracking_rms_m": 0.2837196642925587,
+   "report_tracking_max_m": 0.713084720624016,
+   "recomputed_max_m": 0.713085,
+   "samples": 3301,
+   "runner_sha256": "f2ef29affdaa7ec6c92e281357e115dcb3d6801ca390765fd5f76e0992a53b92",
+   "firmware_sha256": "443e6f743daf2d42b9c0256e599cd56c156d3dbc48f68f64527ce2115fe33c94",
+   "axes": {
+    "roll": {
+     "command_to_actual": {
+      "delay_ms": 172,
+      "gain": 0.9978,
+      "residual_deg": 0.035
+     },
+     "reference_to_actual": {
+      "delay_ms": 12,
+      "gain": 0.9704,
+      "residual_deg": 0.089
+     },
+     "tilt_error_vs_reference_rms_deg": 0.207
+    },
+    "pitch": {
+     "command_to_actual": {
+      "delay_ms": 180,
+      "gain": 0.9932,
+      "residual_deg": 0.025
+     },
+     "reference_to_actual": {
+      "delay_ms": 32,
+      "gain": 0.978,
+      "residual_deg": 0.029
+     },
+     "tilt_error_vs_reference_rms_deg": 0.052
+    }
+   }
+  },
+  {
+   "stack": "cognipilot",
+   "campaign": "arm-speed-cognipilot-hardened-20261106",
+   "id": "confirm-33-harsh-4",
+   "lead": "omega",
+   "noise": "harsh",
+   "seed": 4,
+   "report_passed": true,
+   "report_tracking_rms_m": 0.2825236165942901,
+   "report_tracking_max_m": 0.7101695189327994,
+   "recomputed_max_m": 0.71017,
+   "samples": 3301,
+   "runner_sha256": "f2ef29affdaa7ec6c92e281357e115dcb3d6801ca390765fd5f76e0992a53b92",
+   "firmware_sha256": "443e6f743daf2d42b9c0256e599cd56c156d3dbc48f68f64527ce2115fe33c94",
+   "axes": {
+    "roll": {
+     "command_to_actual": {
+      "delay_ms": 172,
+      "gain": 0.9974,
+      "residual_deg": 0.043
+     },
+     "reference_to_actual": {
+      "delay_ms": 12,
+      "gain": 0.9704,
+      "residual_deg": 0.084
+     },
+     "tilt_error_vs_reference_rms_deg": 0.208
+    },
+    "pitch": {
+     "command_to_actual": {
+      "delay_ms": 178,
+      "gain": 0.992,
+      "residual_deg": 0.037
+     },
+     "reference_to_actual": {
+      "delay_ms": 38,
+      "gain": 0.9767,
+      "residual_deg": 0.041
+     },
+     "tilt_error_vs_reference_rms_deg": 0.06
+    }
+   }
+  },
+  {
+   "stack": "cognipilot",
+   "campaign": "arm-speed-cognipilot-hardened-20261106",
+   "id": "confirm-33-harsh-5",
+   "lead": "omega",
+   "noise": "harsh",
+   "seed": 5,
+   "report_passed": true,
+   "report_tracking_rms_m": 0.28265210756793663,
+   "report_tracking_max_m": 0.7154839165412787,
+   "recomputed_max_m": 0.715484,
+   "samples": 3301,
+   "runner_sha256": "f2ef29affdaa7ec6c92e281357e115dcb3d6801ca390765fd5f76e0992a53b92",
+   "firmware_sha256": "443e6f743daf2d42b9c0256e599cd56c156d3dbc48f68f64527ce2115fe33c94",
+   "axes": {
+    "roll": {
+     "command_to_actual": {
+      "delay_ms": 178,
+      "gain": 0.9974,
+      "residual_deg": 0.031
+     },
+     "reference_to_actual": {
+      "delay_ms": 12,
+      "gain": 0.9702,
+      "residual_deg": 0.081
+     },
+     "tilt_error_vs_reference_rms_deg": 0.208
+    },
+    "pitch": {
+     "command_to_actual": {
+      "delay_ms": 178,
+      "gain": 1.0077,
+      "residual_deg": 0.026
+     },
+     "reference_to_actual": {
+      "delay_ms": 22,
+      "gain": 0.9916,
+      "residual_deg": 0.034
+     },
+     "tilt_error_vs_reference_rms_deg": 0.04
+    }
+   }
+  },
+  {
+   "stack": "cognipilot",
+   "campaign": "arm-speed-cognipilot-hardened-20261106",
+   "id": "confirm-33-none-1",
+   "lead": "omega",
+   "noise": "none",
+   "seed": 1,
+   "report_passed": true,
+   "report_tracking_rms_m": 0.2815023820358946,
+   "report_tracking_max_m": 0.7111548319305009,
+   "recomputed_max_m": 0.711155,
+   "samples": 3301,
+   "runner_sha256": "f2ef29affdaa7ec6c92e281357e115dcb3d6801ca390765fd5f76e0992a53b92",
+   "firmware_sha256": "443e6f743daf2d42b9c0256e599cd56c156d3dbc48f68f64527ce2115fe33c94",
+   "axes": {
+    "roll": {
+     "command_to_actual": {
+      "delay_ms": 178,
+      "gain": 0.9972,
+      "residual_deg": 0.033
+     },
+     "reference_to_actual": {
+      "delay_ms": 18,
+      "gain": 0.9704,
+      "residual_deg": 0.081
+     },
+     "tilt_error_vs_reference_rms_deg": 0.209
+    },
+    "pitch": {
+     "command_to_actual": {
+      "delay_ms": 178,
+      "gain": 0.9996,
+      "residual_deg": 0.015
+     },
+     "reference_to_actual": {
+      "delay_ms": 32,
+      "gain": 0.9841,
+      "residual_deg": 0.025
+     },
+     "tilt_error_vs_reference_rms_deg": 0.042
+    }
+   }
+  },
+  {
+   "stack": "cognipilot",
+   "campaign": "arm-speed-cognipilot-hardened-20261106",
+   "id": "confirm-33-none-2",
+   "lead": "omega",
+   "noise": "none",
+   "seed": 2,
+   "report_passed": true,
+   "report_tracking_rms_m": 0.2815023820358946,
+   "report_tracking_max_m": 0.7111548319305009,
+   "recomputed_max_m": 0.711155,
+   "samples": 3301,
+   "runner_sha256": "f2ef29affdaa7ec6c92e281357e115dcb3d6801ca390765fd5f76e0992a53b92",
+   "firmware_sha256": "443e6f743daf2d42b9c0256e599cd56c156d3dbc48f68f64527ce2115fe33c94",
+   "axes": {
+    "roll": {
+     "command_to_actual": {
+      "delay_ms": 178,
+      "gain": 0.9972,
+      "residual_deg": 0.033
+     },
+     "reference_to_actual": {
+      "delay_ms": 18,
+      "gain": 0.9704,
+      "residual_deg": 0.081
+     },
+     "tilt_error_vs_reference_rms_deg": 0.209
+    },
+    "pitch": {
+     "command_to_actual": {
+      "delay_ms": 178,
+      "gain": 0.9996,
+      "residual_deg": 0.015
+     },
+     "reference_to_actual": {
+      "delay_ms": 32,
+      "gain": 0.9841,
+      "residual_deg": 0.025
+     },
+     "tilt_error_vs_reference_rms_deg": 0.042
+    }
+   }
+  },
+  {
+   "stack": "cognipilot",
+   "campaign": "arm-speed-cognipilot-hardened-20261106",
+   "id": "confirm-33-none-3",
+   "lead": "omega",
+   "noise": "none",
+   "seed": 3,
+   "report_passed": true,
+   "report_tracking_rms_m": 0.2815023820358946,
+   "report_tracking_max_m": 0.7111548319305009,
+   "recomputed_max_m": 0.711155,
+   "samples": 3301,
+   "runner_sha256": "f2ef29affdaa7ec6c92e281357e115dcb3d6801ca390765fd5f76e0992a53b92",
+   "firmware_sha256": "443e6f743daf2d42b9c0256e599cd56c156d3dbc48f68f64527ce2115fe33c94",
+   "axes": {
+    "roll": {
+     "command_to_actual": {
+      "delay_ms": 178,
+      "gain": 0.9972,
+      "residual_deg": 0.033
+     },
+     "reference_to_actual": {
+      "delay_ms": 18,
+      "gain": 0.9704,
+      "residual_deg": 0.081
+     },
+     "tilt_error_vs_reference_rms_deg": 0.209
+    },
+    "pitch": {
+     "command_to_actual": {
+      "delay_ms": 178,
+      "gain": 0.9996,
+      "residual_deg": 0.015
+     },
+     "reference_to_actual": {
+      "delay_ms": 32,
+      "gain": 0.9841,
+      "residual_deg": 0.025
+     },
+     "tilt_error_vs_reference_rms_deg": 0.042
+    }
+   }
+  },
+  {
+   "stack": "cognipilot",
+   "campaign": "arm-speed-cognipilot-hardened-20261106",
+   "id": "confirm-33-none-4",
+   "lead": "omega",
+   "noise": "none",
+   "seed": 4,
+   "report_passed": true,
+   "report_tracking_rms_m": 0.2815023820358946,
+   "report_tracking_max_m": 0.7111548319305009,
+   "recomputed_max_m": 0.711155,
+   "samples": 3301,
+   "runner_sha256": "f2ef29affdaa7ec6c92e281357e115dcb3d6801ca390765fd5f76e0992a53b92",
+   "firmware_sha256": "443e6f743daf2d42b9c0256e599cd56c156d3dbc48f68f64527ce2115fe33c94",
+   "axes": {
+    "roll": {
+     "command_to_actual": {
+      "delay_ms": 178,
+      "gain": 0.9972,
+      "residual_deg": 0.033
+     },
+     "reference_to_actual": {
+      "delay_ms": 18,
+      "gain": 0.9704,
+      "residual_deg": 0.081
+     },
+     "tilt_error_vs_reference_rms_deg": 0.209
+    },
+    "pitch": {
+     "command_to_actual": {
+      "delay_ms": 178,
+      "gain": 0.9996,
+      "residual_deg": 0.015
+     },
+     "reference_to_actual": {
+      "delay_ms": 32,
+      "gain": 0.9841,
+      "residual_deg": 0.025
+     },
+     "tilt_error_vs_reference_rms_deg": 0.042
+    }
+   }
+  },
+  {
+   "stack": "cognipilot",
+   "campaign": "arm-speed-cognipilot-hardened-20261106",
+   "id": "confirm-33-none-5",
+   "lead": "omega",
+   "noise": "none",
+   "seed": 5,
+   "report_passed": true,
+   "report_tracking_rms_m": 0.2815023820358946,
+   "report_tracking_max_m": 0.7111548319305009,
+   "recomputed_max_m": 0.711155,
+   "samples": 3301,
+   "runner_sha256": "f2ef29affdaa7ec6c92e281357e115dcb3d6801ca390765fd5f76e0992a53b92",
+   "firmware_sha256": "443e6f743daf2d42b9c0256e599cd56c156d3dbc48f68f64527ce2115fe33c94",
+   "axes": {
+    "roll": {
+     "command_to_actual": {
+      "delay_ms": 178,
+      "gain": 0.9972,
+      "residual_deg": 0.033
+     },
+     "reference_to_actual": {
+      "delay_ms": 18,
+      "gain": 0.9704,
+      "residual_deg": 0.081
+     },
+     "tilt_error_vs_reference_rms_deg": 0.209
+    },
+    "pitch": {
+     "command_to_actual": {
+      "delay_ms": 178,
+      "gain": 0.9996,
+      "residual_deg": 0.015
+     },
+     "reference_to_actual": {
+      "delay_ms": 32,
+      "gain": 0.9841,
+      "residual_deg": 0.025
+     },
+     "tilt_error_vs_reference_rms_deg": 0.042
+    }
+   }
+  },
+  {
+   "stack": "cognipilot",
+   "campaign": "arm-speed-cognipilot-hardened-20261106",
+   "id": "confirm-33-realistic-1",
+   "lead": "omega",
+   "noise": "realistic",
+   "seed": 1,
+   "report_passed": true,
+   "report_tracking_rms_m": 0.2824601454161991,
+   "report_tracking_max_m": 0.7094143462205521,
+   "recomputed_max_m": 0.709414,
+   "samples": 3301,
+   "runner_sha256": "f2ef29affdaa7ec6c92e281357e115dcb3d6801ca390765fd5f76e0992a53b92",
+   "firmware_sha256": "443e6f743daf2d42b9c0256e599cd56c156d3dbc48f68f64527ce2115fe33c94",
+   "axes": {
+    "roll": {
+     "command_to_actual": {
+      "delay_ms": 172,
+      "gain": 0.9978,
+      "residual_deg": 0.011
+     },
+     "reference_to_actual": {
+      "delay_ms": 12,
+      "gain": 0.9707,
+      "residual_deg": 0.072
+     },
+     "tilt_error_vs_reference_rms_deg": 0.201
+    },
+    "pitch": {
+     "command_to_actual": {
+      "delay_ms": 172,
+      "gain": 0.999,
+      "residual_deg": 0.01
+     },
+     "reference_to_actual": {
+      "delay_ms": 32,
+      "gain": 0.9835,
+      "residual_deg": 0.02
+     },
+     "tilt_error_vs_reference_rms_deg": 0.039
+    }
+   }
+  },
+  {
+   "stack": "cognipilot",
+   "campaign": "arm-speed-cognipilot-hardened-20261106",
+   "id": "confirm-33-realistic-2",
+   "lead": "omega",
+   "noise": "realistic",
+   "seed": 2,
+   "report_passed": true,
+   "report_tracking_rms_m": 0.2831743419063679,
+   "report_tracking_max_m": 0.7129144900361992,
+   "recomputed_max_m": 0.712914,
+   "samples": 3301,
+   "runner_sha256": "f2ef29affdaa7ec6c92e281357e115dcb3d6801ca390765fd5f76e0992a53b92",
+   "firmware_sha256": "443e6f743daf2d42b9c0256e599cd56c156d3dbc48f68f64527ce2115fe33c94",
+   "axes": {
+    "roll": {
+     "command_to_actual": {
+      "delay_ms": 172,
+      "gain": 0.9971,
+      "residual_deg": 0.013
+     },
+     "reference_to_actual": {
+      "delay_ms": 12,
+      "gain": 0.9699,
+      "residual_deg": 0.077
+     },
+     "tilt_error_vs_reference_rms_deg": 0.207
+    },
+    "pitch": {
+     "command_to_actual": {
+      "delay_ms": 172,
+      "gain": 0.9994,
+      "residual_deg": 0.01
+     },
+     "reference_to_actual": {
+      "delay_ms": 32,
+      "gain": 0.9839,
+      "residual_deg": 0.02
+     },
+     "tilt_error_vs_reference_rms_deg": 0.039
+    }
+   }
+  },
+  {
+   "stack": "cognipilot",
+   "campaign": "arm-speed-cognipilot-hardened-20261106",
+   "id": "confirm-33-realistic-3",
+   "lead": "omega",
+   "noise": "realistic",
+   "seed": 3,
+   "report_passed": true,
+   "report_tracking_rms_m": 0.2832310494170844,
+   "report_tracking_max_m": 0.7125554525376115,
+   "recomputed_max_m": 0.712555,
+   "samples": 3301,
+   "runner_sha256": "f2ef29affdaa7ec6c92e281357e115dcb3d6801ca390765fd5f76e0992a53b92",
+   "firmware_sha256": "443e6f743daf2d42b9c0256e599cd56c156d3dbc48f68f64527ce2115fe33c94",
+   "axes": {
+    "roll": {
+     "command_to_actual": {
+      "delay_ms": 172,
+      "gain": 0.9975,
+      "residual_deg": 0.012
+     },
+     "reference_to_actual": {
+      "delay_ms": 12,
+      "gain": 0.9703,
+      "residual_deg": 0.076
+     },
+     "tilt_error_vs_reference_rms_deg": 0.204
+    },
+    "pitch": {
+     "command_to_actual": {
+      "delay_ms": 172,
+      "gain": 0.9972,
+      "residual_deg": 0.01
+     },
+     "reference_to_actual": {
+      "delay_ms": 22,
+      "gain": 0.9817,
+      "residual_deg": 0.019
+     },
+     "tilt_error_vs_reference_rms_deg": 0.041
+    }
+   }
+  },
+  {
+   "stack": "cognipilot",
+   "campaign": "arm-speed-cognipilot-hardened-20261106",
+   "id": "confirm-33-realistic-4",
+   "lead": "omega",
+   "noise": "realistic",
+   "seed": 4,
+   "report_passed": true,
+   "report_tracking_rms_m": 0.28317411351320254,
+   "report_tracking_max_m": 0.7123058069797579,
+   "recomputed_max_m": 0.712306,
+   "samples": 3301,
+   "runner_sha256": "f2ef29affdaa7ec6c92e281357e115dcb3d6801ca390765fd5f76e0992a53b92",
+   "firmware_sha256": "443e6f743daf2d42b9c0256e599cd56c156d3dbc48f68f64527ce2115fe33c94",
+   "axes": {
+    "roll": {
+     "command_to_actual": {
+      "delay_ms": 172,
+      "gain": 0.9973,
+      "residual_deg": 0.012
+     },
+     "reference_to_actual": {
+      "delay_ms": 12,
+      "gain": 0.9702,
+      "residual_deg": 0.073
+     },
+     "tilt_error_vs_reference_rms_deg": 0.204
+    },
+    "pitch": {
+     "command_to_actual": {
+      "delay_ms": 178,
+      "gain": 0.9979,
+      "residual_deg": 0.011
+     },
+     "reference_to_actual": {
+      "delay_ms": 32,
+      "gain": 0.9824,
+      "residual_deg": 0.02
+     },
+     "tilt_error_vs_reference_rms_deg": 0.041
+    }
+   }
+  },
+  {
+   "stack": "cognipilot",
+   "campaign": "arm-speed-cognipilot-hardened-20261106",
+   "id": "confirm-33-realistic-5",
+   "lead": "omega",
+   "noise": "realistic",
+   "seed": 5,
+   "report_passed": true,
+   "report_tracking_rms_m": 0.28293071827341726,
+   "report_tracking_max_m": 0.7136984259797949,
+   "recomputed_max_m": 0.713698,
+   "samples": 3301,
+   "runner_sha256": "f2ef29affdaa7ec6c92e281357e115dcb3d6801ca390765fd5f76e0992a53b92",
+   "firmware_sha256": "443e6f743daf2d42b9c0256e599cd56c156d3dbc48f68f64527ce2115fe33c94",
+   "axes": {
+    "roll": {
+     "command_to_actual": {
+      "delay_ms": 178,
+      "gain": 0.9974,
+      "residual_deg": 0.011
+     },
+     "reference_to_actual": {
+      "delay_ms": 12,
+      "gain": 0.9703,
+      "residual_deg": 0.074
+     },
+     "tilt_error_vs_reference_rms_deg": 0.204
+    },
+    "pitch": {
+     "command_to_actual": {
+      "delay_ms": 178,
+      "gain": 1.0005,
+      "residual_deg": 0.009
+     },
+     "reference_to_actual": {
+      "delay_ms": 22,
+      "gain": 0.9849,
+      "residual_deg": 0.021
+     },
+     "tilt_error_vs_reference_rms_deg": 0.037
+    }
+   }
+  },
+  {
+   "stack": "cognipilot",
+   "campaign": "arm-speed-cognipilot-hardened-20261106",
+   "id": "off-33-realistic-1",
+   "lead": "off",
+   "noise": "realistic",
+   "seed": 1,
+   "report_passed": true,
+   "report_tracking_rms_m": 0.1872835977062245,
+   "report_tracking_max_m": 0.47512482894300306,
+   "recomputed_max_m": 0.475125,
+   "samples": 3301,
+   "runner_sha256": "f2ef29affdaa7ec6c92e281357e115dcb3d6801ca390765fd5f76e0992a53b92",
+   "firmware_sha256": "443e6f743daf2d42b9c0256e599cd56c156d3dbc48f68f64527ce2115fe33c94",
+   "axes": {
+    "roll": {
+     "command_to_actual": {
+      "delay_ms": 172,
+      "gain": 0.9975,
+      "residual_deg": 0.011
+     },
+     "reference_to_actual": {
+      "delay_ms": 172,
+      "gain": 0.9975,
+      "residual_deg": 0.011
+     },
+     "tilt_error_vs_reference_rms_deg": 0.739
+    },
+    "pitch": {
+     "command_to_actual": {
+      "delay_ms": 172,
+      "gain": 0.9995,
+      "residual_deg": 0.01
+     },
+     "reference_to_actual": {
+      "delay_ms": 172,
+      "gain": 0.9995,
+      "residual_deg": 0.01
+     },
+     "tilt_error_vs_reference_rms_deg": 0.117
+    }
+   }
+  },
+  {
+   "stack": "cognipilot",
+   "campaign": "arm-speed-cognipilot-hardened-20261106",
+   "id": "off-33-realistic-2",
+   "lead": "off",
+   "noise": "realistic",
+   "seed": 2,
+   "report_passed": true,
+   "report_tracking_rms_m": 0.18759287827067564,
+   "report_tracking_max_m": 0.47766692907411473,
+   "recomputed_max_m": 0.477667,
+   "samples": 3301,
+   "runner_sha256": "f2ef29affdaa7ec6c92e281357e115dcb3d6801ca390765fd5f76e0992a53b92",
+   "firmware_sha256": "443e6f743daf2d42b9c0256e599cd56c156d3dbc48f68f64527ce2115fe33c94",
+   "axes": {
+    "roll": {
+     "command_to_actual": {
+      "delay_ms": 172,
+      "gain": 0.997,
+      "residual_deg": 0.012
+     },
+     "reference_to_actual": {
+      "delay_ms": 172,
+      "gain": 0.997,
+      "residual_deg": 0.012
+     },
+     "tilt_error_vs_reference_rms_deg": 0.739
+    },
+    "pitch": {
+     "command_to_actual": {
+      "delay_ms": 172,
+      "gain": 0.9996,
+      "residual_deg": 0.01
+     },
+     "reference_to_actual": {
+      "delay_ms": 172,
+      "gain": 0.9996,
+      "residual_deg": 0.01
+     },
+     "tilt_error_vs_reference_rms_deg": 0.117
+    }
+   }
+  },
+  {
+   "stack": "cognipilot",
+   "campaign": "arm-speed-cognipilot-hardened-20261106",
+   "id": "off-33-realistic-3",
+   "lead": "off",
+   "noise": "realistic",
+   "seed": 3,
+   "report_passed": true,
+   "report_tracking_rms_m": 0.18757709494449645,
+   "report_tracking_max_m": 0.47760485389456164,
+   "recomputed_max_m": 0.477605,
+   "samples": 3301,
+   "runner_sha256": "f2ef29affdaa7ec6c92e281357e115dcb3d6801ca390765fd5f76e0992a53b92",
+   "firmware_sha256": "443e6f743daf2d42b9c0256e599cd56c156d3dbc48f68f64527ce2115fe33c94",
+   "axes": {
+    "roll": {
+     "command_to_actual": {
+      "delay_ms": 172,
+      "gain": 0.9974,
+      "residual_deg": 0.012
+     },
+     "reference_to_actual": {
+      "delay_ms": 172,
+      "gain": 0.9974,
+      "residual_deg": 0.012
+     },
+     "tilt_error_vs_reference_rms_deg": 0.738
+    },
+    "pitch": {
+     "command_to_actual": {
+      "delay_ms": 172,
+      "gain": 0.9976,
+      "residual_deg": 0.009
+     },
+     "reference_to_actual": {
+      "delay_ms": 172,
+      "gain": 0.9976,
+      "residual_deg": 0.009
+     },
+     "tilt_error_vs_reference_rms_deg": 0.116
+    }
+   }
+  },
+  {
+   "stack": "cognipilot",
+   "campaign": "arm-speed-cognipilot-hardened-20261106",
+   "id": "off-33-realistic-4",
+   "lead": "off",
+   "noise": "realistic",
+   "seed": 4,
+   "report_passed": true,
+   "report_tracking_rms_m": 0.18733351976869103,
+   "report_tracking_max_m": 0.47717773956796566,
+   "recomputed_max_m": 0.477178,
+   "samples": 3301,
+   "runner_sha256": "f2ef29affdaa7ec6c92e281357e115dcb3d6801ca390765fd5f76e0992a53b92",
+   "firmware_sha256": "443e6f743daf2d42b9c0256e599cd56c156d3dbc48f68f64527ce2115fe33c94",
+   "axes": {
+    "roll": {
+     "command_to_actual": {
+      "delay_ms": 172,
+      "gain": 0.9975,
+      "residual_deg": 0.013
+     },
+     "reference_to_actual": {
+      "delay_ms": 172,
+      "gain": 0.9975,
+      "residual_deg": 0.013
+     },
+     "tilt_error_vs_reference_rms_deg": 0.739
+    },
+    "pitch": {
+     "command_to_actual": {
+      "delay_ms": 178,
+      "gain": 0.9976,
+      "residual_deg": 0.012
+     },
+     "reference_to_actual": {
+      "delay_ms": 178,
+      "gain": 0.9976,
+      "residual_deg": 0.012
+     },
+     "tilt_error_vs_reference_rms_deg": 0.116
+    }
+   }
+  },
+  {
+   "stack": "cognipilot",
+   "campaign": "arm-speed-cognipilot-hardened-20261106",
+   "id": "off-33-realistic-5",
+   "lead": "off",
+   "noise": "realistic",
+   "seed": 5,
+   "report_passed": true,
+   "report_tracking_rms_m": 0.18765933619594996,
+   "report_tracking_max_m": 0.47957853046247945,
+   "recomputed_max_m": 0.479579,
+   "samples": 3301,
+   "runner_sha256": "f2ef29affdaa7ec6c92e281357e115dcb3d6801ca390765fd5f76e0992a53b92",
+   "firmware_sha256": "443e6f743daf2d42b9c0256e599cd56c156d3dbc48f68f64527ce2115fe33c94",
+   "axes": {
+    "roll": {
+     "command_to_actual": {
+      "delay_ms": 172,
+      "gain": 0.9973,
+      "residual_deg": 0.011
+     },
+     "reference_to_actual": {
+      "delay_ms": 172,
+      "gain": 0.9973,
+      "residual_deg": 0.011
+     },
+     "tilt_error_vs_reference_rms_deg": 0.738
+    },
+    "pitch": {
+     "command_to_actual": {
+      "delay_ms": 178,
+      "gain": 1.0006,
+      "residual_deg": 0.009
+     },
+     "reference_to_actual": {
+      "delay_ms": 178,
+      "gain": 1.0006,
+      "residual_deg": 0.009
+     },
+     "tilt_error_vs_reference_rms_deg": 0.114
+    }
+   }
+  },
+  {
+   "stack": "cognipilot",
+   "campaign": "arm-speed-cognipilot-hardened-20261106",
+   "id": "refine-33",
+   "lead": "omega",
+   "noise": "realistic",
+   "seed": 1,
+   "report_passed": true,
+   "report_tracking_rms_m": 0.2824601454161991,
+   "report_tracking_max_m": 0.7094143462205521,
+   "recomputed_max_m": 0.709414,
+   "samples": 3301,
+   "runner_sha256": "f2ef29affdaa7ec6c92e281357e115dcb3d6801ca390765fd5f76e0992a53b92",
+   "firmware_sha256": "443e6f743daf2d42b9c0256e599cd56c156d3dbc48f68f64527ce2115fe33c94",
+   "axes": {
+    "roll": {
+     "command_to_actual": {
+      "delay_ms": 172,
+      "gain": 0.9978,
+      "residual_deg": 0.011
+     },
+     "reference_to_actual": {
+      "delay_ms": 12,
+      "gain": 0.9707,
+      "residual_deg": 0.072
+     },
+     "tilt_error_vs_reference_rms_deg": 0.201
+    },
+    "pitch": {
+     "command_to_actual": {
+      "delay_ms": 172,
+      "gain": 0.999,
+      "residual_deg": 0.01
+     },
+     "reference_to_actual": {
+      "delay_ms": 32,
+      "gain": 0.9835,
+      "residual_deg": 0.02
+     },
+     "tilt_error_vs_reference_rms_deg": 0.039
+    }
+   }
+  }
+ ]
+}

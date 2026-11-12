@@ -18,33 +18,43 @@
 </header>
 
 <main id="main">
-  <h1>Can we finish in time, and what could go wrong?</h1>
+  <h1>What is left, and what could go wrong?</h1>
 
   <div class="answer">
-    <p>The computing work fits in the week, if we follow an ordered plan.</p>
-    <p>The larger risks are the unknown state of the virtual machine, stalled flights, and the time needed to analyse and publish. The first step is to write down the rule before reading any new results.</p>
+    <p>The lead-on comparison is finished. The lead-off searches are left, and they decide the result.</p>
+    <p>The rule for them is committed in <code>docs/results/arm-speed/speed-rule.json</code>. Betaflight's motor protocol must be decided before those flights run.</p>
   </div>
 
-  <h2>Does the flying fit in the week?</h2>
-  <p>Change the numbers to test the plan. The starting values are our planning estimates. Uptime and failure rate are assumptions.</p>
+  <h2>What is done?</h2>
+  <ul>
+    <li>CogniPilot lead-on campaign: 42 flights. 33 s confirmed, 32 s failed.</li>
+    <li>Betaflight lead-on campaign: 66 flights. 33 s passes tracking, 32 s failed.</li>
+    <li>Raw data, rerun programs and FastDyn source bundles published in the <code>raw-data-nov-20261110</code> release, with checksums verified.</li>
+    <li>Matched protocol test for Betaflight at 35 s (PWM against OneShot125).</li>
+    <li>Tilt-lag analysis of all 37 flights at 33 s.</li>
+    <li>Speed-ranking rule written and committed.</li>
+  </ul>
+
+  <h2>Does the remaining flying fit?</h2>
+  <p>Change the numbers to test the plan. The starting values are planning estimates. Uptime and failure rate are assumptions.</p>
 
   <div class="panel">
     <div class="controls">
-      <div><label for="modes">CogniPilot lead settings</label><select id="modes"><option value="1">One</option><option value="2" selected>Both</option></select></div>
-      <div><label for="screen">Search flights per setting</label><input id="screen" type="number" min="1" max="20" value="6"></div>
-      <div><label for="sets">15-run sets per setting</label><input id="sets" type="number" min="1" max="6" value="1"></div>
+      <div><label for="screen">CogniPilot lead-off search flights</label><input id="screen" type="number" min="1" max="20" value="7"></div>
+      <div><label for="sets">CogniPilot 15-run sets</label><input id="sets" type="number" min="1" max="6" value="1"></div>
+      <div><label for="bfsets">Betaflight 15-run sets</label><input id="bfsets" type="number" min="1" max="6" value="1"></div>
       <div><label for="fail">Flights that stall (%)</label><input id="fail" type="number" min="0" max="40" value="5"></div>
       <div><label for="uptime">Computer available (%)</label><input id="uptime" type="number" min="10" max="100" value="60"></div>
-      <div><label for="recovery">After a stall</label><select id="recovery"><option value="retry">Retry that flight</option><option value="restart">Restart the search (current code)</option></select></div>
+      <div><label for="recovery">After a stall</label><select id="recovery"><option value="retry">Retry that flight (the rule)</option><option value="restart">Restart the search (current code)</option></select></div>
     </div>
     <p class="big" id="fit" aria-live="polite"></p>
     <div class="meter" aria-hidden="true"><span id="meter"></span></div>
     <p id="breakdown"></p>
-    <p class="muted small">CogniPilot uses 6.825 seconds of real time per simulated second, for a 33 s lap plus 43 s of mission, and an assumed 60 s of start and stop. Betaflight uses 133 s per flight for 37 flights. Time available is 87 hours, Monday 21:00 to Friday noon.</p>
+    <p class="muted small">CogniPilot uses 447 s of real time per flight (the median of its 42 flights). Betaflight uses 133 s per flight, with 7 search flights per set and 2 runner-parity flights. Time available is about 42 hours, from Thursday evening to the Saturday-noon data freeze in the rule.</p>
   </div>
 
   <h2>What are the open problems?</h2>
-  <p>A blocker stops us from making the claim. A major problem weakens it. A nit is a small correction.</p>
+  <p>A blocker stops us from making the claim. A major problem weakens it. A nit is a small correction. Resolved problems are kept and marked.</p>
   <div class="controls" role="group" aria-label="Severity">
     <button type="button" data-sev="All" aria-pressed="true">All</button>
     <button type="button" data-sev="Blocker" aria-pressed="false">Blockers</button>
@@ -57,38 +67,36 @@
   <h2>What will we say if the work is not finished?</h2>
   <p>Choose what might happen by the deadline.</p>
   <div class="panel">
-    <label for="outcome">By Friday, we have:</label>
+    <label for="outcome">By the data freeze, we have:</label>
     <select id="outcome"></select>
     <p class="big" id="outcome-winner" aria-live="polite"></p>
     <p id="outcome-text"></p>
   </div>
 
-  <h2>What happens each day?</h2>
+  <h2>What happens next?</h2>
   <ol>
-    <li><strong>Monday night to Tuesday morning:</strong> commit the rule. Copy everything off the virtual machine. Measure how often flights stall.</li>
-    <li><strong>Tuesday:</strong> fly Betaflight with lead off. Rerun Betaflight at 32 s and 33 s on the same runner. Calculate the lag from the 40 s pair. Decide whether CogniPilot flights are working.</li>
-    <li><strong>Tuesday night to Thursday:</strong> fly CogniPilot with lead off, then lead on. Run 15 confirmations at the shortest lap time that passes.</li>
-    <li><strong>Friday:</strong> stop new flights at noon. Score the results.</li>
-    <li><strong>Saturday and Sunday:</strong> update the documents and the replay. Check the published pages. Prepare the slides.</li>
+    <li><strong>Now:</strong> decide Betaflight's motor protocol. The rule currently says PWM.</li>
+    <li><strong>Next:</strong> Betaflight runner-parity check at 32 s and 33 s, then the Betaflight lead-off search (about 1 hour).</li>
+    <li><strong>Then:</strong> the CogniPilot lead-off search and its 15-run confirmation (about 3 hours).</li>
+    <li><strong>Saturday noon:</strong> data freeze. Score all four cells with the rule.</li>
+    <li><strong>Before the talk:</strong> update the qualification document, the dashboards and the replay. Check the published pages.</li>
   </ol>
 
   <h2>What still needs a decision?</h2>
   <ul>
-    <li>What wording do we use so our result agrees with the qualification document?</li>
-    <li>Should a short test with the OneShot125 motor protocol be included? It could only downgrade a win to "marginal".</li>
-    <li>Should a tie count as "not faster"? The review recommends yes.</li>
-    <li>What margin makes a win "marginal"? The review suggests a win that flips if the 0.75 m limit moves by 0.02 m.</li>
+    <li>Betaflight's motor protocol: PWM (as drafted) or OneShot125. OneShot125 would mean redoing Betaflight's lead-on cell too.</li>
+    <li>Whether the Saturday-noon freeze holds.</li>
   </ul>
 </main>
 
-<footer>Data from the repository as of 2026-11-09. Simulation only.</footer>
+<footer>Data from the repository as of 2026-11-12. Simulation only.</footer>
 
 <script src="data.js"></script>
 <script>
   const get = (id) => document.getElementById(id);
-  const FLIGHT_S = 6.825 * (33 + 43) + 60;
-  const BF_HOURS = (37 * 133) / 3600;
-  const AVAILABLE_H = 87;
+  const CP_FLIGHT_S = 447;
+  const BF_FLIGHT_S = 133;
+  const AVAILABLE_H = 42;
 
   function clamp(value, low, high) {
     if (Number.isNaN(value)) return low;
@@ -102,31 +110,30 @@
   }
 
   function updateFit() {
-    const modes = Number(get("modes").value);
     const screen = clamp(Number(get("screen").value), 1, 20);
     const sets = clamp(Number(get("sets").value), 1, 6);
+    const bfsets = clamp(Number(get("bfsets").value), 1, 6);
     const failRate = clamp(Number(get("fail").value), 0, 40) / 100;
     const uptime = clamp(Number(get("uptime").value), 10, 100) / 100;
     const restart = get("recovery").value === "restart";
 
-    const perMode = screen + 15 * sets;
-    const attempts = modes * expectedAttempts(perMode, failRate, restart);
-    const needed = (attempts * FLIGHT_S) / 3600 + BF_HOURS;
+    const cpFlights = expectedAttempts(screen + 15 * sets, failRate, restart);
+    const bfFlights = expectedAttempts(7 + 15 * bfsets, failRate, restart) + 2;
+    const cpHours = cpFlights * CP_FLIGHT_S / 3600;
+    const bfHours = bfFlights * BF_FLIGHT_S / 3600;
+    const needed = cpHours + bfHours;
     const available = AVAILABLE_H * uptime;
-    const ratio = needed / available;
 
     get("fit").textContent = needed <= available
       ? `Fits: about ${needed.toFixed(1)} of ${available.toFixed(0)} hours`
       : `Does not fit: about ${needed.toFixed(1)} of ${available.toFixed(0)} hours`;
-
     const meter = get("meter");
-    meter.style.width = `${Math.min(100, ratio * 100)}%`;
+    meter.style.width = `${Math.min(100, needed / available * 100)}%`;
     meter.className = needed <= available ? "" : "over";
-
-    get("breakdown").textContent = `CogniPilot: about ${Math.round(attempts)} flights, including reruns. That takes about ${((attempts * FLIGHT_S) / 3600).toFixed(1)} hours. Betaflight adds ${BF_HOURS.toFixed(1)} hours. This does not include analysis, writing or publishing.`;
+    get("breakdown").textContent = `CogniPilot lead off: about ${Math.round(cpFlights)} flights, ${cpHours.toFixed(1)} hours. Betaflight lead off and parity check: about ${Math.round(bfFlights)} flights, ${bfHours.toFixed(1)} hours. Flights run one at a time. This does not include analysis or publishing.`;
   }
 
-  ["modes", "screen", "sets", "fail", "uptime", "recovery"].forEach((id) => {
+  ["screen", "sets", "bfsets", "fail", "uptime", "recovery"].forEach((id) => {
     get(id).addEventListener("input", updateFit);
     get(id).addEventListener("change", updateFit);
   });
@@ -137,7 +144,7 @@
     const shown = RISKS.filter((risk) => severity === "All" || risk.sev === severity);
     for (const risk of shown) {
       const card = document.createElement("section");
-      card.className = `panel risk ${risk.sev}`;
+      card.className = `panel risk ${risk.sev} ${risk.status}`;
       const tag = document.createElement("div");
       tag.className = "tag";
       tag.textContent = risk.sev;
@@ -152,7 +159,8 @@
       card.append(tag, title, text, action);
       box.appendChild(card);
     }
-    get("risk-count").textContent = `Showing ${shown.length} of ${RISKS.length} problems.`;
+    const open = shown.filter((r) => r.status === "open").length;
+    get("risk-count").textContent = `Showing ${shown.length} of ${RISKS.length} problems. ${open} open, ${shown.length - open} resolved.`;
   }
 
   document.querySelectorAll("[data-sev]").forEach((button) => {
@@ -169,11 +177,9 @@
     option.textContent = value.label;
     outcome.appendChild(option);
   }
-
   function showOutcome() {
-    const key = outcome.value;
-    get("outcome-winner").textContent = key === "all" ? "We can name a result." : "We do not name a winner.";
-    get("outcome-text").textContent = OUTCOMES[key].say;
+    get("outcome-winner").textContent = OUTCOMES[outcome.value].winner;
+    get("outcome-text").textContent = OUTCOMES[outcome.value].say;
   }
   outcome.addEventListener("change", showOutcome);
 

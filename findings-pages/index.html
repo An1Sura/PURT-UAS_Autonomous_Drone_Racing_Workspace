@@ -21,30 +21,31 @@
   <h1>Is CogniPilot faster than Betaflight?</h1>
 
   <div class="answer">
-    <p>We do not know yet.</p>
-    <p>The tests that would answer this question are not finished. Betaflight has a provisional time of 33 seconds. CogniPilot has no full test result under the same rule.</p>
+    <p>With tilt lead on, no. The two stacks tie at 33 seconds.</p>
+    <p>Both pass 33 s on all 15 runs, and both fail at 32 s. The tilt-lead-off tests, which could separate them, have not been flown yet.</p>
   </div>
 
   <h2>What do we know so far?</h2>
   <div class="cards">
     <section class="panel">
-      <h3>Betaflight</h3>
+      <h3>Betaflight, lead on</h3>
       <p class="big">33 s</p>
-      <p>Provisional. It has flown with tilt lead on only. All 15 runs met the tracking limits at 33 s. Two of the 15 did not land.</p>
+      <p>All 15 runs met the tracking limits. 13 of 15 landed. The one flight at 32 s missed the 0.75 m limit, at 0.771 m.</p>
     </section>
     <section class="panel">
-      <h3>CogniPilot</h3>
-      <p class="big">35 s, once</p>
-      <p>One flight passed at 35 s, and one passed at 39 s. Neither is a 15-run test. A newer test series exists, but nobody has read its results.</p>
+      <h3>CogniPilot, lead on</h3>
+      <p class="big">33 s</p>
+      <p>All 15 runs met the tracking limits and all 15 landed. At 32 s, 2 of 15 passed. Most of the others missed by 2 to 7 mm.</p>
     </section>
     <section class="panel">
-      <h3>Direct comparison</h3>
-      <p class="big">Too close to call</p>
-      <p>At 35 s, CogniPilot's largest error was 0.638 m and Betaflight's was 0.652 m. That is one flight each, and it is not enough to decide.</p>
+      <h3>Verdict under the rule</h3>
+      <p class="big">Tie</p>
+      <p>Indistinguishable at 1 s resolution. CogniPilot's largest error was 8 to 25 mm lower than Betaflight's in all 11 distinct matched flights. That is a measured margin, not a faster lap.</p>
     </section>
   </div>
 
-  <p>We expect a tie at 33 seconds when tilt lead is on. This is an estimate, not a measurement. Tilt lead off could change the result, and that test has not been flown.</p>
+  <h2>What could change the answer?</h2>
+  <p>Tilt lead off. At 33 s, CogniPilot's five lead-off flights had a largest error of 0.48 m, against 0.71 m with lead on. That leaves room for shorter laps. Nobody has searched for them yet. Betaflight has never flown lead off on this test bed.</p>
 
   <h2>What does "faster" mean here?</h2>
   <p>It means the shortest <strong>planned</strong> lap that a drone's flight software can follow while staying within limits. It is not a race time, and it is not how fast a computer runs.</p>
@@ -55,10 +56,10 @@
     <li>The drone never reaches its tilt limit.</li>
     <li>The drone covers the whole course in the right order.</li>
   </ul>
-  <p>Each stack uses the better of two settings: tilt lead on or tilt lead off. Equal times are a tie. We report landing separately.</p>
+  <p>Each stack uses the better of two settings: tilt lead on or tilt lead off. Equal times are a tie. We report landing separately. The full rule is in <code>docs/results/arm-speed/speed-rule.json</code>. It was written after the lead-on results were known, so only the lead-off tests are scored blind.</p>
 
   <h2>Does landing change the answer?</h2>
-  <p>Yes. Choose a way of scoring to see Betaflight's result.</p>
+  <p>Choose a way of scoring. The results are for tilt lead on.</p>
   <div class="panel">
     <div class="controls" role="group" aria-label="Scoring method">
       <button type="button" id="score-track" aria-pressed="true">Tracking only</button>
@@ -67,7 +68,7 @@
     <p class="big" id="score-result" aria-live="polite"></p>
     <p id="score-note"></p>
   </div>
-  <p>Separating landing helps Betaflight, which otherwise has no qualifying time. The choice of the better lead setting probably helps CogniPilot. The talk will state both effects.</p>
+  <p>Be careful with the landing result. In one matched test, Betaflight's landing failure went away when only its motor protocol changed. With the PWM protocol we chose, its control loop ran at 500 times a second. With OneShot125 it ran at 2000 times a second and landed. The landing difference may come from our setup, not from Betaflight.</p>
 
   <h2>What are the limits of these results?</h2>
   <ul>
@@ -75,13 +76,14 @@
     <li>"Betaflight" here is a proposed port to this chip, running with a simulation adapter.</li>
     <li>The noise levels are assumed. They are not measured from a real drone.</li>
     <li>Results apply only to the lap times we tested.</li>
+    <li>This is an exploratory result, not a qualified ranking. Gain retesting on this chip and some command checks are still open.</li>
   </ul>
 
   <h2>Where can I go next?</h2>
   <div class="cards">
-    <div class="panel"><a class="card-link" href="results.html">Explore the results</a><p>See all 66 Betaflight flights. Change the error limit and see what happens.</p></div>
-    <div class="panel"><a class="card-link" href="why.html">Why one might be faster</a><p>See what the recordings can and cannot tell us, and what "8 kHz" really means.</p></div>
-    <div class="panel"><a class="card-link" href="plan.html">Plan and risks</a><p>Check whether the work fits in the week. See the open problems.</p></div>
+    <div class="panel"><a class="card-link" href="results.html">Explore the results</a><p>See all 108 flights from both stacks. Change the error limit and see what happens.</p></div>
+    <div class="panel"><a class="card-link" href="why.html">Why one might be faster</a><p>See how each stack follows tilt commands, and why tilt lead matters more than the stack.</p></div>
+    <div class="panel"><a class="card-link" href="plan.html">Plan and risks</a><p>See what is done, what is left, and the open problems.</p></div>
   </div>
 
   <h2>What do these words mean?</h2>
@@ -91,7 +93,7 @@
   <details><summary>Tilt lead</summary><p>An extra tilt command that tries to start a turn slightly early. It can be on or off.</p></details>
   <details><summary>Gain K</summary><p>A setting for how strongly the drone corrects its tilt. Both stacks use K = 6 per second.</p></details>
   <details><summary>Confirmation</summary><p>A set of 15 runs at one lap time, using three noise levels and five random seeds. The five no-noise runs give the same result, so there are 11 distinct flights.</p></details>
-  <details><summary>Provisional</summary><p>A result that could still change, because a required test has not been done.</p></details>
+  <details><summary>Motor protocol</summary><p>How the flight software sends commands to the motors. In this simulation, Betaflight's choice of protocol also set how often its control loop ran.</p></details>
 
   <h2>How did we write these pages?</h2>
   <p>We wrote these pages using the four principles of plain language in ISO 24495-1:2023:</p>
@@ -104,7 +106,7 @@
   <p class="muted small">This describes how we wrote these pages. Nobody has audited them against the standard.</p>
 </main>
 
-<footer>Data from the repository as of 2026-11-09. Simulation only.</footer>
+<footer>Data from the repository as of 2026-11-12. Simulation only.</footer>
 
 <script src="data.js"></script>
 <script>
@@ -116,11 +118,14 @@
   function show(needLanding) {
     track.setAttribute("aria-pressed", String(!needLanding));
     full.setAttribute("aria-pressed", String(needLanding));
-    const lap = shortestConfirmed(MAX_LIMIT, needLanding);
-    result.textContent = lap ? `Betaflight: ${lap} s (provisional)` : "Betaflight: no qualifying time";
+    const parts = ["bf", "cp"].map((stack) => {
+      const lap = shortestConfirmed(stack, MAX_LIMIT, needLanding);
+      return `${STACK_NAME[stack]}: ${lap ? lap + " s" : "no qualifying time"}`;
+    });
+    result.textContent = parts.join(" · ");
     note.textContent = needLanding
-      ? "At every lap time we tested 15 times (33, 34, 35 and 40 s), at least one flight ended still armed in harsh noise."
-      : "All 15 runs at 33 s met the tracking limits. Landing is reported separately: 13 of 15 runs landed.";
+      ? "Betaflight had at least one harsh-noise flight that ended still armed at every lap time it confirmed (33, 34, 35 and 40 s). All 15 CogniPilot runs at 33 s landed."
+      : "Both stacks met the tracking limits on all 15 runs at 33 s. Under the rule this is a tie.";
   }
 
   track.addEventListener("click", () => show(false));

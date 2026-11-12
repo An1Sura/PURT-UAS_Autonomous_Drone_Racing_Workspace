@@ -1,0 +1,60 @@
+{
+  "qualification": "Retained post-termination memory snapshot, not an in-flight time series or physical timing measurement",
+  "flight_id": "bf-protocol-study-20261106",
+  "firmware_sha256": "c9530644680b907053022efa349bd0564701dd09ead526c862ac76d71755423f",
+  "dtcm_sha256": "6d34ed446f3a36168841054503ff0902b36f25f5e46a3b9f9b991c401b5c0caf",
+  "stage": 4,
+  "sequence": 624000,
+  "sim_time_s": 78,
+  "filtered_body_gyro_deg_s": [
+    -0.2769944369792938,
+    0.04978009685873985,
+    -0.2597595155239105
+  ],
+  "rc_setpoint_deg_s": [
+    0,
+    0,
+    0
+  ],
+  "pid": {
+    "roll": {
+      "P": 0.776970624923706,
+      "I": 0,
+      "D": 0.9098127484321594,
+      "F": 0,
+      "S": 0,
+      "Sum": 1.692052960395813
+    },
+    "pitch": {
+      "P": 1.0266656875610352,
+      "I": 0,
+      "D": -0.8658467531204224,
+      "F": 0,
+      "S": 0,
+      "Sum": 0.16781902313232422
+    },
+    "yaw": {
+      "P": 2.9370570182800293,
+      "I": 0,
+      "D": 0,
+      "F": -1.239541091990759e-7,
+      "S": 0,
+      "Sum": 2.987316370010376
+    }
+  },
+  "simulated_scheduling": {
+    "gyro_sample_rate_hz": 8000,
+    "gyro_target_loop_us": 500,
+    "gyro_sample_loop_us": 125,
+    "target_pid_loop_us": 500,
+    "motor_updates": 156000,
+    "motor_updates_per_sim_second": 2000,
+    "qualification": "Configured periods and simulated counter totals; not physical execution speed or jitter"
+  },
+  "raw_little_endian_hex": {
+    "pidData": "8ce7463f000000007de9683f00000000000000003195d83fc869833f0000000022a85dbf0000000000000000c0d82b3ebef83b4000000000000000003f1805b40000000031303f40",
+    "gyroADCf": "37d28dbe37e64b3d33ff84be",
+    "setpointRate": "000000000000000000000000"
+  },
+  "limitation": "adrFastdynRun shutdown clears output motors and changes stage, but does not update PID/gyro state. Read motor end state from the independent flight report, not this post-termination output buffer. This snapshot does not establish the origin of integral growth."
+}
