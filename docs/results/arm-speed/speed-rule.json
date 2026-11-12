@@ -1,0 +1,100 @@
+{
+  "schema": "purt-speed-ranking-rule/1",
+  "status": "DRAFT 2026-11-12. Not in force until committed. Cite the commit hash that adds this file in every result that uses it.",
+  "question": "In FastDyn/QEMU simulation of TROPIC RT1064 firmware against one shared plant, which stack follows the shorter reference lap within the tracking gates?",
+  "definition_of_faster": "The shortest reference lap duration, on the tested 1 s grid, at which a stack passes the tracking rule on all 15 confirmation runs. This is a commanded schedule on one 47.147 m figure-eight, not a race-gate lap time, a hardware speed or a physical maximum.",
+
+  "fixed_conditions": {
+    "backend": "FastDyn/QEMU ARM",
+    "base_config_id": "purt-10x10-z2-offboard-tilt-lead-v3",
+    "course": "10 x 10 m figure-eight at 2 m, one lap, minimum_jerk_each_lap, unchanged geometry",
+    "attitude_gain_per_s": 6,
+    "position_feedback": "plant truth",
+    "plant_sha256": "284cced3ceec15128886d05753900b8ae47f38570ce0112c50e801356de97654",
+    "offboard_sha256": "220db232fd2cae1744afcfd4eb773d6b2dbe37b97f5f36124849344281ec9a3d",
+    "runner_sha256": "f2ef29affdaa7ec6c92e281357e115dcb3d6801ca390765fd5f76e0992a53b92",
+    "firmware_sha256": {
+      "cognipilot": "443e6f743daf2d42b9c0256e599cd56c156d3dbc48f68f64527ce2115fe33c94",
+      "betaflight": "c9530644680b907053022efa349bd0564701dd09ead526c862ac76d71755423f"
+    },
+    "betaflight_motor_protocol": "PWM",
+    "betaflight_motor_protocol_note": "Matches the existing lead-on campaign. A single matched pair (35 s, harsh, seed 2) landed under ONESHOT125 and not under PWM with near-identical tracking. ONESHOT125 runs are a labelled diagnostic and never replace PWM cells under this rule.",
+    "only_difference_between_cells": "stack firmware and controller.feedforward (omega or off)"
+  },
+
+  "cells": [
+    { "stack": "cognipilot", "feedforward": "omega", "status_at_drafting": "complete, already observed; selected 33 s" },
+    { "stack": "betaflight", "feedforward": "omega", "status_at_drafting": "complete on runner 7c9ade, already observed; 33 s passes tracking 15/15; parity check required" },
+    { "stack": "cognipilot", "feedforward": "off", "status_at_drafting": "not searched; five realistic-noise comparator runs at 33 s already observed" },
+    { "stack": "betaflight", "feedforward": "off", "status_at_drafting": "not flown on TROPIC" }
+  ],
+
+  "search": {
+    "coarse_lap_seconds": [40, 35, 30, 25, 22, 20, 18, 16, 14, 12, 10],
+    "stop_coarse": "first flight that fails the tracking rule (realistic noise, seed 1)",
+    "refinement_seconds": 1,
+    "refinement": "descend in 1 s steps from the last passing coarse value; stop at the first tracking failure",
+    "confirmation_noise": ["none", "realistic", "harsh"],
+    "confirmation_seeds": [1, 2, 3, 4, 5],
+    "required_tracking_passes": 15,
+    "fallback": "if any confirmation fails the tracking rule, confirm the next slower tested candidate with all 15 runs",
+    "landing_only_failure_during_search": "counts as a tracking pass. The existing runner stops on report.passed, which includes landing; the operator then starts the next shorter candidate with the same command and records that this happened.",
+    "order": "one QEMU flight at a time; Betaflight lead-off first, then CogniPilot lead-off"
+  },
+
+  "tracking_rule": {
+    "rms_limit_m": 0.35,
+    "max_limit_m": 0.75,
+    "tilt_clamp_updates": 0,
+    "geometry": "four ordered quadrants, +/-4.25 m extents, center return within 0.75 m, no second lap",
+    "complete_run": "process completed and simulated_seconds equals the configured mission length",
+    "landing": "excluded from this rule; see landing_score",
+    "gates_are_fixed": "No gate changes, tie-breakers or finer grids after any cell is observed."
+  },
+
+  "incomplete_runs": "A stalled, timed-out or truncated flight is neither a pass nor a fail. Rerun the same cell up to 2 times. Retain and publish every incomplete attempt and the count. A candidate with a cell still incomplete after 2 reruns cannot be selected.",
+
+  "runner_parity": {
+    "check": "Rerun Betaflight lead-on at 33 s and 32 s, realistic noise, seed 1, on runner f2ef29.",
+    "pass": "tracking_rms_m and tracking_max_m equal to the 7c9ade results within 1e-6 m, and the same tracking verdict",
+    "if_fail": "Repeat the Betaflight lead-on search and confirmation on f2ef29 before scoring that cell."
+  },
+
+  "landing_score": {
+    "report": "For each selected candidate: runs with verified ground contact, firmware disarm and four stopped motors, out of 15.",
+    "full_mission_result": "The shortest candidate passing both the tracking rule and landing on 15/15, reported alongside the tracking result. 'None' is a valid entry.",
+    "disclosure": "Betaflight landing failures under PWM may come from the 500 Hz loop imposed by the PWM setting; do not present a landing difference as a stack property."
+  },
+
+  "scoring": {
+    "stack_score": "the shorter selected lap of the stack's two cells; record which feedforward mode produced it",
+    "verdict": "Compare stack scores. Shorter is faster under this rule. Equal scores are a tie.",
+    "tie_wording": "indistinguishable at 1 s resolution under this rule",
+    "also_report": [
+      "all four cells, including failures and incomplete runs",
+      "margin to 0.75 m at every selected lap",
+      "matched-seed maximum-error differences at the deciding lap",
+      "tracking result and full-mission result as two named results"
+    ]
+  },
+
+  "evidence_status_at_commit": {
+    "blind": ["betaflight off", "cognipilot off below 33 s"],
+    "already_observed": ["cognipilot omega", "betaflight omega", "cognipilot off at 33 s realistic seeds 1-5", "attitude-lag analysis of all 33 s flights"],
+    "statement": "The rule was written after the lead-on results were known. Only the lead-off searches are scored blind."
+  },
+
+  "data_freeze": "2026-11-14T12:00:00-05:00. After this, only reruns of incomplete cells.",
+
+  "required_wording": {
+    "headline_prefix": "Under the committed speed-ranking rule, in FastDyn/QEMU simulation of TROPIC firmware against one shared plant:",
+    "scope": "Exploratory result, not a qualified ranking. ARM gain requalification, onboard rate-command checks and the non-inferiority margin remain open (docs/simulation-qualification.md). Noise levels are assumed. No hardware timing, latency or physical speed claim.",
+    "relation_to_qualification_doc": "docs/simulation-qualification.md counts landing as a gate. This rule reports that landing-inclusive result as the full-mission result and the landing-free result as the tracking result; neither replaces the other."
+  },
+
+  "open_decisions": [
+    "betaflight_motor_protocol: PWM (drafted) or ONESHOT125 for both Betaflight cells",
+    "data_freeze date and time",
+    "whether five no-noise seeds count as five runs (drafted: yes, 15 runs, disclosed as 11 distinct flights)"
+  ]
+}
