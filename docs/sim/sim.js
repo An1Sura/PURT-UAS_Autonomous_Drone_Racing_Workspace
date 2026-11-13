@@ -1,5 +1,7 @@
 import {stats} from '../planner/math.js';
 const $=id=>document.getElementById(id), names=['betaflight','cognipilot'];
+let replayChosen=false;
+document.addEventListener('click',event=>{if(event.target.closest('button'))replayChosen=true;});
 const fetchJson=async url=>{const r=await fetch(url,{cache:'no-store'});if(!r.ok)throw Error(url+' unavailable');return r.json()};
 try {
  const [spec,e]=await Promise.all(['../config/shared-position-benchmark.json','../config/purt-environment.json'].map(fetchJson));
@@ -31,7 +33,7 @@ try {
   $(id).hidden=false;$(id).onclick=()=>{$('variant').disabled=true;$('flight').src='flight-view.html?stack='+name+'&backend='+(folder==='betaflight-nxp'?'fastdyn-nxp':'fastdyn');$('flight').title=name+' FastDyn ARM figure-eight recording';$('flight').style.height='850px';$('status').textContent=name+' · FastDyn ARM BIL · '+(r.passed&&landed?'passed; landing/disarm verified':'FAILED attempt; actual recording')+' · recorded '+new Date(r.recorded_at_unix_s*1000).toISOString().slice(0,10);};
   }
   $('fastdyn-status').textContent='ARM recordings (distinct firmware targets) · one 10 × 10 m lap at 2 m · 40 s reference · no-noise commissioning runs';
-  $('fastdyn').click();
+  if(!replayChosen) $('fastdyn').click();
  } catch(error){$('fastdyn-status').textContent='FastDyn recording unavailable: '+error.message;}
 
  try { const result=await fetchJson('../results/tilt-lead/speed/summary.json');
