@@ -1,0 +1,33 @@
+--- a/src/cerebri_rdd2/src/processes/navigation_estimator.c
++++ b/src/cerebri_rdd2/src/processes/navigation_estimator.c
+@@ -141,6 +141,10 @@
+   efmu->specificForceBodyFlu_m_s2[2] = imu->accel_flu_m_s2.z;
+ }
+ 
++#if defined(CONFIG_RDD2_FASTDYN)
++volatile uint32_t rdd2_fastdyn_process_counts[2];
++#endif
++
+ static void copy_external_odometry_input_to_efmu(
+     NavigationEstimatorState *efmu,
+     const synapse_topic_ExternalOdometryData_t *odometry, bool fresh) {
+@@ -431,6 +435,9 @@
+     process->efmu.reset =
+         !process->initialized || process->gps_origin_initialization_pending;
+     NavigationEstimator_dostep(&process->efmu);
++#if defined(CONFIG_RDD2_FASTDYN)
++    rdd2_fastdyn_process_counts[0]++;
++#endif
+     step_ok =
+         rdd2_generated_step_ok(process->efmu.rumoca_galec_error_signal_status);
+     outputs_finite = efmu_estimate_is_finite(&process->efmu);
+@@ -472,6 +479,9 @@
+ #endif
+   NavigationEstimator_startup(&process->efmu);
+   set_default_mocap_covariance(&process->efmu);
++  #if defined(CONFIG_RDD2_FASTDYN)
++  process->efmu.samplePeriod = 1.0f / RDD2_NAVIGATION_ESTIMATOR_RATE_HZ;
++  #endif
+   NavigationEstimator_recalibrate(&process->efmu);
+   zros_node_init(&process->node, "efmu_navigation");
+ 

@@ -1,0 +1,17 @@
+--- a/src/cerebri_rdd2/src/processes/scheduling.h
++++ b/src/cerebri_rdd2/src/processes/scheduling.h
+@@ -9,8 +9,14 @@
+ #define RDD2_CONTROL_RATE_HZ 1600U
+ #define RDD2_CONTROL_PERIOD_NS 625000ULL
+ #define RDD2_CONTROL_DT_S (1.0f / 1600.0f)
++#if defined(CONFIG_RDD2_FASTDYN)
++/* Explicit equal-rate simulation experiment; hardware/native defaults remain below. */
++#define RDD2_NAVIGATION_ESTIMATOR_RATE_HZ 1600U
++#define RDD2_GUIDANCE_RATE_HZ 1600U
++#else
+ #define RDD2_NAVIGATION_ESTIMATOR_RATE_HZ 1000U
+ #define RDD2_GUIDANCE_RATE_HZ 200U
++#endif
+ #define RDD2_PLANNING_RATE_HZ 50U
+ 
+ /* Lower Zephyr numbers execute first on coincident releases. */

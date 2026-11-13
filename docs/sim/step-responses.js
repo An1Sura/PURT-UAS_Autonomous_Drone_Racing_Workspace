@@ -1,7 +1,7 @@
 const table=document.querySelector('#step-rows');
 const status=document.querySelector('#step-status');
 try {
- const response=await fetch('../results/dshot-steps-20261112/summary.json');
+ const response=await fetch('../results/rate-matched-steps-20261113/summary.json');
  if(!response.ok)throw new Error(`HTTP ${response.status}`);
  const data=await response.json();
  const seconds=n=>n==null?'Not reached':`${n.toFixed(3)} s`;

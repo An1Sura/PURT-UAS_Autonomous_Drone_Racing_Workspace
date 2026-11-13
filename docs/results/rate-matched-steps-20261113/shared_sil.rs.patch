@@ -1,0 +1,84 @@
+--- a/src/cerebri_rdd2/xtask/src/shared_sil.rs
++++ b/src/cerebri_rdd2/xtask/src/shared_sil.rs
+@@ -279,6 +279,7 @@
+             config = config.replace("set mag_hardware = NONE\n", ""); // Magnetometer is absent in this board build.
+             config.push_str("feature -RX_SERIAL\nfeature -RX_PPM\nfeature -RX_PARALLEL_PWM\nfeature RX_MSP\nfeature -OSD\n");
+             config.push_str(&bf_motor_cli(cfg)?);
++            if cfg["timing"]["matched_hz"] == 1600 { config.push_str("set imu_process_denom = 1\n"); }
+             config.push_str("set baro_hardware = NONE\nset blackbox_device = NONE\n");
+             fs::write(out.join("config.txt"), &config)?;
+             let arm=crate::betaflight_fastdyn::ArmTransport::open(Path::new(&memory),binary,&config)?;
+@@ -622,6 +623,11 @@
+         } else {
+             None
+         };
++        if cfg["timing"]["matched_hz"] == 1600 {
++            report.sensor_profile["sensor_and_command_ingress"] = json!("fresh IMU and latest RC delivered on common 625 us boundaries; BF transport clock ticks at 125 us");
++            report.sensor_profile["matched_control_hz"] = json!(1600);
++            report.sensor_profile["attitude_estimator_schedule"] = json!("BF simulation TASK_ATTITUDE rescheduled to IMU rate; onboard equations unchanged");
++        }
+         let mut gnss = SyntheticGnss::default();
+         let mut motors = [0.; 4];
+         let mut sticks = Sticks::default();
+@@ -632,6 +638,10 @@
+         let (mut sum, mut count) = (0., 0u64);
+         let mut last_ref = [0.; 17];
+         let mut lap_started = false;
++        let matched = cfg["timing"]["matched_hz"] == 1600;
++        let mut pending_rc = false;
++        let mut counters_start: Option<Vec<u32>> = None;
++        let mut bf_motor_count = 0u32;
+         let end = report.lap_end_s;
+         let land_start = end + 5.;
+         let land_end = land_start + 8.;
+@@ -696,6 +706,7 @@
+             }
+             let fresh = tick == 1 || tick % 32 == 0;
+             if fresh {
++                pending_rc = true;
+                 channels = sticks.channels(stack, arm, active, hover);
+                 report.stick_updates += 1;
+                 let lead=sticks.lead(arm,active);
+@@ -713,13 +724,15 @@
+             }
+             if let Some(b) = bf.as_mut() {
+                 let (m, ar, mo, flags, bytes) =
+-                    b.step(&plant, tick, channels, fresh, sampled.0, sampled.1)?;
++                    b.step(&plant, tick, channels, if matched { pending_rc && tick % 5 == 0 } else { fresh }, sampled.0, sampled.1)?;
+                 if cfg["stacks"]["betaflight"]["motor_protocol"] == "DSHOT600" {
+                     let readback = u32::from_le_bytes(bytes[60..64].try_into().unwrap());
+                     ensure!(readback >> 24 == 0xd6, "firmware did not confirm DShot600; use new codec ELF");
+                     report.sensor_profile["motor_protocol_readback"] = json!("DSHOT600");
+                     report.sensor_profile["pid_period_readback_us"] = json!(readback & 0xffff);
++                    if matched { ensure!(readback & 0xffff == 625, "matched-rate BF PID period must be 625 us"); }
+                 }
++                bf_motor_count = u32::from_le_bytes(bytes[56..60].try_into().unwrap());
+                 motors = m;
+                 armed = ar;
+                 mode = if channels[5] < 1333 { !mo } else { mo };
+@@ -766,8 +779,25 @@
+                             .collect::<Vec<_>>(),
+                     )?;
+                     report.firmware_exchanges += 1;
++                }
++            }
++            if matched && (tick == 200000 || tick == 208000) {
++                let counts = if let Some(b) = bf.as_ref() {
++                    let arm = b.arm.as_ref().context("matched-rate requires ARM firmware")?;
++                    let mut c = arm.sensor_counters().to_vec();
++                    c.push(bf_motor_count);
++                    c.push(report.firmware_exchanges as u32);
++                    c
++                } else { let tr = transport.as_ref().context("missing CG transport")?; let pc=tr.process_counts()?; vec![tr.motor_generation()?, report.firmware_exchanges as u32, pc[0], pc[1]] };
++                if tick == 200000 { counters_start = Some(counts); } else {
++                    let start = counters_start.as_ref().unwrap();
++                    let delta: Vec<u32> = counts.iter().zip(start).map(|(a,b)| a.wrapping_sub(*b)).collect();
++                    report.sensor_profile["measured_counts_25_to_26_s"] = json!(delta);
++                    report.sensor_profile["measured_counter_names"] = if stack == "betaflight" { json!(["gyro_reads","accel_reads","attitude_updates","motor_writes","transport_ticks"]) } else { json!(["motor_publications","sensor_motor_exchanges","navigation_steps","guidance_steps"]) };
++                    ensure!(delta.iter().take(4).all(|v| *v == 1600), "actual rates differ from 1600 Hz: {:?}", delta);
+                 }
+             }
++            if tick % 5 == 0 { pending_rc = false; }
+             if stack == "ideal" {
+                 armed = arm;
+                 mode = true;

@@ -1,0 +1,13 @@
+--- a/src/betaflight-nxp/src/main/flight/imu.c
++++ b/src/betaflight-nxp/src/main/flight/imu.c
+@@ -909,6 +909,10 @@
+ 
+ void imuUpdateAttitude(timeUs_t currentTimeUs)
+ {
++#ifdef ADR_FASTDYN
++    extern void adrFastdynAttitudeTick(void);
++    adrFastdynAttitudeTick();
++#endif
+     if (sensors(SENSOR_ACC) && acc.isAccelUpdatedAtLeastOnce) {
+         IMU_LOCK;
+ #if ENABLE_SIMULATOR_IMU_SYNC

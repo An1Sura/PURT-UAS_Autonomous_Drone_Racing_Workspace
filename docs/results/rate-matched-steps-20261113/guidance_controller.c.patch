@@ -1,0 +1,25 @@
+--- a/src/cerebri_rdd2/src/processes/guidance_controller.c
++++ b/src/cerebri_rdd2/src/processes/guidance_controller.c
+@@ -307,6 +307,10 @@
+       process->efmu.armed = false;
+     }
+     GuidanceController_dostep(&process->efmu);
++#if defined(CONFIG_RDD2_FASTDYN)
++    extern volatile uint32_t rdd2_fastdyn_process_counts[2];
++    rdd2_fastdyn_process_counts[1]++;
++#endif
+     step_ok =
+         rdd2_generated_step_ok(process->efmu.rumoca_galec_error_signal_status);
+     outputs_finite = efmu_outputs_are_finite(&process->efmu);
+@@ -345,6 +349,11 @@
+     LOG_INF("Configured attitude gain: %s /s",gain_text);
+   }
+ #endif
++  #if defined(CONFIG_RDD2_FASTDYN)
++  process->efmu.samplePeriod = 1.0f / RDD2_GUIDANCE_RATE_HZ;
++  process->efmu.pilotMapping_samplePeriod = process->efmu.samplePeriod;
++  process->efmu.positionGuidance_samplePeriod = process->efmu.samplePeriod;
++  #endif
+   GuidanceController_recalibrate(&process->efmu);
+   zros_node_init(&process->node, "efmu_guidance");
+ 

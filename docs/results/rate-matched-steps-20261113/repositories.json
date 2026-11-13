@@ -1,0 +1,11 @@
+{
+  "scope": "Repository HEADs observed in the VM; working trees include earlier benchmark patches plus the incremental patches in this folder. HEAD alone is not the complete build source.",
+  "revisions": {
+    "src/cerebri_rdd2": "bf784c752f7767bd1a8712a7fc64c5b522000323",
+    "src/modelica_models": "a41f7c0c00b55c1bf54f03c9b66b901ba8e43c6f",
+    "src/rumoca": "4d0e521d9a0bd2527808dbce2c5689834d1a0349",
+    "src/betaflight-nxp": "e1d8d27f59fa166bd637f59d465437212cdc9cdd",
+    "artifacts/fastdyn-pinned": "94c85f3e47be410e8d760b7f8207eb1580d7cd4c",
+    ".devenv/state/fastdyn-pinned/qemu": "99b54836ded8dc3271eba52deee7453efc0a13b9"
+  }
+}

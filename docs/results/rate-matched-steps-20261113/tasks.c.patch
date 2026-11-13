@@ -1,0 +1,13 @@
+--- a/src/betaflight-nxp/src/main/fc/tasks.c
++++ b/src/betaflight-nxp/src/main/fc/tasks.c
+@@ -613,6 +613,10 @@
+         setTaskEnabled(TASK_ACCEL, true);
+         rescheduleTask(TASK_ACCEL, TASK_PERIOD_HZ(acc.sampleRateHz));
+         setTaskEnabled(TASK_ATTITUDE, true);
++#ifdef ADR_FASTDYN
++        /* Matched-rate simulation experiment, not a hardware default. */
++        rescheduleTask(TASK_ATTITUDE, TASK_PERIOD_HZ(acc.sampleRateHz));
++#endif
+     }
+ #endif
+ 

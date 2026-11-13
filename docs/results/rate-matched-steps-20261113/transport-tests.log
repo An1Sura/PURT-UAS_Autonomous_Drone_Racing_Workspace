@@ -1,0 +1,37 @@
+   Compiling cerebri-rdd2-xtask v0.1.0 (/home/suraa.guest/autonomous-drone-bench/src/cerebri_rdd2/xtask)
+warning: fields `position_enu_m`, `velocity_enu_m_s`, and `euler_flu_enu_rad` are never read
+  --> xtask/src/benchmark.rs:56:9
+   |
+55 | pub struct SimulatorState {
+   |            -------------- fields in this struct
+56 |     pub position_enu_m: [f64; 3],
+   |         ^^^^^^^^^^^^^^
+57 |     pub velocity_enu_m_s: [f64; 3],
+   |         ^^^^^^^^^^^^^^^^
+58 |     pub euler_flu_enu_rad: [f64; 3],
+   |         ^^^^^^^^^^^^^^^^^
+   |
+   = note: `SimulatorState` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: field `simulator_state` is never read
+  --> xtask/src/benchmark.rs:70:9
+   |
+62 | pub struct SensorFrame {
+   |            ----------- field in this struct
+...
+70 |     pub simulator_state: Option<SimulatorState>,
+   |         ^^^^^^^^^^^^^^^
+   |
+   = note: `SensorFrame` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+
+warning: `cerebri-rdd2-xtask` (bin "xtask" test) generated 2 warnings
+    Finished `release` profile [optimized] target(s) in 8.22s
+     Running unittests src/main.rs (target/release/deps/xtask-7690d79aa483190c)
+
+running 2 tests
+test betaflight_fastdyn::tests::malformed_packet_and_firmware_error_fail_closed ... ok
+test betaflight_fastdyn::tests::exchange_preserves_packet_and_waits_for_matching_response ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 55 filtered out; finished in 0.00s
+

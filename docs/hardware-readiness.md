@@ -96,3 +96,13 @@ Before freezing the comparison, agree on non-inferiority margins; 1.1× error an
 ## November 6 scope and handoff update
 
 Current work focuses on CogniPilot and Betaflight on TROPIC. See [the PC virtual-pilot handoff](tropic-pc-pilot-handoff.md) for new flight results, hardware setup steps and conference completion gates. ArduPilot/PX4 historical evidence is retained outside the active scope.
+
+## R6L → TROPIC connection checked November 13, 2026
+
+The user identified the TX16S internal module as MULTI 4-in-1 using FrSkyX2 D16. Receiver binding is still a separate bench check. The R6L supports SBUS output; it does not become a CRSF receiver because TROPIC supports CRSF.
+
+The repository’s **rev F** [J11 pinout](https://github.com/NXP-Robotics/MR-VMU-TROPIC/blob/main/pinout.yaml) specifies a four-pin JST-GH RC connector: pin 1 = fused 5 V output, pin 2 = LPUART8 TX, pin 3 = LPUART8 RX, pin 4 = ground (3.3 V UART logic). After checking the actual board revision and connector orientation, the intended SBUS wiring is R6L VIN to J11 pin 1, GND to pin 4, and SBUS OUT to pin 3, with the required inversion handled by the UART configuration or an appropriate interface. Leave TX unconnected for receive-only SBUS. Use SBUS OUT, not SBUS IN or the receiver’s individual PWM channels.
+
+[FrSky’s R6L specifications](https://www.frsky-rc.biz/ws/frsky-archer-plus-r6-lite-sr6-lite.html) give a 3.5–10 V receiver supply range, so the board’s 5 V supply is within that range. Supply voltage does not establish signal-level compatibility: verify output levels and inversion before connecting the UART. Do not feed receiver/BEC power back into J11’s 5 V output.
+
+The current CRSF CogniPilot hardware profile is not plug-and-play with this receiver. The SBUS framing, inversion, raw-channel scaling and failsafe work listed above must be implemented and bench-tested. Start with props removed and verify live channels, arm/kill mapping, and transmitter-loss behavior. An Arduino is not needed between this receiver and TROPIC; the planned Arduino bridge belongs between the PC and the transmitter’s trainer port.

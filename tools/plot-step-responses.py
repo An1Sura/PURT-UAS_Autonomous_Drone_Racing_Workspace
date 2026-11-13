@@ -13,6 +13,7 @@ P.add_argument('out', type=Path)
 P.add_argument('--run-map', type=Path)
 P.add_argument('--rate-folder-suffix', default='-small')
 P.add_argument('--protocol-label', default='')
+P.add_argument('--matched-rates', action='store_true')
 a = P.parse_args(); a.out.mkdir(parents=True, exist_ok=True)
 run_map=json.loads(a.run_map.read_text()) if a.run_map else {}
 colors = {'cognipilot':'#479cff', 'betaflight':'#ff8b32'}
@@ -72,6 +73,22 @@ for ax,(shape,title,ylabel,hold) in zip(axes,specs):
                 item['observed_motor_writes_25_to_26_s']=writes(last)-writes(first)
                 item['pid_period_readback_us']=report['sensor_profile']['pid_period_readback_us']
                 assert report['sensor_profile']['motor_protocol_readback']=='DSHOT600'
+        if a.matched_rates:
+            profile=report['sensor_profile']
+            counts=dict(zip(profile['measured_counter_names'], profile['measured_counts_25_to_26_s']))
+            expected={'gyro_reads':1600,'accel_reads':1600,'attitude_updates':1600,'motor_writes':1600,'transport_ticks':8000} if stack=='betaflight' else {'motor_publications':1600,'sensor_motor_exchanges':1600,'navigation_steps':1600,'guidance_steps':1600}
+            assert counts==expected, f'Unverified rates: {folder}: {counts}'
+            if stack=='betaflight':
+                assert item['observed_motor_writes_25_to_26_s']==1600
+                assert item['pid_period_readback_us']==625
+                counters=np.frombuffer(trace,dtype=np.dtype({'names':['motor_updates'],'formats':['<u4'],'offsets':[56],'itemsize':64}))['motor_updates'][first-1:last]
+                increments=np.diff(counters.astype(np.int64))
+                assert np.all((increments==0)|(increments==1)), 'Skipped or duplicate motor updates'
+                update_ticks=np.flatnonzero(increments==1)
+                intervals=np.diff(update_ticks)*125
+                assert len(intervals)>1000 and np.all(intervals==625), 'Nonuniform BF motor schedule'
+                item['observed_motor_interval_us']={'min':int(intervals.min()),'max':int(intervals.max())}
+            item['verified_rate_counts_25_to_26_s']=counts
         summary['flights'].append(item)
         view=(t>=-.1)&(t<=(hold+.19 if shape=='rate-step' else hold-.001))
         ax.plot(t[view],y[view],color=color,lw=2,label=('CogniPilot' if stack=='cognipilot' else 'Betaflight')+' measured')
@@ -83,9 +100,13 @@ for ax,(shape,title,ylabel,hold) in zip(axes,specs):
     ax.set(title=title,xlabel='Time from command step (s)',ylabel=ylabel)
     ax.axvline(0,color='#afbac9',lw=.8); ax.axvline(hold,color='#afbac9',lw=.8,ls=':')
     ax.grid(alpha=.15); ax.legend(fontsize=9,ncol=2)
+if a.matched_rates:
+    assert len(summary['flights'])==6, 'All six recorded flights are required for the matched-rate figure'
+    for key in ['config','plant','plant_description','offboard','runner']:
+        assert len({f['hashes'][key] for f in summary['flights']})==1, f'Mixed {key} in comparison'
 fig.suptitle('CogniPilot vs Betaflight · recorded ARM step responses\nTROPIC RT1064 · FastDyn/QEMU · shared Rumoca plant' + ('\n'+a.protocol_label if a.protocol_label else ''),fontsize=16)
 if a.protocol_label:
-    fig.supxlabel('Single noise-free probes · plant-truth feedback · execution/ingress rates differ · not hardware latency', fontsize=9)
+    fig.supxlabel('Single noise-free probes · plant-truth feedback · ' + ('matched 1.6 kHz schedule' if a.matched_rates else 'execution/ingress rates differ') + ' · not hardware latency', fontsize=9)
 fig.savefig(a.out/'step-responses.png',dpi=170)
 fig.savefig(a.out/'step-responses.svg')
 summary['attempts'] = []

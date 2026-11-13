@@ -1,0 +1,66 @@
+--- a/src/cerebri_rdd2/xtask/src/shared_memory.rs
++++ b/src/cerebri_rdd2/xtask/src/shared_memory.rs
+@@ -53,6 +53,7 @@
+     offset: usize,
+     sequence: u32,
+     dshot_offset: Option<usize>,
++    process_counts_offset: Option<usize>,
+ }
+ 
+ fn symbol_address(elf: &object::File<'_>, name: &str) -> Result<u64> {
+@@ -105,6 +106,7 @@
+             offset: 0,
+             sequence: 0,
+             dshot_offset: None,
++            process_counts_offset: None,
+         };
+         transport
+             .shared()
+@@ -126,11 +128,13 @@
+             .context("shared-memory offset does not fit the host address space")?;
+         let dshot_offset: usize = symbol_address(&elf, "rdd2_fastdyn_dshot_frames")?
+             .checked_sub(ram_start).context("DShot mailbox outside mapped RAM")?.try_into()?;
++        let process_counts_offset: usize = symbol_address(&elf, "rdd2_fastdyn_process_counts")?
++            .checked_sub(ram_start).context("process counters outside RAM")?.try_into()?;
+         let required_len = offset
+             .checked_add(size_of::<SharedLayout>())
+             .context("shared-memory extent overflow")?;
+         let deadline = Instant::now() + timeout;
+-        let (_file, mapping) = open_mapping(memory_path, required_len.max(dshot_offset.checked_add(16).context("DShot extent overflow")?), deadline)?;
++        let (_file, mapping) = open_mapping(memory_path, required_len.max(dshot_offset.checked_add(16).context("DShot extent overflow")?).max(process_counts_offset.checked_add(8).context("counter extent overflow")?), deadline)?;
+         let shared_base = mapping.as_ptr() as usize + offset;
+         if !shared_base.is_multiple_of(align_of::<SharedLayout>()) {
+             bail!(
+@@ -143,6 +147,7 @@
+             offset,
+             sequence: 0,
+             dshot_offset: Some(dshot_offset),
++            process_counts_offset: Some(process_counts_offset),
+         };
+ 
+         while transport.shared().magic.load(Ordering::Acquire) != RDD2_LOCKSTEP_MAGIC {
+@@ -176,6 +181,16 @@
+                 .add(self.offset)
+                 .cast::<SharedLayout>()
+         }
++    }
++
++    pub fn process_counts(&self) -> Result<[u32; 2]> {
++        let off = self.process_counts_offset.context("ARM process counters missing")?;
++        Ok(std::array::from_fn(|i| unsafe { ptr::read_volatile(self.mapping.as_ptr().add(off + 4*i) as *const u32) }))
++    }
++
++    pub fn motor_generation(&self) -> Result<u32> {
++        let off = self.dshot_offset.context("matched-rate evidence requires ARM DShot mailbox")?;
++        Ok(unsafe { ptr::read_volatile(self.mapping.as_ptr().add(off + 4) as *const u32) })
+     }
+ 
+     pub fn exchange(
+@@ -440,6 +455,7 @@
+             offset: 0,
+             sequence: 0,
+             dshot_offset: None,
++            process_counts_offset: None,
+         };
+         transport
+             .shared()

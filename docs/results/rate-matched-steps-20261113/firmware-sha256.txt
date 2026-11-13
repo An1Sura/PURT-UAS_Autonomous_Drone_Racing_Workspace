@@ -1,0 +1,2 @@
+55ea5bd943ce1b003857b3b1a7affef4008dbf44ebf4d090ba9ae1cc0bc9cc04  artifacts/rate-matched-full-20261113/firmware/betaflight.elf
+a91c0983f7686c0e449760a75e6081c86a6b14be56e0cbc6869d6199082484e3  artifacts/rate-matched-full-20261113/firmware/cognipilot.elf

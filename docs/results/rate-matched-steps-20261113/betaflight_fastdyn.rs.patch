@@ -1,0 +1,12 @@
+--- a/src/cerebri_rdd2/xtask/src/betaflight_fastdyn.rs
++++ b/src/cerebri_rdd2/xtask/src/betaflight_fastdyn.rs
+@@ -64,6 +64,9 @@
+         }
+         Ok(this)
+     }
++    pub fn sensor_counters(&self) -> [u32; 3] {
++        std::array::from_fn(|i| self.word(20 + 4*i).load(Ordering::Acquire))
++    }
+     pub fn exchange(&self, input: &[u8], tick: u32) -> Result<Vec<u8>> {
+         ensure!(input.len()==184,"invalid ARM input packet size");
+         self.write(32,input); self.word(8).store(tick,Ordering::Release);

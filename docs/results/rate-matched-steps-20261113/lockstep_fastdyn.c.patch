@@ -1,0 +1,25 @@
+--- a/src/cerebri_rdd2/subsys/lockstep/lockstep_fastdyn.c
++++ b/src/cerebri_rdd2/subsys/lockstep/lockstep_fastdyn.c
+@@ -51,6 +51,9 @@
+       return;
+     }
+     sequence = cerebri_lockstep_sequence_current(&g_lockstep);
++    extern volatile uint32_t rdd2_fastdyn_process_counts[2];
++    uint32_t nav_before = rdd2_fastdyn_process_counts[0];
++    uint32_t guidance_before = rdd2_fastdyn_process_counts[1];
+     if (!rdd2_lockstep_handle_manual_control(
+             &rdd2_fastdyn_lockstep_shared.manual_control) ||
+         !rdd2_lockstep_handle_gps_mission(
+@@ -88,6 +91,12 @@
+         &rdd2_fastdyn_lockstep_shared.mission_status);
+     rdd2_fastdyn_lockstep_shared.navigation_origin_valid =
+         rdd2_navigation_origin_get(rdd2_fastdyn_lockstep_shared.navigation_origin_lla) ? 1U : 0U;
++    /* Do not let the next host sample overwrite an unconsumed process release. */
++    while (rdd2_fastdyn_process_counts[0] == nav_before ||
++           rdd2_fastdyn_process_counts[1] == guidance_before) {
++      if (cerebri_lockstep_sequence_terminated(&g_lockstep)) return;
++      k_yield();
++    }
+     cerebri_lockstep_sequence_respond(&g_lockstep);
+   }
+ }

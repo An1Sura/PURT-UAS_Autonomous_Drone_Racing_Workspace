@@ -31,7 +31,7 @@ try {
   $(id).hidden=false;$(id).onclick=()=>{$('variant').disabled=true;$('flight').src='flight-view.html?stack='+name+'&backend='+(folder==='betaflight-nxp'?'fastdyn-nxp':'fastdyn');$('flight').title=name+' FastDyn ARM figure-eight recording';$('flight').style.height='850px';$('status').textContent=name+' · FastDyn ARM BIL · '+(r.passed&&landed?'passed; landing/disarm verified':'FAILED attempt; actual recording')+' · recorded '+new Date(r.recorded_at_unix_s*1000).toISOString().slice(0,10);};
   }
   $('fastdyn-status').textContent='ARM recordings (distinct firmware targets) · one 10 × 10 m lap at 2 m · 40 s reference · no-noise commissioning runs';
-  $('fastdyn-nxp').click();
+  $('fastdyn').click();
  } catch(error){$('fastdyn-status').textContent='FastDyn recording unavailable: '+error.message;}
 
  try { const result=await fetchJson('../results/tilt-lead/speed/summary.json');
@@ -51,4 +51,4 @@ for (const [id,stack,folder,lap] of [["cg39","cognipilot","cognipilot-39s",39],[
 
 document.getElementById("cg33confirmed").onclick=()=>{document.getElementById("variant").disabled=true;document.getElementById("flight").src="flight-view.html?stack=cognipilot&backend=cognipilot-33s-confirmed";document.getElementById("flight").title="CogniPilot 33-second confirmed sweep recording";document.getElementById("flight").style.height="850px";document.getElementById("status").textContent="CogniPilot TROPIC · 33 s reference / 76 s full run · realistic seed 1 from 15/15 confirmation cases · ARM tuning and hardware qualification still pending";};
 
-document.getElementById("cg33confirmed").click();
+// Default playback is the restored CogniPilot 40-second baseline after loading.

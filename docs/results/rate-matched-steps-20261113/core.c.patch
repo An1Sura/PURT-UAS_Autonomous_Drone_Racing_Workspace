@@ -1,0 +1,14 @@
+--- a/src/betaflight-nxp/src/main/fc/core.c
++++ b/src/betaflight-nxp/src/main/fc/core.c
+@@ -1346,7 +1346,11 @@
+         rescheduleTask(TASK_ATTITUDE, TASK_PERIOD_HZ(acc.sampleRateHz / (float)imuConfig()->imu_process_denom));
+     } else {
+         LED1_OFF;
++        #ifdef ADR_FASTDYN
++        rescheduleTask(TASK_ATTITUDE, TASK_PERIOD_HZ(acc.sampleRateHz));
++#else
+         rescheduleTask(TASK_ATTITUDE, TASK_PERIOD_HZ(100));
++#endif
+     }
+ 
+     if (!IS_RC_MODE_ACTIVE(BOXPREARM) && ARMING_FLAG(WAS_ARMED_WITH_PREARM)) {
