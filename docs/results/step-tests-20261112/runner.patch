@@ -1,0 +1,145 @@
+--- a/xtask/src/shared_sil.rs
++++ b/xtask/src/shared_sil.rs
+@@ -38,6 +38,8 @@
+     alpha: [f64; 3],
+     feedforward: u8,
+     attitude_gain: f64,
++    acro: bool,
++    rate_command: [f64; 3],
+ }
+ impl Sticks {
+     fn lead(self, arm: bool, active: bool) -> [f64; 2] {
+@@ -72,6 +74,13 @@
+         };
+         rc[4] = if arm { 2000 } else { 1000 };
+         rc[5] = 1500;
++        if self.acro {
++            let full = if stack == "cognipilot" { 6.0 } else { 200f64.to_radians() };
++            rc[0] = (1500. + 500. * (self.rate_command[0] / full).clamp(-1., 1.)).round() as i32;
++            rc[1] = (1500. + 500. * (self.rate_command[1] / full).clamp(-1., 1.)).round() as i32;
++            rc[3] = (1500. - 500. * (self.rate_command[2] / yaw_full).clamp(-1., 1.)).round() as i32;
++            rc[5] = 1000;
++        }
+         // No onboard feed-forward channels: normal six-channel command interface.
+         rc[6..].fill(1500);
+         rc
+@@ -157,7 +166,7 @@
+             omega: [o[20] as f64, o[21] as f64, o[22] as f64],
+             alpha: [o[23] as f64, o[24] as f64, o[25] as f64],
+             feedforward,
+-            attitude_gain: 1., // Set from validated stack mapping before use.
++            acro: false, rate_command: [0.;3], attitude_gain: 1., // Set from validated stack mapping before use.
+         })
+     }
+ }
+@@ -445,7 +454,7 @@
+             "step",
+             "square",
+             "figure-eight",
+-            "attitude-step"
++            "attitude-step", "rate-step", "position-step"
+         ]
+         .contains(&shape),
+         "unsupported shape"
+@@ -469,6 +478,7 @@
+         "config does not match generated controller"
+     );
+     let duration = match shape {
++        "rate-step" | "position-step" => 10.,
+         "attitude-step" => {
+             if cfg["tuning"]["probe_event"].is_number() {
+                 6.
+@@ -482,7 +492,7 @@
+         _ => c["lap_time_s"].as_f64().context("lap time")?,
+     };
+     let shape_id = match shape {
+-        "attitude-step" => 0,
++        "attitude-step" | "rate-step" | "position-step" => 0,
+         "hover" => 0,
+         "step" => 1,
+         "square" => 2,
+@@ -555,7 +565,7 @@
+     let mut lead_log=BufWriter::new(File::create(out.join("tilt-lead.csv"))?);
+     writeln!(lead_log,"time_s,reference_roll_rad,reference_pitch_rad,omega_roll_rad_s,omega_pitch_rad_s,lead_roll_rad,lead_pitch_rad,command_roll_rad,command_pitch_rad,clamped,roll_us,pitch_us")?;
+     let mut trace = BufWriter::new(File::create(out.join("actuator-trace.bin"))?);
+-    let calibration = shape == "attitude-step";
++    let calibration = matches!(shape, "attitude-step" | "rate-step" | "position-step");
+     report.sensor_profile["tuning"] = cfg["tuning"].clone();
+     if calibration {
+         report.qualification = "Attitude/rate calibration flight: shared altitude control, intentional lateral drift; course tracking gates do not apply; landing gates retained".into();
+@@ -565,6 +575,8 @@
+         cal_log,
+         "time_s,roll_command,pitch_command,yaw_rate_command,omega_x,omega_y,omega_z,alpha_x,alpha_y,alpha_z,roll_actual,pitch_actual,yaw_actual,gyro_x,gyro_y,gyro_z"
+     )?;
++    let mut step_log = BufWriter::new(File::create(out.join("step-response.csv"))?);
++    writeln!(step_log,"time_s,acro,roll_command_rad,pitch_command_rad,rate_roll_command_rad_s,rate_pitch_command_rad_s,roll_rad,pitch_rad,gyro_roll_rad_s,gyro_pitch_rad_s,ref_x_m,ref_y_m,ref_z_m,x_m,y_m,z_m,roll_us,pitch_us,mode_matches")?;
+     let mut rows = Vec::<Vec<f64>>::new();
+     let wall = Instant::now();
+     let result = (|| -> Result<()> {
+@@ -665,6 +677,11 @@
+                 if !is_lap {
+                     r[11..17].fill(0.);
+                 }
++                if shape == "position-step" && t >= 25. {
++                    r[1] = 0.5;
++                    r[2] = 0.;
++                    r[4] = 0.; r[5] = 0.; r[7] = 0.; r[8] = 0.;
++                }
+                 last_ref = r;
+                 sticks = offboard.control(&plant, &r, active, ff)?;
+                 if calibration && is_lap {
+@@ -699,7 +716,7 @@
+                     b.step(&plant, tick, channels, fresh, sampled.0, sampled.1)?;
+                 motors = m;
+                 armed = ar;
+-                mode = mo;
++                mode = if channels[5] < 1333 { !mo } else { mo };
+                 report.arming_flags = flags;
+                 trace.write_all(&bytes)?;
+                 report.firmware_exchanges += 1;
+@@ -735,7 +752,7 @@
+                     )?;
+                     motors = response.motors;
+                     armed = response.diagnostics.flight_state.armed;
+-                    mode = response.diagnostics.flight_state.flight_mode == 1;
++                    mode = response.diagnostics.flight_state.flight_mode == if channels[5] < 1333 { 0 } else { 1 };
+                     trace.write_all(
+                         &motors
+                             .iter()
+@@ -762,7 +779,10 @@
+                     "firmware failed to remain armed at {t:.3}; flags={}",
+                     report.arming_flags
+                 );
+-                ensure!(mode, "self-level mode not active at {t:.3}");
++                // Allow 100 ms for a freshly transmitted mode change to be consumed.
++                if shape != "rate-step" || !((25.0..25.1).contains(&t) || (25.6..25.7).contains(&t)) {
++                    ensure!(mode, "requested flight mode not active at {t:.3}");
++                }
+             }
+             if calibration && tick % 5 == 0 {
+                 let e = plant.euler();
+@@ -794,6 +814,10 @@
+                         .join(",")
+                 )?;
+             }
++            if calibration && tick % 5 == 0 {
++                let e=plant.euler(); let g=plant.imu_flu().0; let p=plant.position();
++                writeln!(step_log,"{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{}",t,u8::from(sticks.acro),sticks.roll,sticks.pitch,sticks.rate_command[0],sticks.rate_command[1],e[0],e[1],g[0],g[1],last_ref[1],last_ref[2],last_ref[3],p[0],p[1],p[2],channels[0],channels[1],u8::from(mode))?;
++            }
+             plant.step(motors, DT)?;
+             let p = plant.position();
+             let e = plant.euler();
+@@ -1216,6 +1240,13 @@
+ 
+ /// Identical open-loop attitude probes; shared altitude loop remains active.
+ fn calibration_sticks(sticks: &mut Sticks, shape: &str, t: f64) {
++    if shape == "rate-step" && t < 0.6 {
++        sticks.acro = true;
++        sticks.roll = 0.; sticks.pitch = 0.; sticks.yaw_rate = 0.;
++        sticks.omega = [0.;3]; sticks.alpha = [0.;3]; sticks.feedforward = 0;
++        // A bounded 0.4 s rate pulse followed by 0.2 s zero rate, then attitude recovery.
++        sticks.rate_command = [if t < 0.4 { 10f64.to_radians() } else { 0. }, 0., 0.];
++    }
+     let event = (t / 6.0).floor() as usize;
+     let u = t % 6.0;
+     if shape == "attitude-step" && u < 1.2 && event < 4 {
