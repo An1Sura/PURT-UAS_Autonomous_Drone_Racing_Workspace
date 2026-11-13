@@ -1,0 +1,38 @@
+--- before/shared_sil.rs
++++ after/shared_sil.rs
+@@ -231,10 +231,10 @@
+     let protocol = if profile["motor_protocol"].is_null() { "PWM" } else {
+         profile["motor_protocol"].as_str().context("motor protocol must be a string")?
+     };
+-    // Both use the existing analog 1000..2000 output normalization. DShot
+-    // has different endpoints and is deliberately not accepted here.
+-    ensure!(matches!(protocol, "PWM" | "ONESHOT125"), "unsupported virtual motor protocol");
++    // DShot requires the matched virtual-codec firmware; readback is checked below.
++    ensure!(matches!(protocol, "PWM" | "ONESHOT125" | "DSHOT600"), "unsupported virtual motor protocol");
+     let mut command = format!("set motor_pwm_protocol = {protocol}\n");
++    if protocol == "DSHOT600" { command.push_str("set dshot_bidir = OFF\n"); }
+     if !profile["pid_process_denom"].is_null() {
+         let denom = profile["pid_process_denom"].as_u64().context("integer PID denominator required")?;
+         ensure!((1..=16).contains(&denom), "PID denominator outside 1..16");
+@@ -714,6 +714,12 @@
+             if let Some(b) = bf.as_mut() {
+                 let (m, ar, mo, flags, bytes) =
+                     b.step(&plant, tick, channels, fresh, sampled.0, sampled.1)?;
++                if cfg["stacks"]["betaflight"]["motor_protocol"] == "DSHOT600" {
++                    let readback = u32::from_le_bytes(bytes[60..64].try_into().unwrap());
++                    ensure!(readback >> 24 == 0xd6, "firmware did not confirm DShot600; use new codec ELF");
++                    report.sensor_profile["motor_protocol_readback"] = json!("DSHOT600");
++                    report.sensor_profile["pid_period_readback_us"] = json!(readback & 0xffff);
++                }
+                 motors = m;
+                 armed = ar;
+                 mode = if channels[5] < 1333 { !mo } else { mo };
+@@ -944,7 +950,7 @@
+     #[test]
+     fn virtual_motor_protocol_keeps_analog_units_and_valid_denominator() {
+         assert_eq!(super::bf_motor_cli(&serde_json::json!({})).unwrap(), "set motor_pwm_protocol = PWM\n");
+-        assert!(super::bf_motor_cli(&serde_json::json!({"stacks":{"betaflight":{"motor_protocol":"DSHOT600"}}})).is_err());
++        assert!(super::bf_motor_cli(&serde_json::json!({"stacks":{"betaflight":{"motor_protocol":"DSHOT600"}}})).unwrap().contains("dshot_bidir = OFF"));
+         assert!(super::bf_motor_cli(&serde_json::json!({"stacks":{"betaflight":{"motor_protocol":125}}})).is_err());
+         for denominator in [0,17] {
+             assert!(super::bf_motor_cli(&serde_json::json!({"stacks":{"betaflight":{"pid_process_denom":denominator}}})).is_err());

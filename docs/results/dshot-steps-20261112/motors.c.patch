@@ -1,0 +1,52 @@
+--- before/motors.c
++++ after/motors.c
+@@ -3,6 +3,7 @@
+  */
+ 
+ #include "drivers.h"
++#include "adr_virtual_dshot.h"
+ 
+ #include "motor_override.h"
+ #include "zros_topics.h"
+@@ -26,6 +27,12 @@
+ 
+ #define MOTOR_NODE DT_ALIAS(motors)
+ 
++#if defined(CONFIG_RDD2_LOCKSTEP)
++/* Separate, explicitly tagged DShot wire image; never overload PWM-topic units.
++ * Host resolves this symbol from the ELF and reads it after response acquire. */
++volatile struct { uint32_t magic, generation; uint16_t frames[4]; }
++    rdd2_fastdyn_dshot_frames;
++#endif
+ static atomic_t g_motor_test_active;
+ static rdd2_motor_values_t g_motor_test_values;
+ static atomic_t g_motor_raw_test_active;
+@@ -38,7 +45,15 @@
+ static void motor_output_publish(const rdd2_motor_values_t *motors,
+                                  const rdd2_motor_raw_t *raw, bool armed,
+                                  bool test_mode) {
++#if defined(CONFIG_RDD2_LOCKSTEP)
++  for (unsigned i = 0; i < 4; ++i) {
++    rdd2_fastdyn_dshot_frames.frames[i] = adr_dshot_frame(raw->value[i]);
++  }
++  rdd2_fastdyn_dshot_frames.magic = 0x44533630U;
++  rdd2_fastdyn_dshot_frames.generation++;
++#else
+   ARG_UNUSED(raw);
++#endif
+   ARG_UNUSED(test_mode);
+ 
+   if (!g_rdd2_motor_output_pub_ready) {
+@@ -137,6 +152,12 @@
+         armed ? clampf(motor_values[i], min_output, 1.0f) : 0.0f;
+     raw_values[i] =
+         motor_to_dshot(applied_values[i], armed && applied_values[i] > 0.0f);
++#if defined(CONFIG_RDD2_LOCKSTEP)
++    /* The plant consumes the decoded DShot code, not pre-quantization floats. */
++    if (!adr_dshot_decode(adr_dshot_frame(raw_values[i]), &applied_values[i])) {
++        applied_values[i] = 0.0f;
++    }
++#endif
+ #if defined(CONFIG_RDD2_DSHOT) && !defined(CONFIG_RDD2_LOCKSTEP)
+     nxp_flexio_dshot_data_set(DEVICE_DT_GET(MOTOR_NODE), i, raw_values[i],
+                               false);

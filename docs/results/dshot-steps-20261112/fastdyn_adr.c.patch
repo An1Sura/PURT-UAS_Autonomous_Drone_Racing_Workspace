@@ -1,0 +1,38 @@
+--- before/fastdyn_adr.c
++++ after/fastdyn_adr.c
+@@ -7,6 +7,10 @@
+ #include <math.h>
+ #include "platform.h"
+ #include "drivers/fastdyn_adr.h"
++#include "drivers/motor.h"
++#include "drivers/dshot.h"
++#include "drivers/adr_virtual_dshot.h"
++#include "flight/pid.h"
+ #include "drivers/time.h"
+ #include "drivers/system.h"
+ #include "config/feature.h"
+@@ -74,7 +78,14 @@
+ }
+ void adrFastdynMotors(const float *values)
+ {
+-    for(unsigned i=0;i<4;i++) motors[i]=fmaxf(0,fminf(1,(values[i]-1000.0f)/1000.0f));
++    for(unsigned i=0;i<4;i++) {
++        if (isMotorProtocolDshot()) {
++            uint16_t code = (uint16_t)lrintf(fmaxf(0, fminf(2047, values[i])));
++            if (!adr_dshot_decode(adr_dshot_frame(code), &motors[i])) {
++                adr_fastdyn_shared.stage=251; for(;;) { __NOP(); }
++            }
++        } else motors[i]=fmaxf(0,fminf(1,(values[i]-1000.0f)/1000.0f));
++    }
+     updates++;
+ }
+ void adrFastdynRun(void)
+@@ -99,7 +110,7 @@
+         adrFastdynCycles=bootCycles+clockMicrosToCycles(seq*125);
+         if(current.freshRc) rxMspFrameReceive(current.channels,16);
+         for(unsigned i=0;i<128;i++) scheduler();
+-        AdrOutput out={.version=1,.sequence=seq,.armed=ARMING_FLAG(ARMED),.armingFlags=getArmingDisableFlags(),.angle=FLIGHT_MODE(ANGLE_MODE),.timeUs=(uint64_t)seq*125,.motorUpdates=updates};
++        AdrOutput out={.version=1,.sequence=seq,.armed=ARMING_FLAG(ARMED),.armingFlags=getArmingDisableFlags(),.angle=FLIGHT_MODE(ANGLE_MODE),.timeUs=(uint64_t)seq*125,.motorUpdates=updates,.reserved=(motorConfig()->dev.motorProtocol==MOTOR_PROTOCOL_DSHOT600 ? 0xD6000000U : 0U) | (targetPidLooptime & 0xffffU)};
+         memcpy(out.motors,motors,sizeof(motors));
+         for(unsigned i=0;i<3;i++) out.rpy[i]=attitude.raw[i]*0.1f;
+         memcpy((void *)&adr_fastdyn_shared.output,&out,sizeof(out));

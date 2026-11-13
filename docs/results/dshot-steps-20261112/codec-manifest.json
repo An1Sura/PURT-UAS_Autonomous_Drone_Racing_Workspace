@@ -1,0 +1,18 @@
+{
+  "codec_sha256": "33e16d2c5d53c0357f20b2678b096f575144518e5e2c7e8fd16b3e6f417e3817",
+  "verified_identical_in": [
+    "src/betaflight-nxp/src/main/drivers/adr_virtual_dshot.h",
+    "src/cerebri_rdd2/src/interfaces/adr_virtual_dshot.h"
+  ],
+  "telemetry_request": false,
+  "stop_code": 0,
+  "minimum_throttle_code": 48,
+  "maximum_throttle_code": 2047,
+  "valid_code_checks": 2001,
+  "reserved_command_checks": 47,
+  "single_bit_corruption_checks": 32768,
+  "physical_bit_timing_simulated": false,
+  "cognipilot_wire_symbol": "rdd2_fastdyn_dshot_frames",
+  "cognipilot_wire_marker_hex": "44533630",
+  "betaflight_protocol_readback_marker_hex": "d6000000"
+}

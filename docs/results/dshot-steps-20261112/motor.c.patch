@@ -1,0 +1,48 @@
+--- before/motor.c
++++ after/motor.c
+@@ -302,7 +302,11 @@
+ }
+ 
+ void motorNullDevInit(motorDevice_t *device);
++
+ 
++#ifdef ADR_FASTDYN
++static void adrDshotDevInit(motorDevice_t *device, unsigned count);
++#endif
+ void motorDevInit(unsigned motorCount)
+ {
+ #if defined(USE_PWM_OUTPUT) || defined(USE_DSHOT)
+@@ -320,6 +324,9 @@
+ #endif
+ 
+     bool success = false;
++#ifdef ADR_FASTDYN
++    if (isMotorProtocolDshot()) { adrDshotDevInit(&motorDevice, motorCount); return; }
++#endif
+     motorDevice.count = motorCount;
+     if (isMotorProtocolEnabled()) {
+         do {
+@@ -515,4 +522,23 @@
+ }
+ 
+ 
++#ifdef ADR_FASTDYN
++/* Virtual device only: keep native DShot mixer endpoints and configuration,
++ * replace unavailable FlexIO/DMA hardware. motorWriteAll sends to the codec. */
++static bool adrMotorEnable(void) { return true; }
++static bool adrMotorEnabled(unsigned index) { return index < motorDevice.count; }
++static void adrDshotDevInit(motorDevice_t *device, unsigned count) {
++    static motorVTable_t virtualVTable;
++    virtualVTable = motorNullVTable;
++    virtualVTable.enable = adrMotorEnable;
++    virtualVTable.isMotorEnabled = adrMotorEnabled;
++    virtualVTable.convertExternalToMotor = dshotConvertFromExternal;
++    virtualVTable.convertMotorToExternal = dshotConvertToExternal;
++    device->vTable = &virtualVTable;
++    device->count = count;
++    device->initialized = true;
++    device->enabled = false;
++    device->motorEnableTimeMs = 0;
++}
++#endif
+ #endif // USE_MOTOR

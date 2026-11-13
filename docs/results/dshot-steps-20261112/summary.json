@@ -1,0 +1,275 @@
+{
+  "scope": "Single noise-free roll/positive-east diagnostic per stack; not a tuning qualification or hardware timing result",
+  "flights": [
+    {
+      "stack": "cognipilot",
+      "test": "attitude-step",
+      "attempt_id": "cognipilot-attitude-step",
+      "completed_and_landed": true,
+      "error": null,
+      "baseline": 0.0,
+      "target": 5.0,
+      "rise_10_90_s": 0.2631250000000023,
+      "first_90_percent_s": 0.32250000000000156,
+      "settling_5_percent_s": 0.4018750000000004,
+      "overshoot_percent": 0.0,
+      "end_of_hold_error": 0.009260705314719786,
+      "hold_window_s": 1.2,
+      "requested_command_hold_observed_s": 1.2100000000000015,
+      "hashes": {
+        "config": "2912d9d5b287e9bea66dca05eee22e1585c8bb1855ecc89a22746c8d9f19fefa",
+        "firmware": "3ba2dcf2dea3a66a9b863cf64e3ab2193b06c9a638d7784a209f2cd4699fcf40",
+        "offboard": "220db232fd2cae1744afcfd4eb773d6b2dbe37b97f5f36124849344281ec9a3d",
+        "plant": "284cced3ceec15128886d05753900b8ae47f38570ce0112c50e801356de97654",
+        "plant_description": "fdb12c3379b56d2d18f0ccaab3c62d15d2f97281f55270f37b837ea9c980b91c",
+        "runner": "6eaae109295d35071b48092fa200bba2e4b42895815f7645cc932ae36bf30087"
+      },
+      "raw_step_sha256": "68641e8e07e2832a13b9d45d3622640c94153c8cfd30ee0aaf91616ac10c54ab",
+      "max_dshot_integer_code_residual": 5.8650970458984375e-05
+    },
+    {
+      "stack": "betaflight",
+      "test": "attitude-step",
+      "attempt_id": "betaflight-attitude-step",
+      "completed_and_landed": true,
+      "error": null,
+      "baseline": 0.0,
+      "target": 5.0,
+      "rise_10_90_s": 0.3481249999999996,
+      "first_90_percent_s": 0.401250000000001,
+      "settling_5_percent_s": 0.5281249999999993,
+      "overshoot_percent": 0.0,
+      "end_of_hold_error": 0.012122453951912249,
+      "hold_window_s": 1.2,
+      "requested_command_hold_observed_s": 1.2100000000000015,
+      "hashes": {
+        "config": "2912d9d5b287e9bea66dca05eee22e1585c8bb1855ecc89a22746c8d9f19fefa",
+        "firmware": "1800b93fa7ba151169672ca897c26736b2925370175bf88758c5b60ebcf4172c",
+        "offboard": "220db232fd2cae1744afcfd4eb773d6b2dbe37b97f5f36124849344281ec9a3d",
+        "plant": "284cced3ceec15128886d05753900b8ae47f38570ce0112c50e801356de97654",
+        "plant_description": "fdb12c3379b56d2d18f0ccaab3c62d15d2f97281f55270f37b837ea9c980b91c",
+        "runner": "6eaae109295d35071b48092fa200bba2e4b42895815f7645cc932ae36bf30087"
+      },
+      "raw_step_sha256": "fafa686abacbacb6b8cb7950f878b430572bc5e41fb9cb61f65d19b305f25dd7",
+      "max_dshot_integer_code_residual": 0.00010526180267333984,
+      "observed_motor_writes_25_to_26_s": 8000,
+      "pid_period_readback_us": 125
+    },
+    {
+      "stack": "cognipilot",
+      "test": "rate-step",
+      "attempt_id": "cognipilot-rate-step-retry01",
+      "completed_and_landed": true,
+      "error": null,
+      "baseline": 0.0,
+      "target": 10.0,
+      "rise_10_90_s": 0.0762500000000017,
+      "first_90_percent_s": 0.09250000000000114,
+      "settling_5_percent_s": 0.10624999999999929,
+      "overshoot_percent": 0.0,
+      "end_of_hold_error": 0.22304876480317404,
+      "hold_window_s": 0.4,
+      "requested_command_hold_observed_s": 0.39999999999999913,
+      "hashes": {
+        "config": "2912d9d5b287e9bea66dca05eee22e1585c8bb1855ecc89a22746c8d9f19fefa",
+        "firmware": "3ba2dcf2dea3a66a9b863cf64e3ab2193b06c9a638d7784a209f2cd4699fcf40",
+        "offboard": "220db232fd2cae1744afcfd4eb773d6b2dbe37b97f5f36124849344281ec9a3d",
+        "plant": "284cced3ceec15128886d05753900b8ae47f38570ce0112c50e801356de97654",
+        "plant_description": "fdb12c3379b56d2d18f0ccaab3c62d15d2f97281f55270f37b837ea9c980b91c",
+        "runner": "6eaae109295d35071b48092fa200bba2e4b42895815f7645cc932ae36bf30087"
+      },
+      "raw_step_sha256": "9ef142814da571f0f7b80b3b8af89f8d16ad450b37603c3f7eeddcce9d03e161",
+      "max_dshot_integer_code_residual": 5.84721565246582e-05
+    },
+    {
+      "stack": "betaflight",
+      "test": "rate-step",
+      "attempt_id": "betaflight-rate-step",
+      "completed_and_landed": true,
+      "error": null,
+      "baseline": 0.0,
+      "target": 10.0,
+      "rise_10_90_s": 0.027499999999999858,
+      "first_90_percent_s": 0.03500000000000014,
+      "settling_5_percent_s": 0.14874999999999972,
+      "overshoot_percent": 26.55537042515439,
+      "end_of_hold_error": 0.013365827632030758,
+      "hold_window_s": 0.4,
+      "requested_command_hold_observed_s": 0.39999999999999913,
+      "hashes": {
+        "config": "2912d9d5b287e9bea66dca05eee22e1585c8bb1855ecc89a22746c8d9f19fefa",
+        "firmware": "1800b93fa7ba151169672ca897c26736b2925370175bf88758c5b60ebcf4172c",
+        "offboard": "220db232fd2cae1744afcfd4eb773d6b2dbe37b97f5f36124849344281ec9a3d",
+        "plant": "284cced3ceec15128886d05753900b8ae47f38570ce0112c50e801356de97654",
+        "plant_description": "fdb12c3379b56d2d18f0ccaab3c62d15d2f97281f55270f37b837ea9c980b91c",
+        "runner": "6eaae109295d35071b48092fa200bba2e4b42895815f7645cc932ae36bf30087"
+      },
+      "raw_step_sha256": "b3a039d2e603b709e956a8a93948b9f97e2a4a792c7a07c8ed01fe2c10485427",
+      "max_dshot_integer_code_residual": 0.00010496377944946289,
+      "observed_motor_writes_25_to_26_s": 8000,
+      "pid_period_readback_us": 125
+    },
+    {
+      "stack": "cognipilot",
+      "test": "position-step",
+      "attempt_id": "cognipilot-position-step-retry01",
+      "completed_and_landed": true,
+      "error": null,
+      "baseline": 0.0,
+      "target": 0.5,
+      "rise_10_90_s": 1.1662500000000016,
+      "first_90_percent_s": 1.7675000000000018,
+      "settling_5_percent_s": null,
+      "overshoot_percent": 45.148762726210514,
+      "end_of_hold_error": -0.0360505685536201,
+      "hold_window_s": 10.0,
+      "requested_command_hold_observed_s": 28.000625,
+      "hashes": {
+        "config": "2912d9d5b287e9bea66dca05eee22e1585c8bb1855ecc89a22746c8d9f19fefa",
+        "firmware": "3ba2dcf2dea3a66a9b863cf64e3ab2193b06c9a638d7784a209f2cd4699fcf40",
+        "offboard": "220db232fd2cae1744afcfd4eb773d6b2dbe37b97f5f36124849344281ec9a3d",
+        "plant": "284cced3ceec15128886d05753900b8ae47f38570ce0112c50e801356de97654",
+        "plant_description": "fdb12c3379b56d2d18f0ccaab3c62d15d2f97281f55270f37b837ea9c980b91c",
+        "runner": "6eaae109295d35071b48092fa200bba2e4b42895815f7645cc932ae36bf30087"
+      },
+      "raw_step_sha256": "7054966df5dc34d034c89652884d7d37f938a761b900b4fafbbaaf221db8cd72",
+      "max_dshot_integer_code_residual": 5.817413330078125e-05
+    },
+    {
+      "stack": "betaflight",
+      "test": "position-step",
+      "attempt_id": "betaflight-position-step-retry01",
+      "completed_and_landed": true,
+      "error": null,
+      "baseline": 0.0,
+      "target": 0.5,
+      "rise_10_90_s": 1.2018750000000011,
+      "first_90_percent_s": 1.7956250000000011,
+      "settling_5_percent_s": null,
+      "overshoot_percent": 42.3915252954985,
+      "end_of_hold_error": -0.02752951600799125,
+      "hold_window_s": 10.0,
+      "requested_command_hold_observed_s": 28.000625,
+      "hashes": {
+        "config": "2912d9d5b287e9bea66dca05eee22e1585c8bb1855ecc89a22746c8d9f19fefa",
+        "firmware": "1800b93fa7ba151169672ca897c26736b2925370175bf88758c5b60ebcf4172c",
+        "offboard": "220db232fd2cae1744afcfd4eb773d6b2dbe37b97f5f36124849344281ec9a3d",
+        "plant": "284cced3ceec15128886d05753900b8ae47f38570ce0112c50e801356de97654",
+        "plant_description": "fdb12c3379b56d2d18f0ccaab3c62d15d2f97281f55270f37b837ea9c980b91c",
+        "runner": "6eaae109295d35071b48092fa200bba2e4b42895815f7645cc932ae36bf30087"
+      },
+      "raw_step_sha256": "398a858111c592bd4dab7f7391f5caf58c0ecd665618f4bb92a7879280b27e0a",
+      "max_dshot_integer_code_residual": 0.00010496377944946289,
+      "observed_motor_writes_25_to_26_s": 8000,
+      "pid_period_readback_us": 125
+    }
+  ],
+  "attempts": [
+    {
+      "id": "betaflight-attitude-step",
+      "passed": true,
+      "error": null,
+      "simulated_seconds": 49.0,
+      "hashes": {
+        "config": "2912d9d5b287e9bea66dca05eee22e1585c8bb1855ecc89a22746c8d9f19fefa",
+        "firmware": "1800b93fa7ba151169672ca897c26736b2925370175bf88758c5b60ebcf4172c",
+        "offboard": "220db232fd2cae1744afcfd4eb773d6b2dbe37b97f5f36124849344281ec9a3d",
+        "plant": "284cced3ceec15128886d05753900b8ae47f38570ce0112c50e801356de97654",
+        "plant_description": "fdb12c3379b56d2d18f0ccaab3c62d15d2f97281f55270f37b837ea9c980b91c",
+        "runner": "6eaae109295d35071b48092fa200bba2e4b42895815f7645cc932ae36bf30087"
+      }
+    },
+    {
+      "id": "betaflight-position-step",
+      "passed": false,
+      "error": "No space left on device; incomplete execution, no report produced",
+      "simulated_seconds": null,
+      "hashes": null
+    },
+    {
+      "id": "betaflight-position-step-retry01",
+      "passed": true,
+      "error": null,
+      "simulated_seconds": 53.0,
+      "hashes": {
+        "config": "2912d9d5b287e9bea66dca05eee22e1585c8bb1855ecc89a22746c8d9f19fefa",
+        "firmware": "1800b93fa7ba151169672ca897c26736b2925370175bf88758c5b60ebcf4172c",
+        "offboard": "220db232fd2cae1744afcfd4eb773d6b2dbe37b97f5f36124849344281ec9a3d",
+        "plant": "284cced3ceec15128886d05753900b8ae47f38570ce0112c50e801356de97654",
+        "plant_description": "fdb12c3379b56d2d18f0ccaab3c62d15d2f97281f55270f37b837ea9c980b91c",
+        "runner": "6eaae109295d35071b48092fa200bba2e4b42895815f7645cc932ae36bf30087"
+      }
+    },
+    {
+      "id": "betaflight-rate-step",
+      "passed": true,
+      "error": null,
+      "simulated_seconds": 53.0,
+      "hashes": {
+        "config": "2912d9d5b287e9bea66dca05eee22e1585c8bb1855ecc89a22746c8d9f19fefa",
+        "firmware": "1800b93fa7ba151169672ca897c26736b2925370175bf88758c5b60ebcf4172c",
+        "offboard": "220db232fd2cae1744afcfd4eb773d6b2dbe37b97f5f36124849344281ec9a3d",
+        "plant": "284cced3ceec15128886d05753900b8ae47f38570ce0112c50e801356de97654",
+        "plant_description": "fdb12c3379b56d2d18f0ccaab3c62d15d2f97281f55270f37b837ea9c980b91c",
+        "runner": "6eaae109295d35071b48092fa200bba2e4b42895815f7645cc932ae36bf30087"
+      }
+    },
+    {
+      "id": "cognipilot-attitude-step",
+      "passed": true,
+      "error": null,
+      "simulated_seconds": 49.0,
+      "hashes": {
+        "config": "2912d9d5b287e9bea66dca05eee22e1585c8bb1855ecc89a22746c8d9f19fefa",
+        "firmware": "3ba2dcf2dea3a66a9b863cf64e3ab2193b06c9a638d7784a209f2cd4699fcf40",
+        "offboard": "220db232fd2cae1744afcfd4eb773d6b2dbe37b97f5f36124849344281ec9a3d",
+        "plant": "284cced3ceec15128886d05753900b8ae47f38570ce0112c50e801356de97654",
+        "plant_description": "fdb12c3379b56d2d18f0ccaab3c62d15d2f97281f55270f37b837ea9c980b91c",
+        "runner": "6eaae109295d35071b48092fa200bba2e4b42895815f7645cc932ae36bf30087"
+      }
+    },
+    {
+      "id": "cognipilot-position-step",
+      "passed": false,
+      "error": "No space left on device; incomplete execution, no report produced",
+      "simulated_seconds": null,
+      "hashes": null
+    },
+    {
+      "id": "cognipilot-position-step-retry01",
+      "passed": true,
+      "error": null,
+      "simulated_seconds": 53.0,
+      "hashes": {
+        "config": "2912d9d5b287e9bea66dca05eee22e1585c8bb1855ecc89a22746c8d9f19fefa",
+        "firmware": "3ba2dcf2dea3a66a9b863cf64e3ab2193b06c9a638d7784a209f2cd4699fcf40",
+        "offboard": "220db232fd2cae1744afcfd4eb773d6b2dbe37b97f5f36124849344281ec9a3d",
+        "plant": "284cced3ceec15128886d05753900b8ae47f38570ce0112c50e801356de97654",
+        "plant_description": "fdb12c3379b56d2d18f0ccaab3c62d15d2f97281f55270f37b837ea9c980b91c",
+        "runner": "6eaae109295d35071b48092fa200bba2e4b42895815f7645cc932ae36bf30087"
+      }
+    },
+    {
+      "id": "cognipilot-rate-step",
+      "passed": false,
+      "error": "No space left on device; incomplete execution, no report produced",
+      "simulated_seconds": null,
+      "hashes": null
+    },
+    {
+      "id": "cognipilot-rate-step-retry01",
+      "passed": true,
+      "error": null,
+      "simulated_seconds": 53.0,
+      "hashes": {
+        "config": "2912d9d5b287e9bea66dca05eee22e1585c8bb1855ecc89a22746c8d9f19fefa",
+        "firmware": "3ba2dcf2dea3a66a9b863cf64e3ab2193b06c9a638d7784a209f2cd4699fcf40",
+        "offboard": "220db232fd2cae1744afcfd4eb773d6b2dbe37b97f5f36124849344281ec9a3d",
+        "plant": "284cced3ceec15128886d05753900b8ae47f38570ce0112c50e801356de97654",
+        "plant_description": "fdb12c3379b56d2d18f0ccaab3c62d15d2f97281f55270f37b837ea9c980b91c",
+        "runner": "6eaae109295d35071b48092fa200bba2e4b42895815f7645cc932ae36bf30087"
+      }
+    }
+  ],
+  "status": "6/6 displayed flights completed and landed. 9 total attempts retained, 3 failed attempts. Storage failures are retained as incomplete executions, not controller-performance failures."
+}
