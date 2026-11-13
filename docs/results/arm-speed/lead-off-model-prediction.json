@@ -1,0 +1,51 @@
+{
+  "schema": "purt-model-prediction/1",
+  "label": "MODEL-ONLY PREDICTION. Not a flight result, not a firmware result, not part of the speed ranking.",
+  "written_at": "2026-11-13T17:59:04-05:00",
+  "blind_status": "Written before any TROPIC ARM lead-off search was flown or published. Checked on 2026-11-13: no lead-off search files in any commit, branch or release of this repository. The commit that adds this file is the timestamp of record.",
+  "applies_to": "Lead-off (controller.feedforward = off) cells of docs/results/arm-speed/speed-rule.json, both stacks, on the same course, plant, gates and K = 6/s.",
+
+  "prediction": {
+    "shortest_lead_off_lap_s": {
+      "primary": 26,
+      "if_model_offset_does_not_hold": 27,
+      "statement": "Each stack's lead-off search selects 26 s (or 27 s), well below the 33 s lead-on result."
+    },
+    "stack_difference": "The model has no firmware. Both stacks followed tilt commands with about the same 170 ms delay at 33 s, so the model predicts the same lead-off lap for both: a tie, or at most 1 s apart.",
+    "worst_error_m": {
+      "lap_33": "about 0.48 (already observed for CogniPilot at 33 s realistic noise: 0.475-0.480; used to set the offset)",
+      "lap_30": "about 0.56-0.57",
+      "lap_27": "about 0.67-0.68",
+      "lap_26": "about 0.72",
+      "lap_25": "about 0.76-0.77 (fails the 0.75 m gate)"
+    },
+    "why": "Drag in the plant makes the drone lag behind the reference; the 1/K attitude lag pushes it ahead and outward. With lead off these partly cancel, so lead-off tracks better than lead-on (which removes the attitude lag and leaves the drag error). This is a model explanation, not a measured firmware property."
+  },
+
+  "falsified_if": [
+    "Either stack's confirmed lead-off lap is 24 s or shorter, or 29 s or longer.",
+    "The two stacks' lead-off laps differ by 2 s or more.",
+    "Lead-off is not shorter than lead-on (33 s) for either stack.",
+    "Worst error at the selected lead-off lap differs from the predicted value by more than 0.05 m."
+  ],
+
+  "model": {
+    "description": "Pure Modelica: shared Benchmarks.Trajectory and Benchmarks.PositionLoop (unchanged), full RDD2 plant via Benchmarks.IdealAttitudePlant (drag on), attitude roll/pitch modelled as a first-order lag at 6/s standing in for firmware, lead off. One noise-free run per lap.",
+    "raw_model_worst_error_m": { "33": 0.5196, "30": 0.6064, "29": 0.6404, "28": 0.6773, "27": 0.7175, "26": 0.7614, "25": 0.8094, "22": 0.9813 },
+    "raw_model_rms_m": { "33": 0.2183, "30": 0.2536, "29": 0.2678, "28": 0.2833, "27": 0.3004, "26": 0.3193, "25": 0.3399, "22": 0.4139 },
+    "raw_model_peak_tilt_deg": { "33": 15.04, "30": 17.97, "29": 19.13, "28": 20.39, "27": 21.78, "26": 23.30, "25": 24.96, "22": 30.95 },
+    "offset_method": "Model minus CogniPilot ARM lead-off flights at 33 s = 0.040-0.045 m (0.5196 vs 0.4751-0.4796). Subtracting 0.040-0.045 m from raw model worst error gives the predicted values. Raw model alone selects 27 s (26 s fails at 0.761 m).",
+    "tools": "Rumoca 0.10.0, solver rk-like, output step 0.01 s, on modelica_models a41f7c0 plus patches/modelica-report-fixes.patch and patches/modelica-shared-position.patch, in scratch copies only.",
+    "evidence_folder": "Outside the repository: ~/Desktop/pure-model-lead-20261113/ (RESULTS.md, harness .mo files, CSV outputs) on the author's machine."
+  },
+
+  "not_modelled": [
+    "Firmware estimator, filters, rate loop and either stack's specific attitude response beyond a 6/s first-order lag",
+    "Sensor noise (flights at 33 s varied by about 0.01 m in worst error across noise levels)",
+    "250 Hz stick schedule; lap starts from hover at 10 s rather than 25 s",
+    "Betaflight motor protocol scheduling effects (affects landing, which this prediction does not cover)",
+    "Landing, disarm and the full-mission result"
+  ],
+
+  "use": "Compare against the lead-off cells after the searches finish and report agreement or disagreement either way. This file must not influence the search, the rule or the data freeze."
+}

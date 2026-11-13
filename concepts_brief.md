@@ -1,33 +1,35 @@
-# CogniPilot and Betaflight Speed Comparison on the TROPIC ARM Simulation
+# Drag Feedforward in the Shared Position Loop: What the Model Test Shows and What to Say in the Talk
 
 * **Author:** Lohen Chen
-* **Date:** 2026-11-09
+* **Date:** 2026-11-13
 
 ## Overview
 
-This work answers one question for a research presentation around 2026-11-16: is CogniPilot faster than Betaflight, and if so why and how, and if not, what steps get it there?
+On 2026-11-13 a model-only test was run on the shared benchmark loop. It used Rumoca and the real shared Modelica blocks, but no firmware and no noise, with one run per case. The results are in `/Users/lohenchen/Desktop/pure-model-lead-20261113/RESULTS.md`. The test asked why path tracking is worse with offboard tilt lead on than with it off.
 
-The test bed is the shared TROPIC RT1064 ARM firmware simulation (FastDyn and QEMU). All claims stay limited to simulation. None apply to hardware timing.
+Terms used in this brief:
 
-"Faster" has one meaning here: the shorter reference lap duration, on a 1 second grid, that a stack can follow while meeting all of these on all 15 runs (three noise levels times seeds 1 to 5):
+* **Tilt lead.** An extra tilt added to the stick command, equal to the planned tilt rate divided by the attitude gain K (K = 6/s).
+* **Attitude lag.** The attitude follows a tilt command about 1/K = 167 ms late. The recorded runs show 150 to 192 ms.
+* **Drag feedforward.** Telling the position loop in advance how much air drag to push against, here using the plant's own drag formula at the planned speed.
+* **Gates.** The pass limits: worst position error below 0.75 m, RMS error below 0.35 m, no tilt-clamp events, and correct course geometry.
 
-* root-mean-square (RMS) position error below 0.35 m
-* maximum position error below 0.75 m
-* zero tilt clamps
-* course geometry correct
+The author's hypothesis has three parts:
 
-Each stack uses its better setting of offboard tilt lead (on or off). Both use attitude gain K = 6/s. Equal times are a tie. Landing and disarm are scored and reported separately.
+1. Lead-on tracking is worse because the shared position loop does not account for drag.
+2. The attitude lag happened to cancel part of the drag error, which is why lead off looked better.
+3. Adding drag feedforward cut the lead-on worst error at the 33 s lap from 0.774 m to 0.359 m. In single noise-free model runs it stayed under the worst-error and tilt limits down to a 22 s lap, the shortest lap tried.
 
-The audience is researchers who may open the repository and check the numbers. The value of the work is a result they can check, including a tie or a loss, with every failed attempt still visible.
+The proposal is to present this in the research talk (about 2026-11-16) as the "step to get faster". Adding drag feedforward to the shared loop for both CogniPilot and Betaflight would come later.
 
-Main conclusions from the seven reviews:
+All seven reviewers came to the same main conclusion:
 
-1. The rule can be defended, but only if it is committed before anyone reads the unread CogniPilot results on the virtual machine (VM).
-2. Betaflight's 33 s is not yet its score under this rule, because lead off has never been flown for Betaflight on TROPIC.
-3. With lead on, the likely result is a tie at 33 s. Lead off is the only setting likely to separate the stacks.
-4. The planned "8 kHz versus 1.6 kHz" disclosure is misleading as worded. It must be replaced.
-5. Existing logs can show where the attitude response differs. They cannot show which firmware stage causes the difference.
-6. Compute fits the week. The larger risks are the state of the VM, stalled flights and the time needed for analysis and publishing.
+* The model supports a narrower claim than the one proposed. In this model, drag error and lag error point in opposite directions and partly cancel. The tilt lead removes the lag error as designed, which leaves the drag error exposed.
+* That is a useful finding for one slide.
+* The model does not show that drag is the only cause. It does not rule out firmware, because it contains none.
+* "Measured" is the wrong word. These are model results.
+* The 22 s figure cannot be presented as a lap result. The margin is 0.026 m, and RMS and the other gates were not checked.
+* Any change to the shared loop is a new experiment under a new rule. It is not a fix to apply before the talk.
 
 ## Analysis
 
@@ -43,315 +45,303 @@ Main conclusions from the seven reviews:
 | `egm-structural` | completed |
 | `egm-inventive-catalyst` | completed |
 
-No reviewer could read the VM or `src/`, which are not available on this checkout. Anything that depends on them is marked unverified. The extrapolations below are reviewer arithmetic, not measurements.
+Limits on what was checked:
 
-### Fact check of the stated facts
+* No reviewer could read the a41f7c0 source that the runs used, or the firmware under `src/`, which is not checked out.
+* No reviewer parsed the output CSVs. The direction of each error and where along the lap it happens are taken from RESULTS.md and not rechecked.
+* Arithmetic in this brief that is not in RESULTS.md is reviewer arithmetic, not new runs.
 
-**These hold:**
+### What the evidence does support
 
-* 66 Betaflight attempts and 58 passes.
-* 15 of 15 runs meet the tracking gates at 33, 34, 35 and 40 s. The worst maximum error at 33 s is 0.7329 m (harsh noise, seed 3).
-* 32 s failed on one flight (0.7714 m, realistic noise, seed 1).
-* 30 s failed on one flight (RMS 0.3507 m, maximum 0.8675 m). It failed both error gates.
-* The six confirmation failures are all harsh-noise landing failures that ended armed.
-* The CogniPilot 35 s and 39 s figures, the Betaflight 35 s figures and the shared config hash `aabe2b...`.
-* Wall times, serial QEMU execution, native screening results (26 s and 33 s) and the 2026-11-07 snapshot.
-
-**These need correcting:**
-
-| Stated fact | Correction | Source |
-| --- | --- | --- |
-| Betaflight 8 kHz vs CogniPilot 1.6 kHz | True only for packet exchanges. Both stacks receive new IMU data at 1600 Hz, and Betaflight's 8 kHz packets hold the same sample. Betaflight's control and motor loop ran at 500 Hz under PWM. CogniPilot's control loop rate is not in any committed file the reviewers read. | `docs/results/arm-speed/betaflight-33s/report.json:63,71`; `docs/yaw-noise-investigation.md:55` |
-| Betaflight scores 33 s under the rule | 33 s is an upper bound. It is lead-on and PWM only. Zero lead-off flights exist on TROPIC. The native 0 of 5 was at 26 s and says little about 32 s on ARM. | `docs/results/arm-speed/betaflight-attempts.json`; `docs/arm-benchmark-integration.md:159` |
-| Only the attitude path, firmware and schedule differ | Also different: CogniPilot uses synthetic GNSS while Betaflight has GPS disabled; CogniPilot has up to 0.5 ms of stick timing rounding; Betaflight's PWM setting; and the runner program in the hardened campaign (`f2ef29`) versus the Betaflight campaign (`7c9ade`). | `docs/shared-position-benchmark.md:28`; `docs/results/arm-speed/campaign-state.json:12,17` |
-| `tilt-lead.csv` exists for some runs, implying the speed runs | It exists only for three 40 s no-noise runs under `docs/results/tilt-lead/fastdyn/`. No directory under `docs/results/arm-speed/` has commanded tilt. | File search |
-| 15 runs | The five no-noise seeds give identical results, so there are 11 distinct flights. The noise levels are assumed, not measured. | `docs/arm-benchmark-integration.md:145`; `docs/optimization-sequence.md:15` |
-| FastDyn upstream sources are gone | Upstream is gone, but `docs/fastdyn-source-recovery.md:10` says full-history bundles exist under `artifacts/source-recovery/` and on the VM. A file search did not find that directory on this checkout. It may be ignored by search, so check it. | `docs/fastdyn-source-recovery.md` |
-
-The VM's size, its stopped state and the Mac's size cannot be confirmed from the repository.
-
-### Inventive contradictions and how to resolve them
-
-**1. Strong evidence versus a small compute budget.** This is mostly a false conflict. Betaflight needed four confirmation sets because landing failures forced it to step back. Under the new rule, 33 s would have been selected on the first set.
-
-* Screen on one flight per lap time, then confirm only the shortest passing time (split the work).
-* Stop a candidate at its first tracking failure, and fly the likely failures first (adapt to results).
-* Copy the VM contents off the machine before new work (prepare a fallback).
-* Trade-off: stopping early gives no count of passes out of 15 at failed durations. Run all 15 at the selected time so the landing table is complete.
-
-**2. Fair treatment versus each stack's best setting, with a rule written after Betaflight's results were seen.**
-
-* Commit the rule before the unread data is opened. This blindness can be used only once.
-* Show all four combinations of stack and lead mode.
-* Trade-off: a committed rule can only be changed by a visible amendment, and four cells make a busier slide.
-
-**3. Equal gain versus each stack's best gain.** A common K of 6/s is a fair rule, but it does not give equal responses (see Major risks).
-
-* Keep K fixed and disclose it. Run a pass-or-fail check at K = 6 only, if the ARM path can do it without a rebuild.
-* Trade-off: this does not show that K = 6 is best on ARM, and a failed check would weaken the headline days before the talk.
-
-**4. Depth of explanation versus no new campaign.**
-
-* Treat recorded flights as measurements of the system. Fit lag and gain from commanded tilt to actual attitude. This costs no compute.
-* Trade-off: the fit is one overall figure for the whole attitude path, and Euler-angle comparison is approximate at about 14 degrees of tilt.
-
-**5. A clear winner versus a 1 s grid with a sharp gate.** Betaflight passes 33 s by 0.017 m and fails 32 s by 0.021 m. Publish maximum error against lap time for both stacks and read the single lap time from that curve.
-
-* Trade-off: more material than one number, and some will read it as hedging.
-
-**Ideal Final Result.** One committed rule and one scoring step read every retained attempt and produce the verdict, the error curve and the landing table. New flights are used only for the cells that are missing, and no firmware is rebuilt.
+* **The harness uses the real shared blocks.** These are `Benchmarks.Trajectory`, `PositionLoop` and `Feedforward`, plus the full RDD2 plant with a prescribed attitude. The lead is added to the stick the same way as in the flown runner (`patches/cerebri-rdd2-benchmark.patch:4841-4854`; `LeadIsolation.mo:44-45`). Position feedback is plant truth in both (codebase-details).
+* **The drag feedforward formula is correct.** Its form, frame, sign and coefficients match the plant (`QuadrotorPlant.mo:40-42,135-136`; `drag-comp/LeadIsolation.mo:9-12,37-40`). The QEMU benchmark plant carries the same coefficients (`docs/evidence/four-stack-2026-11-06/modelDescription.xml:173,176`). No wiring bug was found that changes 0.774 → 0.359 m (codebase-details).
+* **Drag is needed for the lead-off advantage.** Without drag, lead on beats lead off (0.312 vs 0.534 m). With drag, the order flips (0.774 vs 0.520 m) (`RESULTS.md:40-43`).
+* **The cancellation story makes a correct prediction.** At shorter laps, adding drag feedforward to lead-off runs makes them worse (27 s: 0.837 vs 0.718 m), because it removes the drag error that the lag was offsetting (`RESULTS.md:69`; structural).
+* **The lead works as designed.** Lead × K matches the tilt-target rate (0.96–1.03), and the recorded runs show only 2–42 ms between the target and the actual attitude (`RESULTS.md:49-50`; `attitude-lag-33s.json`).
+* **A rough size check fits.** The expected along-track lateness is about the drag acceleration divided by the position gain: 0.61 / 1.5 ≈ 0.41 m. That is close to 0.704 − 0.290 m (codebase-details, inventive-catalyst, structural). This is a rough check, not a proof.
 
 ### Risks
 
 #### Blocker
 
-**B1. The rule is not committed before the unread data is opened (all lenses).** Betaflight's results are already known, so the rule is after the fact on that side. The CogniPilot side can still be set in advance, but only until someone reads the VM results.
+**B1. "Caused by drag, not by attitude delay or firmware" claims more than the model shows (all seven lenses).**
 
-* The commit should fix: gates, grid, search order, how a tie is declared, how stalled flights are handled, retry limit, fallback, binary and runner hashes, lead modes and Betaflight's motor protocol.
-* The presentation should cite that commit.
+* The model has no firmware, so it can show only that firmware is not needed to reproduce the pattern. It cannot rule firmware out.
+* The lag is a real error in its own right. With drag off, lag and no lead still give 0.534 m, with the drone ahead of the reference.
+* Three numbers show that drag is not the only error source:
+  * With ideal attitude and drag off, error is still 0.290 m (see M2).
+  * Drag feedforward with lead on leaves 0.359 m, which is above the 0.312 m of the no-drag case.
+  * Feedforward helps lead-on runs but hurts lead-off runs at short laps.
+* Lead and feedforward are needed together.
+* Supported wording: "In the model, drag error and lag error partly cancel. The lead removes the lag error as designed, which exposes the drag error the loop does not account for."
 
-**B2. The repository's own text forbids the claim (six lenses).**
+**B2. "Measured" and "22 s" cannot go in the talk as results (all seven lenses).**
 
-* `docs/simulation-qualification.md:7` lists landing as a gate.
-* `docs/simulation-qualification.md:39` says a failed landing "does not count as faster successful flight".
-* `docs/simulation-qualification.md:47` says "Do not report 33 s as a confirmed reliable speed".
-* `docs/simulation-qualification.md:24` says no superiority claim is justified until the prerequisite gates and margins are settled.
-* The same position appears in `docs/yaw-noise-investigation.md:67`, `docs/tropic-pc-pilot-handoff.md:71`, `docs/research/index.html:6`, and `docs/results/arm-speed/campaign-state.json:5-9`.
+* Every feedforward number comes from one noise-free model run per case (`RESULTS.md:73`). The model leaves out noise, the 250 Hz stick schedule, the estimator, filters and the rate loop (`RESULTS.md:26`).
+* At 22 s the worst error is 0.724 m against 0.75 m, a margin of 0.026 m.
+* That margin is smaller than the 0.04–0.07 m gap between the model and the QEMU runs. That gap was measured only at 33 s and only without feedforward, so it cannot be carried over to 22 s.
+* Where the two can be compared, they give different verdicts. At 33 s with lead on, the model fails (0.774 m) and the QEMU runs pass (0.70–0.73 m).
+* The lap table has no RMS values, although RMS is a gate. It also has no tilt-clamp count, geometry check or center-return check.
+* "Peak tilt 29.8°" appears to be the actual attitude. The runner counts a clamp on the stick command including lead, which is larger (`cerebri-rdd2-benchmark.patch:4845-4848`; codebase-details, structural).
+* 22 s is the shortest lap tried, not a limit that was found.
+* Under the committed rule, "faster" means 15 of 15 QEMU runs across three noise levels (`speed-rule.json:5,36-40`). This result has none of that.
+* "Flights" in RESULTS.md:5 and :60 means QEMU firmware simulation, not hardware. An audience will hear "real drone" unless told otherwise (comprehension, implementation-readiness).
 
-This does not reopen the landing decision. It requires two named results on the same attempts, for example "tracking result" and "full-mission result". Betaflight then reads "33 s tracking result, 13 of 15 landed; no full-mission candidate". The documents must state that this is a scoped, exploratory result and not a qualified ranking. A bare "is faster" headline would still conflict with line 24 of the qualification document, so the wording must be "under this stated rule".
+**B3. Adding drag feedforward to the shared loop cannot fit inside the committed rule (design, zoom-out, structural, implementation-readiness, codebase-details).**
 
-**B3. Betaflight has not been scored under the rule (six lenses).** Lead off has not been flown on TROPIC. The runner accepts `off` as a mode (`patches/cerebri-rdd2-benchmark.patch:6369-6380`), so a search should be possible, but no committed record shows it working on ARM. A full 21-flight search takes about 47 minutes. Until it is done, 33 s stays "provisional, lead-on".
+* The rule fixes `offboard_sha256` and `base_config_id ...-v3`, and allows only firmware and feedforward mode to differ between runs (`speed-rule.json:9,14,22`).
+* It also forbids changes after any run is observed (`:52`), and the data freeze is 2026-11-14 12:00 (`:87`).
+* A shared-loop change creates a new configuration. It would need a new rule committed before any run with drag feedforward.
+* Under AGENTS.md it would also trigger every native rerun, a replay refresh, landing checks and a Pages publish.
+* None of this fits before the talk.
 
-**B4. A CogniPilot win can be dismissed because of how Betaflight was set up (design, structural, comprehension).**
+**B4. The scratch folder cannot reproduce its own tables (design, codebase-details, implementation-readiness, structural, inventive-catalyst).**
 
-* Betaflight ran its control and motor loop at 500 Hz, set by the PWM protocol.
-* It is a proposed NXP port with a simulation adapter (`docs/simulation-qualification.md:29`).
-* With the same config at 40 s, the STM32F405 build scored RMS 0.143 m and maximum 0.348 m. The TROPIC build scored RMS 0.195 m and maximum 0.507 m. That gap is unexplained and is far larger than the 0.004 m RMS gap between the stacks at 35 s.
-* A speech slide reading "8 kHz versus 1.6 kHz" would plant the wrong idea.
-
-Requirements:
-
-* Show a table with separate rows for plant, IMU, exchange, control and motor rate, stick and position rates.
-* Read back CogniPilot's control rate or mark it unknown.
-* Label the stack "Betaflight (proposed TROPIC port, PWM, 500 Hz loop in this simulation)".
-* Disclose the STM32F405 gap.
-* Decide how OneShot125 is treated (see Open decisions).
-
-**B5. "Why" cannot be answered as a cause from the committed logs (all lenses, rated Blocker as framed by two).**
-
-* The only matched pair with commanded and actual tilt is `docs/results/tilt-lead/fastdyn/betaflight-nxp` and `docs/results/tilt-lead/fastdyn/cognipilot`: 40 s, no noise, lead on, same config `a6d0ca`, firmware hashes matching the campaigns, different runners.
-* Do not use `docs/results/tilt-lead/fastdyn/betaflight`, which is the STM32F405 build.
-* Attitude is logged at 100 Hz and commanded tilt at 250 Hz. There is no gyro, rate command or estimator state.
-* The exchange difference is at most about 0.5 ms, against a 167 ms attitude time constant at K = 6/s, or about 0.3 percent. It is a disclosed limit, not an explanation.
-
-The claim must narrow to "where the difference appears". Use three evidence levels: observed, consistent with, and not measured. Allowed wording: "stack X turns tilt commands into attitude N ms sooner, and this tracks the position error difference". Not allowed: "because of its estimator".
-
-**B6. The VM is a single point of failure, and the search cannot resume (implementation readiness).**
-
-* `flight()` stops the whole search on any incomplete flight (`patches/cerebri-rdd2-benchmark.patch:6357-6360`), and each search requires a new output directory (`:6386`), so a stall restarts from the 40 s step.
-* For a 28-flight search with a per-flight failure rate of 5 percent, the expected cost is about 64 attempts. At 15 percent it is about 620.
-* Retrying single cells costs 28 divided by (1 minus the failure rate).
-* The only failure data is one timeout in three published runs, before the hardening.
-* Measure the failure rate from VM logs first. Sources and results exist only on the VM. FastDyn kills other QEMU instances at startup, so a resumed job and a new job can kill each other. Disk had 1.4 GB free on 10-16 (`docs/simulator-provenance.md:130`).
+* The top-level `LeadIsolation.mo:12` and `LeadCases.mo:10-15` pass `pos(forceFraction = ...)`. RESULTS.md:29-30 says this crashes every run, so these files did not produce `out/` (`orig/LeadIsolation.mo` probably did).
+* There is no harness for the drag-off cases, so how drag was zeroed is not recorded.
+* `modelica-report-fixes.patch` is cited but not in the folder.
+* Not recorded: the Rumoca binary hash, the exact commands, the end time for each case (end times changed on crash retries), and a hash for each CSV.
+* The Desktop `modelica_models` clone does not match the run base:
+  * `Vehicles/Rdd2/LogLinearController.mo:7-9` sets position and velocity gains {3,3,4} and {3.5,3.5,4}, against the `Controller` defaults {1.5,1.5,2} and {2.2,2.2,2.5} (`LogLinear/package.mo:302-303`).
+  * The shared-position patch will not apply to this clone (codebase-details).
+  * Which gains a41f7c0 and the flown generated C actually use is unverified. This matters because the size of the drag error scales inversely with the position gain.
 
 #### Major
 
-**M1. A tie is the likely lead-on result.** Five lenses estimated CogniPilot lead-on at about 0.748 to 0.763 m at 32 s, against the 0.75 m gate. These are extrapolations from one or two flights, and error rises about 0.04 m per second. Native CogniPilot also failed 32 s at 0.7519 m (`docs/arm-benchmark-integration.md:156`).
+**M1. Perfect knowledge of drag (all seven lenses).**
 
-* Plan for four outcomes: win, tie, loss and inconclusive.
-* A tie means "not faster" and follows the "steps to get there" branch.
-* Write the tie sentence now: "indistinguishable at 1 s resolution under this rule".
-* Do not add a tie-breaker or a finer grid after seeing a tie.
-* Show the margin to 0.75 m beside every lap time.
+* The feedforward copies the plant's exact coefficients, uses ground speed as airspeed (there is no wind), and uses the true attitude.
+* So 0.359 m is a best case for the benchmark plant. It says nothing about hardware.
+* The plant's own drag values are assumptions, and measuring drag is listed as future work in `docs/cognipilot-speed-experiment.md:11`.
+* No test was run with wrong coefficients (for example 0.5× and 1.5×).
 
-**M2. Lead off is the deciding unknown, and it may be misleading.** Native CogniPilot with lead off reached a maximum of about 0.475 m at 33 s, against about 0.71 m with lead on. Native results may not carry over: Betaflight went from 26 s native to 33 s on ARM. `docs/arm-benchmark-integration.md:161-164` also warns that the lead-off behavior needs checking. One possible reason, untested, is that the lead formula (omega divided by K) leads CogniPilot too much, because its native attitude response is faster than K implies.
+**M2. The 0.29 m error left with ideal attitude and no drag is unexplained (all seven lenses).**
 
-**M3. The rule moves results in both directions, and the talk should say so.** Separating landing helps Betaflight, which otherwise has no qualified time. The better-of-lead clause probably helps CogniPilot. Keeping the 0.75 m gate has already cost CogniPilot a native 32 s result. The result is "best of two lead settings at equal K", not "each stack at its best". If CogniPilot wins only with lead off, the headline must say that.
+* With near-ideal attitude, no drag and lead off, worst error is 0.290 m (`RESULTS.md:41`). That is about 37% of the 0.774 m case and is larger than some of the gains being claimed.
+* Candidates, none tested:
+  * Integral windup during the climb. `pos.engage = true` from t = 0 (`drag-comp/LeadIsolation.mo:30`), so the integrator runs through the ground start and the climb to 2 m before the lap begins. With Ki = 0.05 it decays slowly (codebase-details, likely).
+  * Motor lag of 12.5 or 25 ms.
+  * The 100 Hz sample-and-hold.
+  * The heading-only reference attitude mixing horizontal error into vertical error.
+  * Height error inside the 3D error.
+* Until this is split up, no one can say drag is the main remaining term at 22 s.
 
-**M4. Equal K is the same rule, not the same response.** Natively, both stacks qualified K of 5 and 6.
+**M3. Drag feedforward is not the same as removing drag (structural).**
 
-| At K = 6 | Rise time | Overshoot |
-| --- | --- | --- |
-| Betaflight | 0.31 s | up to 19.94 percent (limit 20) |
-| CogniPilot | 0.262 s | 0 |
+* With feedforward, the drone feels the drag at its actual speed minus the drag at the planned speed. That leftover acts as extra damping on speed error.
+* This is why ideal attitude with feedforward (0.271 m) beats ideal attitude with no drag at all (0.290 m).
+* A control case is missing: drag off, feedforward on. It would separate the two effects.
 
-Requalification on TROPIC is open (`docs/simulation-qualification.md:18`). ARM reports say `tuning_status: passed_common_step_rule`, while `docs/results/arm-speed/betaflight-33s/metadata.json` says qualification is pending, so do not quote the report label. Changing K requires a rebuild and triggers the rerun rule in `AGENTS.md`.
+**M4. The lead does not include the change in the drag term (design, codebase-details, inventive-catalyst, implementation-readiness, comprehension).**
 
-**M5. The compute budget fits only with an ordered plan.** CogniPilot wall time is about 6.8 seconds per simulated second, and a mission lasts lap time plus 43 s. A 15-run confirmation is about 2.2 hours.
+* The feedforward is added only to the reference acceleration. The lead is still computed from the trajectory's own jerk and snap (`modelica-shared-position.patch`, Feedforward block lines 86-89), so the rate of change of the drag term is never led.
+* With feedforward on, lead × K no longer equals the tilt-target rate.
+* RESULTS.md does not say which case the 0.96–1.03 lead check used.
+* This also bears on qualification item 2.4, integrated feedforward consistency (`docs/simulation-qualification.md:16-17`).
 
-| Plan | CogniPilot flights | Time |
-| --- | --- | --- |
-| Lean: bracket both modes, one 15-run confirmation | about 32 | about 5 h |
-| Existing search, both modes, first confirmation passes | about 54 | about 9 h |
-| Existing search with Betaflight-style fallback | about 142 | about 23 h |
-| Full on/off confirmation at every grid point from 30 to 40 s | 330 | about 50 h, not realistic |
+**M5. "Affects both stacks equally" is not shown (all seven lenses).**
 
-Betaflight adds about 47 minutes for lead off, or up to about 5 hours for both modes in full. Supply depends on uptime: about 275 usable flights at an assumed 60 percent uptime, about 83 if only nights are available. Stalls are not yet root-caused (`docs/optimization-sequence.md:7,33`). The Mac must stay awake on power, because sleep could trip the 30 s wall watchdog (inference, not tested).
+* The input is the same for both stacks. The effect depends on how much lag each stack has left over:
+  * Betaflight pitch command-to-actual: 150–190 ms; CogniPilot: 172–192 ms.
+  * Reference-to-actual: 2–42 ms against 12–42 ms (`attitude-lag-33s.json`).
+* The matched-pair gaps between the stacks at 33 s are only 0.008–0.025 m, and the feedforward changes errors by about 0.4 m. It could reorder the stacks.
+* It could also change which lead mode is each stack's better cell, and the rule scores each stack by its better cell (`speed-rule.json:70`).
+* Firmware drag compensation is unverified (`src/` is absent), but neither stack can see the position reference. Both receive angle-mode sticks only, with no onboard feedforward allowed (`simulation-qualification.md:3`).
+* Two things to confirm are off: Betaflight's `patternVelocityFeedforward` and CogniPilot's legacy `reference_lead_s` (codebase-details).
 
-**M6. The search code implements the old rule.** A pass requires `report.passed`, which includes landing (`patches/cerebri-rdd2-benchmark.patch:6340`). A landing failure stops the descent during screening and costs another 15 flights during confirmation.
+**M6. The wrong baseline: the model's own lead-off result already reaches 27 s (zoom-out, structural, comprehension, codebase-details).**
 
-* Each attempt stores tracking, clamps, geometry and landing separately, so attempts can be re-scored without new flights.
-* The one gap is a screening flight that failed only on landing, where nothing faster was tried.
-* A scoring tool must not be workspace Python (`AGENTS.md:28`). Browser JavaScript, `jq` or project-native Rust are allowed.
+* Lead off without feedforward passes the worst-error limit at 30 s (0.606 m) and 27 s (0.718 m) (`RESULTS.md:68-69`).
+* So the model's gain from feedforward is 27 → 22 s, not 33 → 22 s.
+* The lead-off searches already in the rule may beat 33 s with no code change.
 
-**M7. The runners differ between campaigns (one lens rated this Blocker).** The fix is cheap: rerun Betaflight on `f2ef29` at 32 and 33 s, about 35 minutes. Otherwise disclose the difference on the results slide. `docs/betaflight-protocol-study.md:14` already sets this standard. Encouraging, but not proof: Betaflight at 40 s no noise was numerically identical under runners `8faf4e` and `7c9ade`.
+**M7. Timing against the blind lead-off searches (design, zoom-out, implementation-readiness, inventive-catalyst, structural).**
 
-**M8. "Faster" will be misheard (comprehension).** The audience may hear CPU speed, race lap time or vehicle limit.
+* The lead-off runs below 33 s are the only blind part of the rule (`speed-rule.json:82-84`).
+* Showing a drag story before they are scored can look like an after-the-fact explanation of why lead off won.
+* The model also makes a lead-off prediction that can be checked: pass at 27 s, fail at 25 s, about 0.04 m pessimistic. A written, timestamped prediction made before those results are seen is a free test of whether the model carries over to firmware.
 
-* Say "shortest commanded lap schedule on one 47 m figure-eight that both stacks can follow within 0.75 m worst-case error at K = 6/s".
-* The limit is the gate, not the vehicle: tilt peaks near 14 degrees against a 35-degree limit.
-* The error is same-time error, so a drone on the path but late fails.
-* Do not show wall time (133 s against about 545 s). It invites "CogniPilot is four times slower".
-* The dashboard title "Making CogniPilot more competitive" (`docs/research/index.html:7`) primes a bias reading. Consider changing it for this talk.
+**M8. The model does not prove the result carries over to QEMU (design, structural).**
 
-**M9. Do not overclaim the 15 runs.** Say "11 distinct flights across assumed noise levels". At 33 s, RMS varies only from 0.2874 to 0.2893 m across all noise, so noise tests tracking very little.
+* Agreement on two numbers, one per lead mode, shows consistency, not cause.
+* The model uses a first-order lag, while the recorded fits are a pure delay. Codebase-details estimates the size difference on this course at under 1%.
+* No one has checked whether the error in the QEMU runs is also along-track lateness.
+* Test proposed by design: one labelled QEMU diagnostic pair with plant drag set to zero. The model predicts the lead-on/lead-off order reverses.
 
-**M10. The shared control loop may be most of the error.** An old ideal-attitude run at 40 s has a maximum of 0.4813 m, against 0.4919 m for CogniPilot and 0.5071 m for Betaflight. That run is stale (K = 2, different hashes). A rerun at K = 6 on current hashes takes seconds of wall time if the native path still works. If the gap stays small, the honest message is that stack choice moves the limit by little.
+**M9. Where to put the feedforward is undecided, and two of the obvious places break existing checks (implementation-readiness, design, inventive-catalyst, zoom-out).**
 
-**M11. Evidence layout (structural).** Keep one source of truth:
+* Inside `Trajectory`, it fails the analytic acceleration check (`cerebri-rdd2-benchmark.patch:4561-4563,4672`).
+* Inside `PositionLoop`, it fails the `PositionOracle` equivalence check (`:4642-4653,4676`).
+* Written by hand in the Rust runner or C shim, it breaks "all controller mathematics from generated C" (`:4727`).
+* Moving it out of the loop does not avoid regeneration or the reruns, because `offboard_sha256` covers both blocks (inventive-catalyst).
 
-* One rule file beside the data, for example `docs/results/arm-speed/speed-rule.json`. The runner's `predeclared-rule.json` is a precedent.
-* A `cognipilot-attempts.json` in the same format as the Betaflight file.
-* Verdicts derived from rule plus attempts at render time. Do not type them by hand.
-* Use one matrix per stack and lead mode, with cell states: pass, tracking fail, landing fail, incomplete, not run.
-* `docs/arm-speed.js:4` hardcodes Betaflight. Captions in `docs/research/index.html:6,10` and the static `speed-and-landing.svg` must be changed or they will contradict the verdict.
+**M10. Cost and missing plan (implementation-readiness, design).**
 
-**M12. Incomplete flights.** A stalled or truncated flight counts as neither pass nor fail. Rerun the same cell, with a stated retry limit, retain it and publish the stall count (`docs/optimization-sequence.md:9`).
+* A full adoption needs: patch update, regeneration with `xtask shared-loop-check`, the ideal-attitude checks, native reruns for both stacks, and a four-cell campaign of sequential QEMU flights. Design estimates roughly 250 flights, and the Betaflight PWM campaign alone took 66 attempts.
+* It also needs landing checks, with Betaflight PWM landing failures expected again, and a replay and Pages refresh.
+* No owners, stage gates or stopping rule are named.
 
-**M13. "Steps to get there" may have little measured behind it.** Lead mode is the only setting that can be changed without a rebuild. Split the slide into measured steps and untested ideas, each with the measurement that would test it. Express the gap in centimetres at the next grid point. Onboard changes stay in separate configurations (`docs/optimization-sequence.md:27`).
+**M11. Raising the position gain is another lever (codebase-details).**
 
-**M14. What triggers the `AGENTS.md` rerun and publish rules.**
-
-| Change | Rerun or republish needed? |
-| --- | --- |
-| Re-scoring existing reports | No flights. Labels must change. |
-| Lead off or new lap times, same binaries | Refresh `docs/replay/source.html` and `index.html` from the actual trajectory if a new flight is presented. Update dates and provenance, and verify GitHub Pages. |
-| A flight that passes tracking but fails landing | Label it. Never animate a landing absent from the recording. |
-| Host watchdog or search-order change | Not flight logic if traces are proven identical. Disclose the hash. |
-| Read-only observer | No, if a byte-identical trace is shown. Only Betaflight has shown this. |
-| Firmware or adapter telemetry | Yes. Full rerun on both stacks. Do not do this week. |
-| K change | Yes. Do not do this week. |
-| OneShot125 as the Betaflight baseline | Yes, adapter timing. Needs 15 confirmations. |
-
-**M15. Prepared answer for the native gap.** Someone will ask why Betaflight went from 26 s native to 33 s on ARM. Answer: firmware and target differ, native is a different experiment, and it is excluded from the ranking.
+* Drag lateness scales roughly with 1/kp.
+* The talk should not present feedforward as the only way to reduce it.
 
 #### Nit
 
-* Do not present the 0.004 m RMS difference at 35 s as a finding. It is one CogniPilot flight.
-* The `omega_*_us` and `alpha_*_us` columns in `trajectory.csv` are legacy neutral values. Do not plot them as lead.
-* `docs/arm-benchmark-integration.md:89` still says Betaflight runs on STM32F405. `docs/betaflight-protocol-study.md:1,24` says no flight has completed, and a OneShot report exists. Mark or fix them before citing them.
-* 31 s was never flown because the search stops at the first failure. Say "shortest passing 33 s, failed at 32 s, tested grid only".
-* State that reproduction is possible from retained sources only, because clean setup is blocked (`docs/fastdyn-source-recovery.md:28`).
+* **The peak speed in RESULTS.md is wrong** (codebase-details, inventive-catalyst; also my own check). "Reference peaks about 2.7 m/s" (`RESULTS.md:58-59`) should be about 4.0 m/s at 33 s, and about 6 m/s at 22 s. The stated 0.61 m/s² peak feedforward matches 4.0 m/s, not 2.7. Confirm from `traj.velocity` in a CSV.
+* **Two different "0.29 m" values.** 0.290 is a worst error (`RESULTS.md:41`) and 0.291 is an RMS (`:36`). Name the case and the measure each time.
+* **The near-ideal attitude, lead-on row** (1.010 m) adds a lead where there is no lag to cancel. Label it as an over-lead control, not evidence.
+* **Reported tables leave out runs.** Lead 0.25 and 0.75 were run but not reported. The lead 0.5, drag-off CSV exists, but its row is missing.
+* **Disabling the lead also disables the alpha feedforward.** `pos.feedforwardEnabled = leadScale > 0` turns it off in lead-off runs (`drag-comp/LeadIsolation.mo:31`). Harmless here, but state it.
+* **The forceFraction check covered one case only.** It tested 33 s without feedforward. It was not repeated for feedforward or short laps.
+* **"Peak motor command 0.74 at 22 s"** does not name the case.
+* **speed-rule.json:3 still says "DRAFT ... Not in force until committed"**, and its open decisions (`:95-99`) are still listed, although commit 4b20b6c added the file. Reconcile this before the talk cites the rule.
+* **"Today 33 s" needs its basis.** It is lead-on, tracking only, and Betaflight has landing failures. `simulation-qualification.md:47` says not to report 33 s as a confirmed reliable speed.
+* **The talk needs a one-line glossary**: tilt lead, K, stick command, shared position loop, feedforward, gates, and "lap" meaning a planned schedule.
 
 ### Where the lenses disagreed
 
 | Topic | Positions | How this brief treats it |
 | --- | --- | --- |
-| VM first or rule first | One lens said inspect and log the VM first. The others said commit the rule first. | Commit first. It takes minutes and removes the conflict. |
-| Step probes at K = 6 on ARM | Three lenses favor running them. Zoom-out and readiness would cut them. ARM support is unverified. | Run only if no rebuild is needed; otherwise disclose. |
-| OneShot125 | Design: a required fairness variable. Readiness: small labelled check. Structural and zoom-out: leave it out. | Open decision for the author. |
-| Rerun Betaflight on the new runner | Most: rerun a subset. Readiness: optionally rerun all. | Rerun a subset first. |
-| First flights | Readiness: Betaflight first, because it is cheap. Zoom-out: CogniPilot lead off first. | Betaflight lead off first. It takes under an hour and sets the target. |
+| Show 22 s at all | Zoom-out: drop it. Others: only on a slide marked as a model-only projection. | Recommend leaving it out. If used, it must carry every qualifier in B2 (open decision). |
+| Fit drag from existing recordings | Inventive-catalyst: fit drag from the recorded runs, with no new flights. Implementation-readiness: `trajectory.csv` has no velocity or acceleration columns, and the fit can only return the plant's own assumed values. | A fit can check that the QEMU plant matches the Modelica plant, but it cannot measure real drag. It needs extra logged signals first. |
+| Where the feedforward lives | Design, inventive-catalyst: in the reference layer, with matching jerk and snap. Implementation-readiness: a new generated `DragFeedforward` block feeding the summed reference input. | These fit together: a separate generated block computed from the reference, which also outputs the jerk term. Decide this in the new rule, not now. |
+| Severity of the Desktop clone mismatch | Codebase-details: Blocker for reproducibility. Others: Major. | Blocker (B4) for presenting numbers, because the gains set the size of the drag error. |
+
+### Proposals from the inventive and design lenses (proposals, not author decisions)
+
+* **Turn the data freeze into a test.** Before the lead-off results are opened, write down the model's lead-off prediction with a timestamp. A correct prediction is the strongest evidence available for the talk. A wrong one shows where the model fails.
+* **Test the drag hypothesis on recorded QEMU runs, with no new flights:**
+  * *Phase test.* Drag error should peak at peak speed (the center crossing). Lag error should peak at the turn apexes.
+  * *Size test.* Regress along-track error on planned speed and on planned acceleration.
+  * *Scaling test.* Compare across the Betaflight 40, 35, 34, 33 and 32 s runs. Drag error grows more slowly with shorter laps than lag error does.
+* **Run model sweeps as extends-modifiers**, which work, to avoid the crashing PositionLoop modifier:
+  * Feedforward scale {0, 0.5, 0.8, 1.0, 1.2, 1.5}.
+  * Lag {150, 170, 190 ms}.
+  * Laps {22, 20, 18 s}.
+  * Report the margin as a range across the sweep.
+* **An integral term or disturbance observer** is a later option for hardware, where drag really is unknown. The current integrator (Ki = 0.05, about a 30 s time constant) cannot absorb drag.
+* **Plan for hardware drag measurement (deferred).** Fly constant-speed straight passes at several speeds in each direction, indoors with no wind. Log motion-capture velocity, the body x/y accelerometer and attitude. The fit must include rotor drag, which the plant does not model. No airframe, owner or logging setup exists yet.
 
 ## Goals vs. Non-Goals
 
 * **In-Scope Goals:**
-  * A written rule, committed before the unread CogniPilot results are opened.
-  * A win, tie, loss or inconclusive verdict for the four combinations of stack and lead mode, under that rule.
-  * A separate landing table, with the original full-mission result shown beside the tracking result.
-  * A measured description of where the attitude response differs, with causes marked as not measured.
-  * Accurate disclosure of timing rates and of the Betaflight setup.
-  * Measured steps toward a win, separated from untested ideas.
-  * Every failed and incomplete attempt retained and shown.
-  * Replay and GitHub Pages updated from actual recordings if new flights are presented.
+  * One honest slide on the model diagnosis: drag and lag partly cancel, and the lead removes the lag as designed. Use the wording in B1, the word "model" throughout, and the required scope wording from `speed-rule.json:89-92`.
+  * Keep the committed rule and the in-progress lead-off searches exactly as they are until the data freeze.
+  * A written, timestamped model prediction for the lead-off searches, made only if those results are still unseen.
+  * A reproducibility record for the scratch study:
+    * the base commit and the gains it used, both patches, and the Rumoca binary;
+    * for each CSV: the model file hash, the command and the end time;
+    * how drag was zeroed in the drag-off runs.
+  * Small model checks before any number goes on a slide:
+    * RMS and stick-command tilt for every lap case;
+    * the drag-off, feedforward-on control case;
+    * 0.5× and 1.5× drag coefficients;
+    * the lead check repeated with feedforward on;
+    * one rerun with the integrator starting when the lap starts.
+  * Correct the peak-speed line in RESULTS.md.
 * **Out-of-Scope Non-Goals:**
-  * Hardware timing, jitter or physical flight claims.
-  * Any firmware change or firmware telemetry this week.
-  * Tuning K or changing K on ARM this week.
-  * Fixing Betaflight landing, or finding its root cause.
-  * Clean FastDyn reproduction.
-  * ArduPilot and PX4.
-  * Global maximum speed or race-gate lap time claims.
-  * A CogniPilot observer equivalent to the Betaflight yaw observer.
+  * Any change to the shared loop, offboard hash or benchmark config before the talk.
+  * Any lap-time claim from the model, including "22 s".
+  * Any claim about hardware drag or physical speed.
+  * Claiming that firmware is ruled out, or that both stacks benefit equally.
+  * Mixing results with and without drag feedforward in one ranking.
+  * Tracing the 0.29 m error to its source before the talk, beyond the single integrator rerun.
+  * Hardware drag measurement flights.
 
 ## Alternatives Weighed
 
-* **Requiring landing inside the speed pass rule.** Rejected by author: landing is scored separately.
-* **Maintainer attribution.** Rejected by author: the work names no maintainer.
+The author's concept proposes two things: present the result as the "step to get faster", and later add drag feedforward to the shared loop. Every option below is a reviewer proposal for the author to confirm. None is an author decision.
 
-The options below are reviewer recommendations for the author to confirm. They are not author decisions.
-
-* **Confirming all 15 runs at every lap time in both modes.** Proposed rejection: about 330 CogniPilot flights and 50 hours, which leaves no time for analysis.
-* **Adding instrumented firmware to explain the cause.** Proposed rejection: it changes the binary hashes and forces a full rerun for both stacks.
-* **Requalifying or sweeping K on ARM.** Proposed rejection: CogniPilot needs a rebuild per gain, and changing K triggers the rerun rule. A native sweep can be a separately labelled next step.
-* **A tie-breaker on RMS or a finer grid after a tie.** Proposed rejection: either would be a new rule written after the data was seen.
-* **Dropping lead off to save time.** Proposed rejection: it is the most likely way to separate the stacks, and the native result shows lead-on alone does not show CogniPilot's best.
-* **Leading with paired same-speed error and no lap-time verdict.** Partly adopted: show that error beside the verdict. The audience still asked a lap-time question, so the verdict stays.
-* **Using the unread hardened results as they are.** Proposed rejection: that search used the landing-inclusive rule, and landing failures may have stopped its descent. Re-score it and fill in the missing cells.
-* **Using the old `tilt-lead/fastdyn/betaflight` run for lag.** Proposed rejection: it is the STM32F405 build.
+* **Present "measured step to get faster, 33 s to 22 s".** Proposed rejection:
+  * The results are model output from single noise-free runs.
+  * The 22 s margin (0.026 m) is smaller than the known gap between model and QEMU.
+  * RMS and the other gates were not checked.
+  * The rule's required wording does not allow it.
+  * The fair baseline is the model's own lead-off result of 27 s, not 33 s.
+* **Add drag feedforward to the shared loop before the talk.** Proposed rejection:
+  * It changes the fixed offboard hash and config.
+  * It voids both completed campaigns and the blind lead-off searches.
+  * Under AGENTS.md it triggers a full rerun and republish, which cannot finish in three days.
+* **Put the feedforward inside `Trajectory`.** Proposed rejection: it fails the analytic acceleration check in `shared-loop-check`.
+* **Put the feedforward inside `PositionLoop`.** Proposed rejection: it fails the `PositionOracle` equivalence check. It also ties the plant's coefficients into a generic controller block.
+* **Write the feedforward by hand in the Rust runner or C shim.** Proposed rejection: it breaks the rule that all controller mathematics come from generated C.
+* **Keep the feedforward on measured attitude.** Proposed rejection for any future version:
+  * It puts the attitude estimate into what should be a reference-only path.
+  * It differs per stack.
+  * Rotating by the planned attitude costs little error below 30° of tilt and keeps the input identical for both stacks.
+* **Raise the integral gain to absorb drag.** Proposed rejection for now:
+  * It amplifies noise and can interact with the lead.
+  * It adds a tuning value that the rule would have to freeze.
+  * Keep it as a hardware-era option.
+* **Fit "real" drag from the existing `trajectory.csv` files.** Proposed rejection as a drag measurement:
+  * The files have no velocity or specific-force columns.
+  * Any fit would only return the simulated plant's assumed values.
+  * It is still useful to confirm that the QEMU plant matches the Modelica plant.
 
 ## Key Decisions & Staging for Next Steps
 
 ### Decided by the author
 
-* The definition of faster, the gates, the 1 s grid, the 15-run set and the better-of-lead rule.
-* K = 6/s for both stacks.
-* Equal times are a tie.
-* Landing is scored and reported separately.
+* Shortest-lap definition, gates, K = 6/s and lead modes, as fixed in the committed rule (`speed-rule.json`).
 * Simulation-only claims.
+* Drag feedforward in the shared loop is "consider later", not planned work.
 
 ### Open decisions for the author
 
 | Decision | Reviewer recommendation |
 | --- | --- |
-| Wording that reconciles this result with `docs/simulation-qualification.md:24,47` | Two named results, and "under this stated rule" in the headline. |
-| OneShot125 | Keep PWM as the primary. Add a small labelled OneShot check at 31 to 33 s, about 11 minutes, that can only downgrade a win to "marginal". Read back the real loop rate. |
-| Is a tie a "not faster" result? | Yes. Follow the "steps to get there" branch. |
-| Stop at first tracking failure, or fly all 15 | Stop early at failed candidates, for both stacks. Fly all 15 at the selected time. |
-| Runner parity | Rerun Betaflight 32 and 33 s on `f2ef29`. |
-| What counts as a "marginal" win | A win whose verdict flips if the maximum-error gate moves by plus or minus 0.02 m. Reported as description, with the 0.75 m gate unchanged. |
-| Search runner | Use the unmodified runner and re-score, unless the measured failure rate is above about 2 percent. Then add per-cell retry to the Rust search and prove traces are unchanged. |
+| Headline wording for the talk | "Model diagnosis," not "measured step." Use the B1 wording, and name the 0.29 m remaining loop error as not yet traced to a source. |
+| Show 22 s at all | Leave it out. If shown, label it: model only, no firmware, no noise, exact drag, one run, margin 0.026 m, RMS unchecked, shortest lap tried. |
+| Pre-register a lead-off prediction | Yes, if lead-off results are still unseen. Otherwise state that any comparison was made after the results were seen. |
+| Gains used at a41f7c0 | Check with `git show a41f7c0:Control/Multirotor/LogLinear/package.mo` and against the flown generated C before quoting any model number. |
+| Whether a future drag-feedforward rule is wanted | Only after the model checks show the gain survives wrong coefficients and the control case. If yes, write rule version 2 with config `...-v4` and commit it before any run. |
+| Wait for the lead-off freeze before any v4 work | Yes. Keep all v4 code and config away from the VM until after 2026-11-14 12:00. |
 
 ### Staged plan
 
-**Stage 0, Monday 11-09 evening to Tuesday 11-10 morning: secure the rule and the data.**
+**Stage 0, before 2026-11-14 12:00 (freeze).**
 
-1. Commit the versioned rule, the definition sentence and the tie sentence, before reading any VM results.
-2. Start the VM. Confirm that no coordinator or QEMU has resumed. Check free disk.
-3. Copy the hardened and legacy campaign folders, logs, `src/` and FastDyn bundles to the Mac unchanged, with hashes.
-4. From the logs, compute the stall rate, real time per flight and hashes. Check whether each flight kept `tilt-lead.csv` and whether the hardened search reached a usable lead-on set.
+1. Do not change the VM, config or rule.
+2. If lead-off results are unseen, commit a timestamped model prediction for the lead-off cells: pass at 27 s, fail at 25 s, plus the stated model bias.
+3. Fix the DRAFT status line in `speed-rule.json` if the rule is in force.
 
-**Stage 1, Tuesday 11-10: cheap cells.**
+**Stage 1, 2026-11-13 to 11-15: make the scratch study checkable.**
 
-5. Betaflight lead off, using the same search order.
-6. Betaflight 32 and 33 s on runner `f2ef29`, with a trace comparison.
-7. Rerun the ideal-attitude case at K = 6 on current hashes.
-8. Compute the 40 s lag from the matched pair, against both the reference tilt and the final command.
-9. Go or no-go, Tuesday night: if CogniPilot flights are not producing results, fall back to both modes at 32 and 33 s, plus 15 runs on the better mode.
+4. Record the run manifest: base commit and gains, both patches, Rumoca hash, and for each CSV the model file, command, end time and hash. Record the drag-off method.
+5. Export from the existing CSVs:
+   * RMS for each lap case;
+   * stick-command tilt including lead;
+   * along-track, cross-track and vertical error, and the time of the worst point;
+   * peak reference speed.
+6. Run a few new model cases, retrying any Rumoca crash with a different end time and logging every retry:
+   * the drag-off, feedforward-on control case;
+   * feedforward at 0.5× and 1.5×, at 33 s and 27 s;
+   * the lead check with feedforward on;
+   * one rerun with the integrator starting when the lap starts.
+7. Correct the peak-speed line in RESULTS.md.
 
-**Stage 2, Tuesday night to Thursday 11-12: CogniPilot.**
+**Stage 2, the talk (about 2026-11-16).**
 
-10. CogniPilot lead off, screening down from the coarse grid, then refined to 1 s. Declare in advance that any landing-only screening stop is followed by extra flights.
-11. CogniPilot lead on, unless a valid set already exists on the VM.
-12. 15-run confirmation at the shortest candidate. Fall back only on tracking failure. Keep every attempt.
+8. Show the committed-rule result in its required wording, separately from the model.
+9. Show one model slide with three error-along-the-lap curves: lag with drag, lead with drag, and lead with drag and feedforward. Add one sentence on why the lag puts the drone ahead.
+10. Suggested smallest honest message (comprehension, zoom-out, design and structural converged on this):
+    > "In a noise-free model of our shared position loop and plant, with no firmware, the lead-on penalty comes from drag that the loop does not account for. Without the lead, the slow attitude response happened to offset part of that drag error. The lead works as designed. Adding the model's own drag formula to the loop roughly halved worst error at the 33 s schedule (0.77 → 0.36 m), leaving about 0.3 m of loop error not yet traced to a source. This is a hypothesis for the next firmware simulation campaign, under a new rule. No hardware result."
+11. Mention that the model's lead-off prediction exists and, if the results are in, whether it held.
 
-**Stage 3, Friday 11-13: freeze and score.**
+**Stage 3, after the talk, only if adopted.**
 
-13. Data freeze at noon. No new flights after this, except reruns of incomplete cells.
-14. Run the scorer. Produce the 2-by-2 table, the error curve, the landing table and the margins.
-15. Compute lag at the deciding lap times if the logs exist.
+12. Write and commit rule version 2 and config `...-v4`, with drag feedforward as a declared factor.
+13. Add a separate generated `DragFeedforward` block computed from the reference, including its jerk and snap terms. Take its coefficients from one source shared with the plant, enforced by `shared-loop-check`. Add a new oracle test.
+14. Acceptance test with feedforward off: the new library must reproduce `confirm-33-none-1` `trajectory.csv` byte for byte for both stacks.
+15. Stage gate: one QEMU flight per stack at 33 s, lead on, no noise, with feedforward.
+    * Expected: worst error at or below about 0.45 m and mean along-track error near zero.
+    * Stop and revisit the drag explanation if the improvement is less than half the model prediction.
+16. Full campaign under rule version 2, following the AGENTS.md rules:
+    * all native reruns, keeping failed attempts;
+    * landing checks;
+    * replay refresh from actual trajectories;
+    * Pages publish.
 
-**Stage 4, Saturday 11-14 to Sunday 11-15: publish and prepare.**
-
-16. Update the qualification text, the dashboard, the state file and the captions together.
-17. Refresh the replay from actual trajectories, keep the final sample, and verify GitHub Pages once.
-18. Write the three required slides: definition and rule, verdict and landing table, where the difference appears and what is not measured.
-
-### If the campaign is only partly finished
-
-| Outcome | What the presentation says |
-| --- | --- |
-| No new CogniPilot data | Betaflight 33 s tracking, provisional. One paired 35 s comparison. "Unresolved." Show the 40 s lag pair and the plan. |
-| Screening done, confirmation partial | Report brackets per stack and mode, labelled unconfirmed. No winner. |
-| One mode confirmed | Answer for that mode only. Mark the other as pending. |
-| All confirmed | The 2-by-2 table, a tie or winner by the committed rule, and a separate landing table. |
+    Keep the v3 recordings labelled with their original dates.
+17. Hardware drag measurement is a separate later workstream. It needs an owner, an airframe and logging.
