@@ -1,0 +1,13 @@
+{
+  "modes": [
+    "off",
+    "omega"
+  ],
+  "timelineEnd": 83,
+  "playPause": true,
+  "reset": true,
+  "topView": true,
+  "mobileOverflow": false,
+  "navigationTeardown": true,
+  "errors": []
+}

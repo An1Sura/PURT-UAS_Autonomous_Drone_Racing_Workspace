@@ -1,0 +1,16 @@
+[
+  {
+    "feedforward": "off",
+    "id": "figure-eight-off",
+    "noise": "realistic",
+    "seed": 1,
+    "shape": "figure-eight"
+  },
+  {
+    "feedforward": "omega",
+    "id": "figure-eight-omega",
+    "noise": "realistic",
+    "seed": 1,
+    "shape": "figure-eight"
+  }
+]

@@ -1,0 +1,471 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fmiModelDescription
+  fmiVersion="3.0"
+  modelName="Benchmarks_IdealAttitudePlant"
+  generationTool="Rumoca"
+  instantiationToken="f66b8051-a5a8-4617-88d7-5e208e14e6b9">
+  <ModelExchange modelIdentifier="Rumoca_f66b8051_a5a8_4617_88d7_5e208e14e6b9"/>
+  <CoSimulation modelIdentifier="Rumoca_f66b8051_a5a8_4617_88d7_5e208e14e6b9" canHandleVariableCommunicationStepSize="true"/>
+  <UnitDefinitions>
+    <Unit name="s">
+      <BaseUnit s="1"/>
+    </Unit>
+  </UnitDefinitions>
+  <ModelVariables>
+    <Float64 name="time" valueReference="0" causality="independent" variability="continuous" unit="s"/>
+    <Float64 name="omegaMax" valueReference="1" causality="parameter" variability="tunable" initial="exact" start="1100.0">
+    </Float64>
+    <Float64 name="rotorGeometry.armLength_m" valueReference="2" causality="parameter" variability="tunable" initial="exact" start="0.25">
+    </Float64>
+    <Float64 name="rotorGeometry.effectiveMomentArm_m" valueReference="3" causality="parameter" variability="tunable" initial="exact" start="0.17677669529663687" description="Quad-X roll/pitch lever arm">
+    </Float64>
+    <Float64 name="rotorGeometry.rotorTorqueRatio_m" valueReference="4" causality="parameter" variability="tunable" initial="exact" start="0.016">
+    </Float64>
+    <Float64 name="rotorGeometry.positionBodyFlu_m" valueReference="5" causality="parameter" variability="tunable" initial="exact" start="0.17677669529663687 -0.17677669529663687 0.0 -0.17677669529663687 -0.17677669529663687 0.0 -0.17677669529663687 0.17677669529663687 0.0 0.17677669529663687 0.17677669529663687 0.0">
+      <Dimension start="4"/>
+      <Dimension start="3"/>
+    </Float64>
+    <Float64 name="rotorGeometry.yawMomentPerThrust_m" valueReference="6" causality="parameter" variability="tunable" initial="exact" start="-0.016 0.016 -0.016 0.016">
+      <Dimension start="4"/>
+    </Float64>
+    <Float64 name="rotorEffectiveness" valueReference="7" causality="parameter" variability="tunable" initial="exact" start="1.0 1.0 1.0 1.0 -0.17677669529663687 -0.17677669529663687 0.17677669529663687 0.17677669529663687 -0.17677669529663687 0.17677669529663687 0.17677669529663687 -0.17677669529663687 -0.016 0.016 -0.016 0.016">
+      <Dimension start="4"/>
+      <Dimension start="4"/>
+    </Float64>
+    <Float64 name="commands.motor" valueReference="8" causality="input" variability="continuous" start="0.0 0.0 0.0 0.0" description="normalized motor commands">
+      <Dimension start="4"/>
+    </Float64>
+    <Boolean name="imu.valid" valueReference="9" causality="output" variability="discrete" start="false" description="True when the sample can be used">
+    </Boolean>
+    <Boolean name="imu.fresh" valueReference="10" causality="output" variability="discrete" start="false" description="True for one estimator tick per new sample">
+    </Boolean>
+    <Float64 name="imu.timestamp_s" valueReference="11" causality="output" variability="continuous" start="0.0">
+    </Float64>
+    <Float64 name="imu.angularVelocityBodyFlu_rad_s" valueReference="12" causality="output" variability="continuous" start="0.0 0.0 0.0">
+      <Dimension start="3"/>
+    </Float64>
+    <Float64 name="imu.specificForceBodyFlu_m_s2" valueReference="13" causality="output" variability="continuous" start="0.0 0.0 0.0" description="Accelerometer specific force; stationary level value is +g on body z">
+      <Dimension start="3"/>
+    </Float64>
+    <Boolean name="truth.valid" valueReference="14" causality="output" variability="discrete" start="false">
+    </Boolean>
+    <Float64 name="truth.timestamp_s" valueReference="15" causality="output" variability="continuous" start="0.0">
+    </Float64>
+    <Float64 name="truth.positionWorldEnu_m" valueReference="16" causality="output" variability="continuous" start="0.0 0.0 0.0">
+      <Dimension start="3"/>
+    </Float64>
+    <Float64 name="truth.velocityWorldEnu_m_s" valueReference="17" causality="output" variability="continuous" start="0.0 0.0 0.0">
+      <Dimension start="3"/>
+    </Float64>
+    <Float64 name="truth.accelerationWorldEnu_m_s2" valueReference="18" causality="output" variability="continuous" start="0.0 0.0 0.0">
+      <Dimension start="3"/>
+    </Float64>
+    <Float64 name="truth.quaternionWorldBody" valueReference="19" causality="output" variability="continuous" start="0.0 0.0 0.0 0.0" description="Scalar-first Hamilton quaternion {w,x,y,z}, body FLU to world ENU">
+      <Dimension start="4"/>
+    </Float64>
+    <Float64 name="truth.rotationWorldBody" valueReference="20" causality="output" variability="continuous" start="0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0" description="Direction-cosine matrix mapping body FLU vectors into world ENU">
+      <Dimension start="3"/>
+      <Dimension start="3"/>
+    </Float64>
+    <Float64 name="truth.eulerRpy_rad" valueReference="21" causality="output" variability="continuous" start="0.0 0.0 0.0" description="Intrinsic 3-2-1 attitude ordered {roll,pitch,yaw}">
+      <Dimension start="3"/>
+    </Float64>
+    <Float64 name="truth.angularVelocityBodyFlu_rad_s" valueReference="22" causality="output" variability="continuous" start="0.0 0.0 0.0">
+      <Dimension start="3"/>
+    </Float64>
+    <Float64 name="truth.angularVelocityWorldEnu_rad_s" valueReference="23" causality="output" variability="continuous" start="0.0 0.0 0.0">
+      <Dimension start="3"/>
+    </Float64>
+    <Float64 name="motorOmega_rad_s" valueReference="24" causality="output" variability="continuous" start="0.0 0.0 0.0 0.0">
+      <Dimension start="4"/>
+    </Float64>
+    <Boolean name="dynamics.idealAttitude" valueReference="25" causality="parameter" variability="tunable" initial="exact" start="true" description="Test-only prescribed orientation; full 6DOF remains the default">
+    </Boolean>
+    <Float64 name="dynamics.attitudeOverride" valueReference="26" causality="local" variability="continuous" start="0.0 0.0 0.0 0.0">
+      <Dimension start="4"/>
+    </Float64>
+    <Float64 name="dynamics.mass" valueReference="27" causality="parameter" variability="tunable" initial="exact" start="2.0" description="Mass [kg]">
+    </Float64>
+    <Float64 name="dynamics.g" valueReference="28" causality="parameter" variability="tunable" initial="exact" start="9.80665" description="Gravity [m/s^2]">
+    </Float64>
+    <Float64 name="dynamics.ixx" valueReference="29" causality="parameter" variability="tunable" initial="exact" start="0.02166666666666667" description="Body inertia matrix xx entry [kg*m^2]">
+    </Float64>
+    <Float64 name="dynamics.iyy" valueReference="30" causality="parameter" variability="tunable" initial="exact" start="0.02166666666666667" description="Body inertia matrix yy entry [kg*m^2]">
+    </Float64>
+    <Float64 name="dynamics.izz" valueReference="31" causality="parameter" variability="tunable" initial="exact" start="0.04000000000000001" description="Body inertia matrix zz entry [kg*m^2]">
+    </Float64>
+    <Float64 name="dynamics.ixy" valueReference="32" causality="parameter" variability="tunable" initial="exact" start="0.0" description="Body inertia matrix xy entry [kg*m^2]">
+    </Float64>
+    <Float64 name="dynamics.ixz" valueReference="33" causality="parameter" variability="tunable" initial="exact" start="0.0" description="Body inertia matrix xz entry [kg*m^2]">
+    </Float64>
+    <Float64 name="dynamics.iyz" valueReference="34" causality="parameter" variability="tunable" initial="exact" start="0.0" description="Body inertia matrix yz entry [kg*m^2]">
+    </Float64>
+    <Float64 name="dynamics.J" valueReference="35" causality="parameter" variability="tunable" initial="exact" start="0.02166666666666667 0.0 0.0 0.0 0.02166666666666667 0.0 0.0 0.0 0.04000000000000001" description="Body inertia matrix [kg*m^2]">
+      <Dimension start="3"/>
+      <Dimension start="3"/>
+    </Float64>
+    <Float64 name="dynamics.p_start" valueReference="36" causality="parameter" variability="tunable" initial="exact" start="0.0 0.0 0.12000000000000001" description="Initial world position">
+      <Dimension start="3"/>
+    </Float64>
+    <Float64 name="dynamics.v_b_start" valueReference="37" causality="parameter" variability="tunable" initial="exact" start="0.0 0.0 0.0" description="Initial body velocity">
+      <Dimension start="3"/>
+    </Float64>
+    <Float64 name="dynamics.q_start" valueReference="38" causality="parameter" variability="tunable" initial="exact" start="1.0 0.0 0.0 0.0" description="Initial quaternion w,x,y,z">
+      <Dimension start="4"/>
+    </Float64>
+    <Float64 name="dynamics.omega_start" valueReference="39" causality="parameter" variability="tunable" initial="exact" start="0.0 0.0 0.0" description="Initial body angular velocity">
+      <Dimension start="3"/>
+    </Float64>
+    <Float64 name="dynamics.qnorm_gain" valueReference="40" causality="parameter" variability="tunable" initial="exact" start="1.0" description="Quaternion renormalization gain">
+    </Float64>
+    <Float64 name="dynamics.F_b" valueReference="41" causality="local" variability="continuous" start="0.0 0.0 0.0" description="Total non-gravity force in body frame [N]">
+      <Dimension start="3"/>
+    </Float64>
+    <Float64 name="dynamics.M_b" valueReference="42" causality="local" variability="continuous" start="0.0 0.0 0.0" description="Total moment in body frame [N*m]">
+      <Dimension start="3"/>
+    </Float64>
+    <Float64 name="dynamics.p" valueReference="43" causality="local" variability="continuous" initial="exact" start="0.0 0.0 0.12000000000000001" description="World position [m]">
+      <Dimension start="3"/>
+    </Float64>
+    <Float64 name="dynamics.v_b" valueReference="44" causality="local" variability="continuous" start="0.0 0.0 0.0" description="Body velocity [m/s]">
+      <Dimension start="3"/>
+    </Float64>
+    <Float64 name="dynamics.q" valueReference="45" causality="local" variability="continuous" start="1.0 0.0 0.0 0.0" description="Quaternion w,x,y,z">
+      <Dimension start="4"/>
+    </Float64>
+    <Float64 name="dynamics.omega" valueReference="46" causality="local" variability="continuous" start="0.0 0.0 0.0" description="Body angular velocity [rad/s]">
+      <Dimension start="3"/>
+    </Float64>
+    <Float64 name="dynamics.R" valueReference="47" causality="local" variability="continuous" start="1.0 0.0 0.0 0.0 1.0 0.0 0.0 0.0 1.0" description="Direction cosine matrix, body to world">
+      <Dimension start="3"/>
+      <Dimension start="3"/>
+    </Float64>
+    <Float64 name="dynamics.v_w" valueReference="48" causality="local" variability="continuous" initial="exact" start="0.0 0.0 0.0" description="World velocity [m/s]">
+      <Dimension start="3"/>
+    </Float64>
+    <Float64 name="dynamics.a_b" valueReference="49" causality="local" variability="continuous" start="0.0 0.0 0.0" description="Body specific force [m/s^2]">
+      <Dimension start="3"/>
+    </Float64>
+    <Float64 name="dynamics.state.worldPosition" valueReference="50" causality="local" variability="continuous" start="0.0 0.0 0.0" description="World position [m]">
+      <Dimension start="3"/>
+    </Float64>
+    <Float64 name="dynamics.state.bodyVelocity" valueReference="51" causality="local" variability="continuous" start="0.0 0.0 0.0" description="Body-frame linear velocity [m/s]">
+      <Dimension start="3"/>
+    </Float64>
+    <Float64 name="dynamics.state.attitude" valueReference="52" causality="local" variability="continuous" start="0.0 0.0 0.0 0.0" description="Unit quaternion {w,x,y,z}, body to world">
+      <Dimension start="4"/>
+    </Float64>
+    <Float64 name="dynamics.state.bodyAngularVelocity" valueReference="53" causality="local" variability="continuous" start="0.0 0.0 0.0" description="Body-frame angular velocity [rad/s]">
+      <Dimension start="3"/>
+    </Float64>
+    <Float64 name="dynamics.wrench.bodyForce" valueReference="54" causality="local" variability="continuous" start="0.0 0.0 0.0" description="Force [N]">
+      <Dimension start="3"/>
+    </Float64>
+    <Float64 name="dynamics.wrench.bodyTorque" valueReference="55" causality="local" variability="continuous" start="0.0 0.0 0.0" description="Torque [N*m]">
+      <Dimension start="3"/>
+    </Float64>
+    <Float64 name="dynamics.physicalParameters.mass" valueReference="56" causality="local" variability="continuous" start="0.0" description="Mass [kg]; callers must require mass &gt; 0" min="0.0">
+    </Float64>
+    <Float64 name="dynamics.physicalParameters.gravity" valueReference="57" causality="local" variability="continuous" start="0.0" description="Gravity magnitude [m/s^2]" min="0.0">
+    </Float64>
+    <Float64 name="dynamics.physicalParameters.inertia" valueReference="58" causality="local" variability="continuous" start="0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0" description="Body inertia [kg*m^2]">
+      <Dimension start="3"/>
+      <Dimension start="3"/>
+    </Float64>
+    <Float64 name="dynamics.physicalParameters.quaternionNormGain" valueReference="59" causality="local" variability="continuous" start="0.0" description="Off-manifold norm stabilization; zero gives the physical vector field" min="0.0">
+    </Float64>
+    <Float64 name="dynamics.worldPositionRate" valueReference="60" causality="local" variability="continuous" start="0.0 0.0 0.0">
+      <Dimension start="3"/>
+    </Float64>
+    <Float64 name="dynamics.bodyVelocityRate" valueReference="61" causality="local" variability="continuous" start="0.0 0.0 0.0">
+      <Dimension start="3"/>
+    </Float64>
+    <Float64 name="dynamics.attitudeRate" valueReference="62" causality="local" variability="continuous" start="0.0 0.0 0.0 0.0">
+      <Dimension start="4"/>
+    </Float64>
+    <Float64 name="dynamics.bodyAngularVelocityRate" valueReference="63" causality="local" variability="continuous" start="0.0 0.0 0.0">
+      <Dimension start="3"/>
+    </Float64>
+    <Float64 name="dynamics.vehicle_mass" valueReference="64" causality="parameter" variability="tunable" initial="exact" start="2.0" description="Total vehicle mass [kg]">
+    </Float64>
+    <Float64 name="dynamics.gravity" valueReference="65" causality="parameter" variability="tunable" initial="exact" start="9.80665" description="Gravitational acceleration [m/s2]">
+    </Float64>
+    <Float64 name="dynamics.vehicle_ixx" valueReference="66" causality="parameter" variability="tunable" initial="exact" start="0.02166666666666667" description="Body inertia xx [kg*m^2]">
+    </Float64>
+    <Float64 name="dynamics.vehicle_iyy" valueReference="67" causality="parameter" variability="tunable" initial="exact" start="0.02166666666666667" description="Body inertia yy [kg*m^2]">
+    </Float64>
+    <Float64 name="dynamics.vehicle_izz" valueReference="68" causality="parameter" variability="tunable" initial="exact" start="0.04000000000000001" description="Body inertia zz [kg*m^2]">
+    </Float64>
+    <Float64 name="dynamics.Ct" valueReference="69" causality="parameter" variability="tunable" initial="exact" start="0.00000854858" description="Thrust coefficient [N/(rad/s)^2]">
+    </Float64>
+    <Float64 name="dynamics.Cm" valueReference="70" causality="parameter" variability="tunable" initial="exact" start="0.016" description="Rotor torque/thrust ratio [m]">
+    </Float64>
+    <Float64 name="dynamics.arm_length" valueReference="71" causality="parameter" variability="tunable" initial="exact" start="0.25" description="Arm length [m]">
+    </Float64>
+    <Float64 name="dynamics.d" valueReference="72" causality="parameter" variability="tunable" initial="exact" start="0.17677669529663687" description="Effective moment arm [m]">
+    </Float64>
+    <Float64 name="dynamics.Cl_p" valueReference="73" causality="parameter" variability="tunable" initial="exact" start="-0.2" description="Rolling moment coefficient per roll rate">
+    </Float64>
+    <Float64 name="dynamics.Cm_q" valueReference="74" causality="parameter" variability="tunable" initial="exact" start="-0.2" description="Pitching moment coefficient per pitch rate">
+    </Float64>
+    <Float64 name="dynamics.Cn_r" valueReference="75" causality="parameter" variability="tunable" initial="exact" start="-0.1" description="Yawing moment coefficient per yaw rate">
+    </Float64>
+    <Float64 name="dynamics.S" valueReference="76" causality="parameter" variability="tunable" initial="exact" start="0.1" description="Reference area [m^2]">
+    </Float64>
+    <Float64 name="dynamics.CdA" valueReference="77" causality="parameter" variability="tunable" initial="exact" start="0.06 0.08 0.12" description="Body-axis drag area [m^2]">
+      <Dimension start="3"/>
+    </Float64>
+    <Float64 name="dynamics.linear_drag" valueReference="78" causality="parameter" variability="tunable" initial="exact" start="0.12 0.12 0.18" description="Low-speed body-axis drag [N/(m/s)]">
+      <Dimension start="3"/>
+    </Float64>
+    <Float64 name="dynamics.rho" valueReference="79" causality="parameter" variability="tunable" initial="exact" start="1.225" description="Air density [kg/m^3]">
+    </Float64>
+    <Float64 name="dynamics.mag_world_enu" valueReference="80" causality="parameter" variability="tunable" initial="exact" start="0.0 0.21 -0.45" description="Magnetic field in world ENU axes [Gauss]">
+      <Dimension start="3"/>
+    </Float64>
+    <Float64 name="dynamics.ground_k" valueReference="81" causality="parameter" variability="tunable" initial="exact" start="3000.0" description="Ground stiffness per contact point [N/m]">
+    </Float64>
+    <Float64 name="dynamics.ground_c" valueReference="82" causality="parameter" variability="tunable" initial="exact" start="150.0" description="Ground normal damping per contact point [N*s/m]">
+    </Float64>
+    <Float64 name="dynamics.ground_tangent_c" valueReference="83" causality="parameter" variability="tunable" initial="exact" start="25.0" description="Ground tangential damping per contact point [N*s/m]">
+    </Float64>
+    <Float64 name="dynamics.ground_z" valueReference="84" causality="parameter" variability="tunable" initial="exact" start="0.0" description="World Z coordinate of the ground collision plane [m]">
+    </Float64>
+    <Float64 name="dynamics.initial_ground_clearance" valueReference="85" causality="parameter" variability="tunable" initial="exact" start="0.02" description="Initial landing-leg clearance above the ground plane [m]">
+    </Float64>
+    <Float64 name="dynamics.leg_x" valueReference="86" causality="parameter" variability="tunable" initial="exact" start="0.17" description="Landing contact X offset from CG [m]">
+    </Float64>
+    <Float64 name="dynamics.leg_y" valueReference="87" causality="parameter" variability="tunable" initial="exact" start="0.17" description="Landing contact Y offset from CG [m]">
+    </Float64>
+    <Float64 name="dynamics.leg_z" valueReference="88" causality="parameter" variability="tunable" initial="exact" start="-0.1" description="Landing contact Z offset from CG [m]">
+    </Float64>
+    <Float64 name="dynamics.tau_up" valueReference="89" causality="parameter" variability="tunable" initial="exact" start="0.0125" description="Motor spin-up time constant [s]">
+    </Float64>
+    <Float64 name="dynamics.tau_down" valueReference="90" causality="parameter" variability="tunable" initial="exact" start="0.025" description="Motor spin-down time constant [s]">
+    </Float64>
+    <Float64 name="dynamics.motor_tau_eps" valueReference="91" causality="parameter" variability="tunable" initial="exact" start="1.0" description="Smooth transition width for asymmetric motor lag [rad/s]">
+    </Float64>
+    <Float64 name="dynamics.motor_moment_map" valueReference="92" causality="parameter" variability="tunable" initial="exact" start="-0.17677669529663687 -0.17677669529663687 0.17677669529663687 0.17677669529663687 -0.17677669529663687 0.17677669529663687 0.17677669529663687 -0.17677669529663687 -0.016 0.016 -0.016 0.016" description="Motor thrust to body moment map">
+      <Dimension start="3"/>
+      <Dimension start="4"/>
+    </Float64>
+    <Float64 name="dynamics.rate_damping" valueReference="93" causality="parameter" variability="tunable" initial="exact" start="-0.020000000000000004 -0.020000000000000004 -0.010000000000000002" description="Body rate damping coefficients">
+      <Dimension start="3"/>
+    </Float64>
+    <Float64 name="dynamics.omega_cmd" valueReference="94" causality="local" variability="continuous" start="0.0 0.0 0.0 0.0" description="Motor commands [rad/s]">
+      <Dimension start="4"/>
+    </Float64>
+    <Float64 name="dynamics.position" valueReference="95" causality="local" variability="continuous" start="0.0 0.0 0.12000000000000001" description="World position [m]">
+      <Dimension start="3"/>
+    </Float64>
+    <Float64 name="dynamics.velocity" valueReference="96" causality="local" variability="continuous" start="0.0 0.0 0.0" description="World velocity [m/s]">
+      <Dimension start="3"/>
+    </Float64>
+    <Float64 name="dynamics.quat" valueReference="97" causality="local" variability="continuous" start="1.0 0.0 0.0 0.0" description="Quaternion w,x,y,z">
+      <Dimension start="4"/>
+    </Float64>
+    <Float64 name="dynamics.omega_m" valueReference="98" causality="local" variability="continuous" start="0.0 0.0 0.0 0.0" description="Motor actual speeds [rad/s]">
+      <Dimension start="4"/>
+    </Float64>
+    <Float64 name="dynamics.accel" valueReference="99" causality="local" variability="continuous" start="0.0 0.0 0.0" description="Body FLU accelerometer [m/s^2] (specific force)">
+      <Dimension start="3"/>
+    </Float64>
+    <Float64 name="dynamics.gyro" valueReference="100" causality="local" variability="continuous" start="0.0 0.0 0.0" description="Body FLU gyroscope [rad/s]">
+      <Dimension start="3"/>
+    </Float64>
+    <Float64 name="dynamics.mag" valueReference="101" causality="local" variability="continuous" start="0.0 0.21 -0.45" description="Body FLU magnetometer [Gauss]">
+      <Dimension start="3"/>
+    </Float64>
+    <Float64 name="dynamics.motor[1].Ct" valueReference="102" causality="parameter" variability="tunable" initial="exact" start="0.00000854858" description="Thrust coefficient [N/(rad/s)^2]">
+    </Float64>
+    <Float64 name="dynamics.motor[1].tau_up" valueReference="103" causality="parameter" variability="tunable" initial="exact" start="0.0125" description="Motor spin-up time constant [s]">
+    </Float64>
+    <Float64 name="dynamics.motor[1].tau_down" valueReference="104" causality="parameter" variability="tunable" initial="exact" start="0.025" description="Motor spin-down time constant [s]">
+    </Float64>
+    <Float64 name="dynamics.motor[1].tau_inv_mid" valueReference="105" causality="parameter" variability="tunable" initial="exact" start="60.0" description="Mean inverse motor lag [1/s]">
+    </Float64>
+    <Float64 name="dynamics.motor[1].tau_inv_delta" valueReference="106" causality="parameter" variability="tunable" initial="exact" start="20.0" description="Signed inverse motor lag half-range [1/s]">
+    </Float64>
+    <Float64 name="dynamics.motor[1].tau_eps" valueReference="107" causality="parameter" variability="tunable" initial="exact" start="1.0" description="Smooth transition width for asymmetric lag [rad/s]">
+    </Float64>
+    <Float64 name="dynamics.motor[1].omega_cmd" valueReference="108" causality="local" variability="continuous" start="0.0" description="Commanded speed [rad/s]">
+    </Float64>
+    <Float64 name="dynamics.motor[1].omega" valueReference="109" causality="local" variability="continuous" initial="exact" start="0.0" description="Actual speed [rad/s]">
+    </Float64>
+    <Float64 name="dynamics.motor[1].thrust" valueReference="110" causality="local" variability="continuous" start="0.0" description="Motor thrust [N]">
+    </Float64>
+    <Float64 name="dynamics.motor[1].omega_error" valueReference="111" causality="local" variability="continuous" start="0.0" description="Motor speed tracking error [rad/s]">
+    </Float64>
+    <Float64 name="dynamics.motor[1].lag_blend" valueReference="112" causality="local" variability="continuous" start="0.0" description="Smooth lag blend">
+    </Float64>
+    <Float64 name="dynamics.motor[1].tau_inv" valueReference="113" causality="local" variability="continuous" start="0.0" description="Smooth inverse lag [1/s]">
+    </Float64>
+    <Float64 name="dynamics.motor[2].Ct" valueReference="114" causality="parameter" variability="tunable" initial="exact" start="0.00000854858" description="Thrust coefficient [N/(rad/s)^2]">
+    </Float64>
+    <Float64 name="dynamics.motor[2].tau_up" valueReference="115" causality="parameter" variability="tunable" initial="exact" start="0.0125" description="Motor spin-up time constant [s]">
+    </Float64>
+    <Float64 name="dynamics.motor[2].tau_down" valueReference="116" causality="parameter" variability="tunable" initial="exact" start="0.025" description="Motor spin-down time constant [s]">
+    </Float64>
+    <Float64 name="dynamics.motor[2].tau_inv_mid" valueReference="117" causality="parameter" variability="tunable" initial="exact" start="60.0" description="Mean inverse motor lag [1/s]">
+    </Float64>
+    <Float64 name="dynamics.motor[2].tau_inv_delta" valueReference="118" causality="parameter" variability="tunable" initial="exact" start="20.0" description="Signed inverse motor lag half-range [1/s]">
+    </Float64>
+    <Float64 name="dynamics.motor[2].tau_eps" valueReference="119" causality="parameter" variability="tunable" initial="exact" start="1.0" description="Smooth transition width for asymmetric lag [rad/s]">
+    </Float64>
+    <Float64 name="dynamics.motor[2].omega_cmd" valueReference="120" causality="local" variability="continuous" start="0.0" description="Commanded speed [rad/s]">
+    </Float64>
+    <Float64 name="dynamics.motor[2].omega" valueReference="121" causality="local" variability="continuous" initial="exact" start="0.0" description="Actual speed [rad/s]">
+    </Float64>
+    <Float64 name="dynamics.motor[2].thrust" valueReference="122" causality="local" variability="continuous" start="0.0" description="Motor thrust [N]">
+    </Float64>
+    <Float64 name="dynamics.motor[2].omega_error" valueReference="123" causality="local" variability="continuous" start="0.0" description="Motor speed tracking error [rad/s]">
+    </Float64>
+    <Float64 name="dynamics.motor[2].lag_blend" valueReference="124" causality="local" variability="continuous" start="0.0" description="Smooth lag blend">
+    </Float64>
+    <Float64 name="dynamics.motor[2].tau_inv" valueReference="125" causality="local" variability="continuous" start="0.0" description="Smooth inverse lag [1/s]">
+    </Float64>
+    <Float64 name="dynamics.motor[3].Ct" valueReference="126" causality="parameter" variability="tunable" initial="exact" start="0.00000854858" description="Thrust coefficient [N/(rad/s)^2]">
+    </Float64>
+    <Float64 name="dynamics.motor[3].tau_up" valueReference="127" causality="parameter" variability="tunable" initial="exact" start="0.0125" description="Motor spin-up time constant [s]">
+    </Float64>
+    <Float64 name="dynamics.motor[3].tau_down" valueReference="128" causality="parameter" variability="tunable" initial="exact" start="0.025" description="Motor spin-down time constant [s]">
+    </Float64>
+    <Float64 name="dynamics.motor[3].tau_inv_mid" valueReference="129" causality="parameter" variability="tunable" initial="exact" start="60.0" description="Mean inverse motor lag [1/s]">
+    </Float64>
+    <Float64 name="dynamics.motor[3].tau_inv_delta" valueReference="130" causality="parameter" variability="tunable" initial="exact" start="20.0" description="Signed inverse motor lag half-range [1/s]">
+    </Float64>
+    <Float64 name="dynamics.motor[3].tau_eps" valueReference="131" causality="parameter" variability="tunable" initial="exact" start="1.0" description="Smooth transition width for asymmetric lag [rad/s]">
+    </Float64>
+    <Float64 name="dynamics.motor[3].omega_cmd" valueReference="132" causality="local" variability="continuous" start="0.0" description="Commanded speed [rad/s]">
+    </Float64>
+    <Float64 name="dynamics.motor[3].omega" valueReference="133" causality="local" variability="continuous" initial="exact" start="0.0" description="Actual speed [rad/s]">
+    </Float64>
+    <Float64 name="dynamics.motor[3].thrust" valueReference="134" causality="local" variability="continuous" start="0.0" description="Motor thrust [N]">
+    </Float64>
+    <Float64 name="dynamics.motor[3].omega_error" valueReference="135" causality="local" variability="continuous" start="0.0" description="Motor speed tracking error [rad/s]">
+    </Float64>
+    <Float64 name="dynamics.motor[3].lag_blend" valueReference="136" causality="local" variability="continuous" start="0.0" description="Smooth lag blend">
+    </Float64>
+    <Float64 name="dynamics.motor[3].tau_inv" valueReference="137" causality="local" variability="continuous" start="0.0" description="Smooth inverse lag [1/s]">
+    </Float64>
+    <Float64 name="dynamics.motor[4].Ct" valueReference="138" causality="parameter" variability="tunable" initial="exact" start="0.00000854858" description="Thrust coefficient [N/(rad/s)^2]">
+    </Float64>
+    <Float64 name="dynamics.motor[4].tau_up" valueReference="139" causality="parameter" variability="tunable" initial="exact" start="0.0125" description="Motor spin-up time constant [s]">
+    </Float64>
+    <Float64 name="dynamics.motor[4].tau_down" valueReference="140" causality="parameter" variability="tunable" initial="exact" start="0.025" description="Motor spin-down time constant [s]">
+    </Float64>
+    <Float64 name="dynamics.motor[4].tau_inv_mid" valueReference="141" causality="parameter" variability="tunable" initial="exact" start="60.0" description="Mean inverse motor lag [1/s]">
+    </Float64>
+    <Float64 name="dynamics.motor[4].tau_inv_delta" valueReference="142" causality="parameter" variability="tunable" initial="exact" start="20.0" description="Signed inverse motor lag half-range [1/s]">
+    </Float64>
+    <Float64 name="dynamics.motor[4].tau_eps" valueReference="143" causality="parameter" variability="tunable" initial="exact" start="1.0" description="Smooth transition width for asymmetric lag [rad/s]">
+    </Float64>
+    <Float64 name="dynamics.motor[4].omega_cmd" valueReference="144" causality="local" variability="continuous" start="0.0" description="Commanded speed [rad/s]">
+    </Float64>
+    <Float64 name="dynamics.motor[4].omega" valueReference="145" causality="local" variability="continuous" initial="exact" start="0.0" description="Actual speed [rad/s]">
+    </Float64>
+    <Float64 name="dynamics.motor[4].thrust" valueReference="146" causality="local" variability="continuous" start="0.0" description="Motor thrust [N]">
+    </Float64>
+    <Float64 name="dynamics.motor[4].omega_error" valueReference="147" causality="local" variability="continuous" start="0.0" description="Motor speed tracking error [rad/s]">
+    </Float64>
+    <Float64 name="dynamics.motor[4].lag_blend" valueReference="148" causality="local" variability="continuous" start="0.0" description="Smooth lag blend">
+    </Float64>
+    <Float64 name="dynamics.motor[4].tau_inv" valueReference="149" causality="local" variability="continuous" start="0.0" description="Smooth inverse lag [1/s]">
+    </Float64>
+    <Float64 name="dynamics.F_m" valueReference="150" causality="local" variability="continuous" start="0.0 0.0 0.0 0.0" description="Motor thrusts [N]">
+      <Dimension start="4"/>
+    </Float64>
+    <Float64 name="dynamics.T" valueReference="151" causality="local" variability="continuous" start="0.0" description="Total motor thrust [N]">
+    </Float64>
+    <Float64 name="dynamics.M_rotor" valueReference="152" causality="local" variability="continuous" start="0.0 0.0 0.0" description="Rotor moment in body FLU [N*m]">
+      <Dimension start="3"/>
+    </Float64>
+    <Float64 name="dynamics.M_rate" valueReference="153" causality="local" variability="continuous" start="0.0 0.0 0.0" description="Rate damping moment in body FLU [N*m]">
+      <Dimension start="3"/>
+    </Float64>
+    <Float64 name="dynamics.V" valueReference="154" causality="local" variability="continuous" start="0.0" description="Airspeed magnitude [m/s]">
+    </Float64>
+    <Float64 name="dynamics.drag_b" valueReference="155" causality="local" variability="continuous" start="0.0 0.0 0.0" description="Body drag force [N]">
+      <Dimension start="3"/>
+    </Float64>
+    <Float64 name="dynamics.leg_h_w" valueReference="156" causality="local" variability="continuous" start="0.0 0.0 0.0 0.0" description="Landing contact world Z positions [m]">
+      <Dimension start="4"/>
+    </Float64>
+    <Float64 name="dynamics.leg_r_b" valueReference="157" causality="parameter" variability="tunable" initial="exact" start="0.17 -0.17 0.17 -0.17 -0.17 0.17 0.17 -0.17 -0.1 -0.1 -0.1 -0.1" description="Landing contact offsets in body FLU [m]">
+      <Dimension start="3"/>
+      <Dimension start="4"/>
+    </Float64>
+    <Float64 name="dynamics.leg_v_b" valueReference="158" causality="local" variability="continuous" start="0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0" description="Landing contact velocities in body [m/s]">
+      <Dimension start="3"/>
+      <Dimension start="4"/>
+    </Float64>
+    <Float64 name="dynamics.leg_f_w" valueReference="159" causality="local" variability="continuous" start="0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0" description="Landing contact forces in world [N]">
+      <Dimension start="3"/>
+      <Dimension start="4"/>
+    </Float64>
+    <Float64 name="dynamics.leg_f_b" valueReference="160" causality="local" variability="continuous" start="0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0" description="Landing contact forces in body [N]">
+      <Dimension start="3"/>
+      <Dimension start="4"/>
+    </Float64>
+    <Float64 name="dynamics.leg_m_b" valueReference="161" causality="local" variability="continuous" start="0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0" description="Landing contact moments in body [N*m]">
+      <Dimension start="3"/>
+      <Dimension start="4"/>
+    </Float64>
+    <Float64 name="dynamics.F_ground_b" valueReference="162" causality="local" variability="continuous" start="0.0 0.0 0.0" description="Total ground force in body FLU [N]">
+      <Dimension start="3"/>
+    </Float64>
+    <Float64 name="dynamics.M_ground_b" valueReference="163" causality="local" variability="continuous" start="0.0 0.0 0.0" description="Total ground moment in body FLU [N*m]">
+      <Dimension start="3"/>
+    </Float64>
+    <Float64 name="eulerB321_rad" valueReference="164" causality="local" variability="continuous" start="0.0 0.0 0.0" description="Lie-group B321 coordinates [yaw, pitch, roll]">
+      <Dimension start="3"/>
+    </Float64>
+    <Float64 name="idealQuaternion" valueReference="165" causality="input" variability="continuous" start="1.0 0.0 0.0 0.0">
+      <Dimension start="4"/>
+    </Float64>
+    <Float64 name="der(dynamics.p)" valueReference="166" causality="local" variability="continuous" initial="calculated" derivative="43">
+      <Dimension start="3"/>
+    </Float64>
+    <Float64 name="der(dynamics.v_w)" valueReference="167" causality="local" variability="continuous" initial="calculated" derivative="48">
+      <Dimension start="3"/>
+    </Float64>
+    <Float64 name="der(dynamics.motor[1].omega)" valueReference="168" causality="local" variability="continuous" initial="calculated" derivative="109">
+    </Float64>
+    <Float64 name="der(dynamics.motor[2].omega)" valueReference="169" causality="local" variability="continuous" initial="calculated" derivative="121">
+    </Float64>
+    <Float64 name="der(dynamics.motor[3].omega)" valueReference="170" causality="local" variability="continuous" initial="calculated" derivative="133">
+    </Float64>
+    <Float64 name="der(dynamics.motor[4].omega)" valueReference="171" causality="local" variability="continuous" initial="calculated" derivative="145">
+    </Float64>
+  </ModelVariables>
+  <ModelStructure>
+    <Output valueReference="9"/>
+    <Output valueReference="10"/>
+    <Output valueReference="11"/>
+    <Output valueReference="12"/>
+    <Output valueReference="13"/>
+    <Output valueReference="14"/>
+    <Output valueReference="15"/>
+    <Output valueReference="16"/>
+    <Output valueReference="17"/>
+    <Output valueReference="18"/>
+    <Output valueReference="19"/>
+    <Output valueReference="20"/>
+    <Output valueReference="21"/>
+    <Output valueReference="22"/>
+    <Output valueReference="23"/>
+    <Output valueReference="24"/>
+    <ContinuousStateDerivative valueReference="166"/>
+    <InitialUnknown valueReference="166"/>
+    <ContinuousStateDerivative valueReference="167"/>
+    <InitialUnknown valueReference="167"/>
+    <ContinuousStateDerivative valueReference="168"/>
+    <InitialUnknown valueReference="168"/>
+    <ContinuousStateDerivative valueReference="169"/>
+    <InitialUnknown valueReference="169"/>
+    <ContinuousStateDerivative valueReference="170"/>
+    <InitialUnknown valueReference="170"/>
+    <ContinuousStateDerivative valueReference="171"/>
+    <InitialUnknown valueReference="171"/>
+  </ModelStructure>
+</fmiModelDescription>

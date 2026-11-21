@@ -1,0 +1,60 @@
+within Benchmarks;
+block PositionLoop "Shared off-board log-linear position loop; bounded trajectory feed-forward"
+  parameter Real samplePeriod = 0.01;
+  parameter Real tiltLimit = 0.6108652381980153;
+  parameter Real yawRateLimit = 3.490658503988659;
+  parameter Real yawGain = 1.0;
+  parameter Real forceFraction = 0.7;
+  input Real position[3](each start = 0.0);
+  input Real velocity[3](each start = 0.0);
+  input Real quaternion[4](start = {1.0,0.0,0.0,0.0});
+  input Real referencePosition[3](each start = 0.0);
+  input Real referenceVelocity[3](each start = 0.0);
+  input Real referenceAcceleration[3](each start = 0.0);
+  input Real referenceJerk[3](each start = 0.0);
+  input Real referenceSnap[3](each start = 0.0);
+  input Boolean feedforwardEnabled(start = false);
+  output Real omegaFeedforward[3];
+  output Real alphaFeedforward[3];
+  input Real referenceYaw(start = 0.0);
+  input Boolean engage(start = false);
+  output Real roll;
+  output Real pitch;
+  output Real yawRate;
+  output Real thrust;
+  output Boolean valid;
+  output Real rawAttitude[4];
+  output Real integral[3];
+protected
+  Benchmarks.Feedforward ff;
+  Vehicles.Rdd2.LogLinearController controller(
+    samplePeriod = samplePeriod, translationalCorrectionFraction = forceFraction);
+  Real euler[3];
+  Real direction[3];
+  Real headingDirection[3];
+  Real yawError;
+equation
+  ff.thrust=thrust; ff.desiredQuaternion=rawAttitude; ff.jerk=referenceJerk; ff.snap=referenceSnap;
+  ff.yaw=referenceYaw; ff.enabled=feedforwardEnabled and engage;
+  omegaFeedforward=ff.omega; alphaFeedforward=ff.alpha;
+  controller.positionWorld = position;
+  controller.velocityWorld = velocity;
+  controller.quaternionWorldBody = quaternion;
+  controller.positionReferenceWorld = referencePosition;
+  controller.velocityReferenceWorld = referenceVelocity;
+  controller.accelerationReferenceWorld = referenceAcceleration;
+  controller.headingQuaternionReference = LieGroups.SO3.EulerB321.to_Quat({referenceYaw,0.0,0.0});
+  controller.resetIntegral = not engage;
+  rawAttitude = controller.attitudeSetpoint;
+  integral = controller.positionIntegral;
+  euler = LieGroups.SO3.EulerB321.from_Quat(quaternion);
+  direction = LieGroups.SO3.Quat.rotate(rawAttitude,{0.0,0.0,1.0});
+  headingDirection = {cos(euler[1])*direction[1]+sin(euler[1])*direction[2],
+    -sin(euler[1])*direction[1]+cos(euler[1])*direction[2],direction[3]};
+  roll = MathUtilities.clip(atan2(-headingDirection[2],sqrt(headingDirection[1]^2+headingDirection[3]^2)),-tiltLimit,tiltLimit);
+  pitch = MathUtilities.clip(atan2(headingDirection[1],headingDirection[3]),-tiltLimit,tiltLimit);
+  yawError = atan2(sin(referenceYaw-euler[1]),cos(referenceYaw-euler[1]));
+  yawRate = MathUtilities.clip(yawGain*yawError,-yawRateLimit,yawRateLimit);
+  thrust = controller.thrust;
+  valid = engage and thrust >= 0.0 and thrust <= 41.3749272;
+end PositionLoop;

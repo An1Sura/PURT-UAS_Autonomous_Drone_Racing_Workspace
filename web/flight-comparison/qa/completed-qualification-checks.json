@@ -1,0 +1,177 @@
+{
+  "completedDate": "2026-11-21",
+  "scope": "Descriptive matched ARM validation; no superiority, non-inferiority or fastest-lap claim",
+  "runs": 78,
+  "pairedConditions": 39,
+  "fixedReferenceQualified": true,
+  "checks": [
+    {
+      "id": "generated-loop",
+      "label": "Exact flight-library oracle, derivative and orientation checks",
+      "completed": 1,
+      "planned": 1,
+      "passed": true
+    },
+    {
+      "id": "native-ingress",
+      "label": "Rebuilt native firmware integration checks",
+      "completed": 2,
+      "planned": 2,
+      "passed": true
+    },
+    {
+      "id": "attitude",
+      "label": "Signed attitude response",
+      "completed": 8,
+      "planned": 8,
+      "passed": true
+    },
+    {
+      "id": "baseline",
+      "label": "Hover, step, square, figure-eight off/on",
+      "completed": 10,
+      "planned": 10,
+      "passed": true
+    },
+    {
+      "id": "matrix",
+      "label": "40 s lap: three noise profiles × five repeats × off/on",
+      "completed": 60,
+      "planned": 60,
+      "passed": true
+    },
+    {
+      "id": "parity",
+      "label": "Paired config, shared artifacts, noise bytes and counters",
+      "completed": 39,
+      "planned": 39,
+      "passed": true
+    },
+    {
+      "id": "raw-scoring",
+      "label": "Raw scoring, input cadence, configuration and commands",
+      "completed": 78,
+      "planned": 78,
+      "passed": true
+    },
+    {
+      "id": "repeatability",
+      "label": "No-noise trajectory and motor-byte repeatability",
+      "completed": 4,
+      "planned": 4,
+      "passed": true
+    }
+  ],
+  "seedAudit": [
+    {
+      "stack": "cognipilot",
+      "noise": "none",
+      "completeSeeds": 5,
+      "plannedSeeds": 5,
+      "equalWithinSeed": true,
+      "distinctInnovations": 1,
+      "passed": true
+    },
+    {
+      "stack": "cognipilot",
+      "noise": "realistic",
+      "completeSeeds": 5,
+      "plannedSeeds": 5,
+      "equalWithinSeed": true,
+      "distinctInnovations": 5,
+      "passed": true
+    },
+    {
+      "stack": "cognipilot",
+      "noise": "harsh",
+      "completeSeeds": 5,
+      "plannedSeeds": 5,
+      "equalWithinSeed": true,
+      "distinctInnovations": 5,
+      "passed": true
+    },
+    {
+      "stack": "betaflight",
+      "noise": "none",
+      "completeSeeds": 5,
+      "plannedSeeds": 5,
+      "equalWithinSeed": true,
+      "distinctInnovations": 1,
+      "passed": true
+    },
+    {
+      "stack": "betaflight",
+      "noise": "realistic",
+      "completeSeeds": 5,
+      "plannedSeeds": 5,
+      "equalWithinSeed": true,
+      "distinctInnovations": 5,
+      "passed": true
+    },
+    {
+      "stack": "betaflight",
+      "noise": "harsh",
+      "completeSeeds": 5,
+      "plannedSeeds": 5,
+      "equalWithinSeed": true,
+      "distinctInnovations": 5,
+      "passed": true
+    }
+  ],
+  "noNoiseRepeats": [
+    {
+      "stack": "cognipilot",
+      "mode": "off",
+      "completed": 5,
+      "trajectoryIdentical": true,
+      "actuatorIdentical": true
+    },
+    {
+      "stack": "cognipilot",
+      "mode": "omega",
+      "completed": 5,
+      "trajectoryIdentical": true,
+      "actuatorIdentical": true
+    },
+    {
+      "stack": "betaflight",
+      "mode": "off",
+      "completed": 5,
+      "trajectoryIdentical": true,
+      "actuatorIdentical": true
+    },
+    {
+      "stack": "betaflight",
+      "mode": "omega",
+      "completed": 5,
+      "trajectoryIdentical": true,
+      "actuatorIdentical": true
+    }
+  ],
+  "baseline": [
+    {
+      "stack": "betaflight",
+      "lead": "off",
+      "rms_m": 0.20248068182538698,
+      "peak_m": 0.501195243549862
+    },
+    {
+      "stack": "betaflight",
+      "lead": "omega",
+      "rms_m": 0.14255173236145446,
+      "peak_m": 0.34240089686371367
+    },
+    {
+      "stack": "cognipilot",
+      "lead": "off",
+      "rms_m": 0.14100710963874558,
+      "peak_m": 0.3473317589492073
+    },
+    {
+      "stack": "cognipilot",
+      "lead": "omega",
+      "rms_m": 0.1966007141393091,
+      "peak_m": 0.4995038896393245
+    }
+  ]
+}

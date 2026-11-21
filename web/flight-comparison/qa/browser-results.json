@@ -1,0 +1,14 @@
+{
+  "viewsTested": 11,
+  "replayControls": true,
+  "evidenceInspector": true,
+  "chartExports": true,
+  "proposalExport": true,
+  "protocolExport": true,
+  "paperHidden": true,
+  "statisticsComparison": true,
+  "desktopOverflow": false,
+  "mobileOverflow": false,
+  "externalRequests": [],
+  "errors": []
+}

@@ -1,0 +1,72 @@
+{
+  "revision": 1,
+  "scope": "Descriptive matched ARM validation; no superiority, non-inferiority or fastest-lap claim",
+  "frozen_before_new_flights": true,
+  "stacks": [
+    "cognipilot",
+    "betaflight"
+  ],
+  "firmware": "Frozen November 13 TROPIC RT1064 simulation ELFs; controller equations unchanged",
+  "plant": "Existing 2 kg, 500 mm diagonal Rumoca plant; no physical parameters changed",
+  "execution": {
+    "master_hz": 8000,
+    "imu_hz": 1600,
+    "control_hz": 1600,
+    "position_hz": 100,
+    "command_hz": 250,
+    "motor_encoding": "virtual DShot600; no electrical timing"
+  },
+  "inputs": {
+    "noise": "Same seed and sample schedule, fixed-hover-reference vibration independent of actual motor outputs; retain binary innovations to verify SHA-256 equality",
+    "quantization": "Match BF virtual int16 IMU: truncation, +/-32767 counts; gyro16.4LSB/deg/s; accel2048LSB/g",
+    "attitude": "Same 35-degree normal-stick map; +/-0.035-degree quantization tolerance; fixed yaw=0",
+    "acro": "Outside primary figure-eight qualification; historical nominal10deg/s discrepancy is preserved and not relabeled matched"
+  },
+  "tuning": {
+    "selected_gain_per_s": 6,
+    "selection_source": "Existing equal-budget native tuning",
+    "requalification": "Four fresh 5-degree signed roll/pitch probes per stack, realistic seed1, fresh hover per probe",
+    "rise_s": [
+      0.2,
+      0.4
+    ],
+    "overshoot_fraction_max": 0.2,
+    "settling_band_deg": 1,
+    "settling_s_max": 1,
+    "action_if_failed": "Retain failure; do not call inherited tuning ARM-qualified. Fixed-gain baseline comparisons remain diagnostic."
+  },
+  "baseline": [
+    "hover",
+    "step",
+    "square",
+    "figure-eight"
+  ],
+  "reference_lap_s": 40,
+  "modes": [
+    "off",
+    "omega"
+  ],
+  "noise": [
+    "none",
+    "realistic",
+    "harsh"
+  ],
+  "seeds": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "gates": {
+    "rms_m": 0.35,
+    "max_error_m": 0.75,
+    "tilt_clamp_updates": 0,
+    "landed": true,
+    "disarmed": true,
+    "motors_stopped": true,
+    "course": "one ordered figure-eight, full extents and center return"
+  },
+  "scoring": "Post-step ground-truth vs held100Hz reference at8000Hz, t25 through lap_end inclusive; binary raw scoring samples retained for independent recalculation",
+  "failures": "Retain all attempts. A timeout is an infrastructure failure, never a performance boundary."
+}

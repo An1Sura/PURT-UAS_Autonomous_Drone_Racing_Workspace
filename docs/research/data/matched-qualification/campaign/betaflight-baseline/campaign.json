@@ -1,0 +1,1019 @@
+{
+  "completed_runs": 8,
+  "coordinator_sha256": "611dac8da528b297e63162abccfaed19643f896ff14e52d8f0f62f17e50ac360",
+  "planned_runs": 8,
+  "runs": [
+    {
+      "case": {
+        "feedforward": "off",
+        "id": "attitude-1",
+        "noise": "realistic",
+        "probe_event": 1,
+        "seed": 1,
+        "shape": "attitude-step"
+      },
+      "execution_complete": true,
+      "exit_success": true,
+      "id": "attitude-1",
+      "report": {
+        "armed_observed": true,
+        "arming_flags": 0,
+        "commanded_accel_ff_peak_rad_s2": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "commanded_rate_ff_peak_rad_s": [
+          0.0,
+          0.0
+        ],
+        "error": null,
+        "final_armed": false,
+        "final_motors": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "final_position": [
+          -0.003268357186939611,
+          -0.11892211055718226,
+          0.09836555833329956
+        ],
+        "firmware_exchanges": 392000,
+        "grounded_stopped_samples": 54651,
+        "hashes": {
+          "config": "2609ea53efe5f7c900b54d74772687f1266f3616ee85ebe9ad53db50ed27b8cd",
+          "firmware": "55ea5bd943ce1b003857b3b1a7affef4008dbf44ebf4d090ba9ae1cc0bc9cc04",
+          "offboard": "220db232fd2cae1744afcfd4eb773d6b2dbe37b97f5f36124849344281ec9a3d",
+          "plant": "284cced3ceec15128886d05753900b8ae47f38570ce0112c50e801356de97654",
+          "plant_description": "fdb12c3379b56d2d18f0ccaab3c62d15d2f97281f55270f37b837ea9c980b91c",
+          "runner": "58e673b9558a88bd755ff41b71a57365af3cf6d4bddb4abf88da4d76a6c581c8"
+        },
+        "lap_end_s": 31.0,
+        "lap_start_s": 25.0,
+        "maximum_tilt_deg": 8.185904472030376,
+        "mode_observed": true,
+        "offboard_updates": 4900,
+        "passed": true,
+        "peak_tilt_lead_rad": [
+          0.0,
+          0.0
+        ],
+        "qualification": "Attitude/rate calibration flight: shared altitude control, intentional lateral drift; course tracking gates do not apply; landing gates retained",
+        "samples": 392000,
+        "sensor_profile": {
+          "accel_std_m_s2": 0.03,
+          "attitude_estimator_schedule": "BF simulation TASK_ATTITUDE rescheduled to IMU rate; onboard equations unchanged",
+          "attitude_gain_per_s": 6.0,
+          "betaflight_hover_throttle": 0.6885788423153674,
+          "distribution": "12-uniform sum approximation; assumed diagnostic magnitudes, not measured hardware",
+          "execution_backend": "fastdyn-qemu-arm",
+          "feedforward": "off",
+          "feedforward_interface": "offboard tilt lead omega/K; six normal RC channels; no onboard feed-forward modifications",
+          "gyro_std_rad_s": 0.002,
+          "hover_calibration_status": "mean commanded PWM fraction over 30–35 s of closed-loop native Betaflight hover at 2 m in the shared plant",
+          "imu_hz": 1600,
+          "input_matching": {
+            "accel_counts_per_g": 2048,
+            "conversion": "truncate toward zero, symmetric +/-32767 clamp; CG quantized at adapter, BF by existing virtual sensor",
+            "gyro_counts_per_deg_s": 16.4,
+            "innovation": "same seeded additive noise and fixed-hover vibration at every 1600 Hz sample",
+            "scope": "exogenous noise parity; actual IMU values differ with each vehicle response",
+            "vibration_reference_motor": 0.688504390918394
+          },
+          "level": "realistic",
+          "master_tick_hz": 8000,
+          "matched_control_hz": 1600,
+          "measured_counter_names": [
+            "gyro_reads",
+            "accel_reads",
+            "attitude_updates",
+            "motor_writes",
+            "transport_ticks"
+          ],
+          "measured_counts_25_to_26_s": [
+            1600,
+            1600,
+            1600,
+            1600,
+            8000
+          ],
+          "motor_protocol_readback": "DSHOT600",
+          "motor_vibration": "deterministic two-blade harmonic at 2*1100*normalized_motor rad/s; fixed per-motor and per-axis phase offsets; amplitude 0.25*IMU noise std scaled by motor command, assumed diagnostic model",
+          "noise_input_sha256": "80c3dc3d76397379ce22c286a7e6f00f18560b69f1a1ddf8289b6a52d42354f4",
+          "pid_period_readback_us": 625,
+          "position_feedback": "plant truth",
+          "position_loop_hz": 100,
+          "rc_smoothing": "OFF",
+          "scoring_input_sha256": "372eeac1019355dcdbce33b0a00f1d90810c2969db1287a61bf0d8ff1703bef0",
+          "seed": 1,
+          "sensor_and_command_ingress": "fresh IMU and latest RC delivered on common 625 us boundaries; BF transport clock ticks at 125 us",
+          "sensor_input_sha256": "22cf989752e97f94fd4a1bd029436ed0e25a61990a13ed6eabc3fdbc3a396eb4",
+          "stick_schedule_hz": 250,
+          "trace_format": {
+            "noise_and_sensor": "little-endian u32 tick + six f32 values: gyro FLU rad/s, specific force FLU m/s2",
+            "scoring": "seven little-endian f64: t, x,y,z, ref_x,ref_y,ref_z; 8000 Hz lap samples, inclusive endpoints"
+          },
+          "tuning": {
+            "probe_event": 1
+          },
+          "tuning_status": "native_selected_6_per_s_pending_arm_requalification"
+        },
+        "shape": "attitude-step",
+        "simulated_seconds": 49.0,
+        "stack": "betaflight",
+        "stick_updates": 12251,
+        "tilt_clamp_updates": 0,
+        "tracking_max_m": 1.1192374651965074,
+        "tracking_rms_m": 0.6597317592701486,
+        "wall_seconds": 174.871170851
+      }
+    },
+    {
+      "case": {
+        "feedforward": "off",
+        "id": "attitude-2",
+        "noise": "realistic",
+        "probe_event": 2,
+        "seed": 1,
+        "shape": "attitude-step"
+      },
+      "execution_complete": true,
+      "exit_success": true,
+      "id": "attitude-2",
+      "report": {
+        "armed_observed": true,
+        "arming_flags": 0,
+        "commanded_accel_ff_peak_rad_s2": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "commanded_rate_ff_peak_rad_s": [
+          0.0,
+          0.0
+        ],
+        "error": null,
+        "final_armed": false,
+        "final_motors": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "final_position": [
+          -0.1230396824583566,
+          -0.004362774798437345,
+          0.09836555833330018
+        ],
+        "firmware_exchanges": 392000,
+        "grounded_stopped_samples": 54651,
+        "hashes": {
+          "config": "c78861fcb2d7445e34d20a24678516a4c977a38f9b91f4b6fd2af1dfbbb5b225",
+          "firmware": "55ea5bd943ce1b003857b3b1a7affef4008dbf44ebf4d090ba9ae1cc0bc9cc04",
+          "offboard": "220db232fd2cae1744afcfd4eb773d6b2dbe37b97f5f36124849344281ec9a3d",
+          "plant": "284cced3ceec15128886d05753900b8ae47f38570ce0112c50e801356de97654",
+          "plant_description": "fdb12c3379b56d2d18f0ccaab3c62d15d2f97281f55270f37b837ea9c980b91c",
+          "runner": "58e673b9558a88bd755ff41b71a57365af3cf6d4bddb4abf88da4d76a6c581c8"
+        },
+        "lap_end_s": 31.0,
+        "lap_start_s": 25.0,
+        "maximum_tilt_deg": 8.214350874197239,
+        "mode_observed": true,
+        "offboard_updates": 4900,
+        "passed": true,
+        "peak_tilt_lead_rad": [
+          0.0,
+          0.0
+        ],
+        "qualification": "Attitude/rate calibration flight: shared altitude control, intentional lateral drift; course tracking gates do not apply; landing gates retained",
+        "samples": 392000,
+        "sensor_profile": {
+          "accel_std_m_s2": 0.03,
+          "attitude_estimator_schedule": "BF simulation TASK_ATTITUDE rescheduled to IMU rate; onboard equations unchanged",
+          "attitude_gain_per_s": 6.0,
+          "betaflight_hover_throttle": 0.6885788423153674,
+          "distribution": "12-uniform sum approximation; assumed diagnostic magnitudes, not measured hardware",
+          "execution_backend": "fastdyn-qemu-arm",
+          "feedforward": "off",
+          "feedforward_interface": "offboard tilt lead omega/K; six normal RC channels; no onboard feed-forward modifications",
+          "gyro_std_rad_s": 0.002,
+          "hover_calibration_status": "mean commanded PWM fraction over 30–35 s of closed-loop native Betaflight hover at 2 m in the shared plant",
+          "imu_hz": 1600,
+          "input_matching": {
+            "accel_counts_per_g": 2048,
+            "conversion": "truncate toward zero, symmetric +/-32767 clamp; CG quantized at adapter, BF by existing virtual sensor",
+            "gyro_counts_per_deg_s": 16.4,
+            "innovation": "same seeded additive noise and fixed-hover vibration at every 1600 Hz sample",
+            "scope": "exogenous noise parity; actual IMU values differ with each vehicle response",
+            "vibration_reference_motor": 0.688504390918394
+          },
+          "level": "realistic",
+          "master_tick_hz": 8000,
+          "matched_control_hz": 1600,
+          "measured_counter_names": [
+            "gyro_reads",
+            "accel_reads",
+            "attitude_updates",
+            "motor_writes",
+            "transport_ticks"
+          ],
+          "measured_counts_25_to_26_s": [
+            1600,
+            1600,
+            1600,
+            1600,
+            8000
+          ],
+          "motor_protocol_readback": "DSHOT600",
+          "motor_vibration": "deterministic two-blade harmonic at 2*1100*normalized_motor rad/s; fixed per-motor and per-axis phase offsets; amplitude 0.25*IMU noise std scaled by motor command, assumed diagnostic model",
+          "noise_input_sha256": "80c3dc3d76397379ce22c286a7e6f00f18560b69f1a1ddf8289b6a52d42354f4",
+          "pid_period_readback_us": 625,
+          "position_feedback": "plant truth",
+          "position_loop_hz": 100,
+          "rc_smoothing": "OFF",
+          "scoring_input_sha256": "fe89aa5136e0eb86194d1272e0f2693b01ebb02fa4aa2f94b93dd78aa1f60622",
+          "seed": 1,
+          "sensor_and_command_ingress": "fresh IMU and latest RC delivered on common 625 us boundaries; BF transport clock ticks at 125 us",
+          "sensor_input_sha256": "7c6994845930dc1fd6b5858e3476974e4a89dbd123294bc3d50131c90b0816bd",
+          "stick_schedule_hz": 250,
+          "trace_format": {
+            "noise_and_sensor": "little-endian u32 tick + six f32 values: gyro FLU rad/s, specific force FLU m/s2",
+            "scoring": "seven little-endian f64: t, x,y,z, ref_x,ref_y,ref_z; 8000 Hz lap samples, inclusive endpoints"
+          },
+          "tuning": {
+            "probe_event": 2
+          },
+          "tuning_status": "native_selected_6_per_s_pending_arm_requalification"
+        },
+        "shape": "attitude-step",
+        "simulated_seconds": 49.0,
+        "stack": "betaflight",
+        "stick_updates": 12251,
+        "tilt_clamp_updates": 0,
+        "tracking_max_m": 1.12163726733122,
+        "tracking_rms_m": 0.6625997969618554,
+        "wall_seconds": 182.54918721
+      }
+    },
+    {
+      "case": {
+        "feedforward": "off",
+        "id": "attitude-3",
+        "noise": "realistic",
+        "probe_event": 3,
+        "seed": 1,
+        "shape": "attitude-step"
+      },
+      "execution_complete": true,
+      "exit_success": true,
+      "id": "attitude-3",
+      "report": {
+        "armed_observed": true,
+        "arming_flags": 0,
+        "commanded_accel_ff_peak_rad_s2": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "commanded_rate_ff_peak_rad_s": [
+          0.0,
+          0.0
+        ],
+        "error": null,
+        "final_armed": false,
+        "final_motors": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "final_position": [
+          0.12443405233036046,
+          -0.0034950407982761245,
+          0.09836555833330068
+        ],
+        "firmware_exchanges": 392000,
+        "grounded_stopped_samples": 54651,
+        "hashes": {
+          "config": "69d94745f1ed6da2a51b5fbd82f36748a08b8dde4232aa1660c2a4fd4c70168b",
+          "firmware": "55ea5bd943ce1b003857b3b1a7affef4008dbf44ebf4d090ba9ae1cc0bc9cc04",
+          "offboard": "220db232fd2cae1744afcfd4eb773d6b2dbe37b97f5f36124849344281ec9a3d",
+          "plant": "284cced3ceec15128886d05753900b8ae47f38570ce0112c50e801356de97654",
+          "plant_description": "fdb12c3379b56d2d18f0ccaab3c62d15d2f97281f55270f37b837ea9c980b91c",
+          "runner": "58e673b9558a88bd755ff41b71a57365af3cf6d4bddb4abf88da4d76a6c581c8"
+        },
+        "lap_end_s": 31.0,
+        "lap_start_s": 25.0,
+        "maximum_tilt_deg": 8.189086989579224,
+        "mode_observed": true,
+        "offboard_updates": 4900,
+        "passed": true,
+        "peak_tilt_lead_rad": [
+          0.0,
+          0.0
+        ],
+        "qualification": "Attitude/rate calibration flight: shared altitude control, intentional lateral drift; course tracking gates do not apply; landing gates retained",
+        "samples": 392000,
+        "sensor_profile": {
+          "accel_std_m_s2": 0.03,
+          "attitude_estimator_schedule": "BF simulation TASK_ATTITUDE rescheduled to IMU rate; onboard equations unchanged",
+          "attitude_gain_per_s": 6.0,
+          "betaflight_hover_throttle": 0.6885788423153674,
+          "distribution": "12-uniform sum approximation; assumed diagnostic magnitudes, not measured hardware",
+          "execution_backend": "fastdyn-qemu-arm",
+          "feedforward": "off",
+          "feedforward_interface": "offboard tilt lead omega/K; six normal RC channels; no onboard feed-forward modifications",
+          "gyro_std_rad_s": 0.002,
+          "hover_calibration_status": "mean commanded PWM fraction over 30–35 s of closed-loop native Betaflight hover at 2 m in the shared plant",
+          "imu_hz": 1600,
+          "input_matching": {
+            "accel_counts_per_g": 2048,
+            "conversion": "truncate toward zero, symmetric +/-32767 clamp; CG quantized at adapter, BF by existing virtual sensor",
+            "gyro_counts_per_deg_s": 16.4,
+            "innovation": "same seeded additive noise and fixed-hover vibration at every 1600 Hz sample",
+            "scope": "exogenous noise parity; actual IMU values differ with each vehicle response",
+            "vibration_reference_motor": 0.688504390918394
+          },
+          "level": "realistic",
+          "master_tick_hz": 8000,
+          "matched_control_hz": 1600,
+          "measured_counter_names": [
+            "gyro_reads",
+            "accel_reads",
+            "attitude_updates",
+            "motor_writes",
+            "transport_ticks"
+          ],
+          "measured_counts_25_to_26_s": [
+            1600,
+            1600,
+            1600,
+            1600,
+            8000
+          ],
+          "motor_protocol_readback": "DSHOT600",
+          "motor_vibration": "deterministic two-blade harmonic at 2*1100*normalized_motor rad/s; fixed per-motor and per-axis phase offsets; amplitude 0.25*IMU noise std scaled by motor command, assumed diagnostic model",
+          "noise_input_sha256": "80c3dc3d76397379ce22c286a7e6f00f18560b69f1a1ddf8289b6a52d42354f4",
+          "pid_period_readback_us": 625,
+          "position_feedback": "plant truth",
+          "position_loop_hz": 100,
+          "rc_smoothing": "OFF",
+          "scoring_input_sha256": "ac03a54df9016e47d6ad280fc8532a9044985a58d18684096f437a42d7a39dc9",
+          "seed": 1,
+          "sensor_and_command_ingress": "fresh IMU and latest RC delivered on common 625 us boundaries; BF transport clock ticks at 125 us",
+          "sensor_input_sha256": "f7343493233190fb70c104e20d07b7c7b1dcabf4b1797d9b9fc7c668c377d8ab",
+          "stick_schedule_hz": 250,
+          "trace_format": {
+            "noise_and_sensor": "little-endian u32 tick + six f32 values: gyro FLU rad/s, specific force FLU m/s2",
+            "scoring": "seven little-endian f64: t, x,y,z, ref_x,ref_y,ref_z; 8000 Hz lap samples, inclusive endpoints"
+          },
+          "tuning": {
+            "probe_event": 3
+          },
+          "tuning_status": "native_selected_6_per_s_pending_arm_requalification"
+        },
+        "shape": "attitude-step",
+        "simulated_seconds": 49.0,
+        "stack": "betaflight",
+        "stick_updates": 12251,
+        "tilt_clamp_updates": 0,
+        "tracking_max_m": 1.119322442334184,
+        "tracking_rms_m": 0.6610450311326304,
+        "wall_seconds": 188.397867819
+      }
+    },
+    {
+      "case": {
+        "feedforward": "off",
+        "id": "hover-off",
+        "noise": "realistic",
+        "seed": 1,
+        "shape": "hover"
+      },
+      "execution_complete": true,
+      "exit_success": true,
+      "id": "hover-off",
+      "report": {
+        "armed_observed": true,
+        "arming_flags": 0,
+        "commanded_accel_ff_peak_rad_s2": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "commanded_rate_ff_peak_rad_s": [
+          0.0,
+          0.0
+        ],
+        "error": null,
+        "final_armed": false,
+        "final_motors": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "final_position": [
+          0.0036399665264134967,
+          -0.004057740613208661,
+          0.0983655583333012
+        ],
+        "firmware_exchanges": 424000,
+        "grounded_stopped_samples": 54456,
+        "hashes": {
+          "config": "172c59fd94bbb8dc7539499cbae3906e0c52d2cfa81c8ed25f0e1c5fd5813a7c",
+          "firmware": "55ea5bd943ce1b003857b3b1a7affef4008dbf44ebf4d090ba9ae1cc0bc9cc04",
+          "offboard": "220db232fd2cae1744afcfd4eb773d6b2dbe37b97f5f36124849344281ec9a3d",
+          "plant": "284cced3ceec15128886d05753900b8ae47f38570ce0112c50e801356de97654",
+          "plant_description": "fdb12c3379b56d2d18f0ccaab3c62d15d2f97281f55270f37b837ea9c980b91c",
+          "runner": "58e673b9558a88bd755ff41b71a57365af3cf6d4bddb4abf88da4d76a6c581c8"
+        },
+        "lap_end_s": 35.0,
+        "lap_start_s": 25.0,
+        "maximum_tilt_deg": 0.08538336234037915,
+        "mode_observed": true,
+        "offboard_updates": 5300,
+        "passed": true,
+        "peak_tilt_lead_rad": [
+          0.0,
+          0.0
+        ],
+        "qualification": "FastDyn/QEMU ARM BIL; shared generated offboard loop and plant; local-source commissioning run, not physical hardware latency",
+        "samples": 424000,
+        "sensor_profile": {
+          "accel_std_m_s2": 0.03,
+          "attitude_estimator_schedule": "BF simulation TASK_ATTITUDE rescheduled to IMU rate; onboard equations unchanged",
+          "attitude_gain_per_s": 6.0,
+          "betaflight_hover_throttle": 0.6885788423153674,
+          "distribution": "12-uniform sum approximation; assumed diagnostic magnitudes, not measured hardware",
+          "execution_backend": "fastdyn-qemu-arm",
+          "feedforward": "off",
+          "feedforward_interface": "offboard tilt lead omega/K; six normal RC channels; no onboard feed-forward modifications",
+          "gyro_std_rad_s": 0.002,
+          "hover_calibration_status": "mean commanded PWM fraction over 30–35 s of closed-loop native Betaflight hover at 2 m in the shared plant",
+          "imu_hz": 1600,
+          "input_matching": {
+            "accel_counts_per_g": 2048,
+            "conversion": "truncate toward zero, symmetric +/-32767 clamp; CG quantized at adapter, BF by existing virtual sensor",
+            "gyro_counts_per_deg_s": 16.4,
+            "innovation": "same seeded additive noise and fixed-hover vibration at every 1600 Hz sample",
+            "scope": "exogenous noise parity; actual IMU values differ with each vehicle response",
+            "vibration_reference_motor": 0.688504390918394
+          },
+          "level": "realistic",
+          "master_tick_hz": 8000,
+          "matched_control_hz": 1600,
+          "measured_counter_names": [
+            "gyro_reads",
+            "accel_reads",
+            "attitude_updates",
+            "motor_writes",
+            "transport_ticks"
+          ],
+          "measured_counts_25_to_26_s": [
+            1600,
+            1600,
+            1600,
+            1600,
+            8000
+          ],
+          "motor_protocol_readback": "DSHOT600",
+          "motor_vibration": "deterministic two-blade harmonic at 2*1100*normalized_motor rad/s; fixed per-motor and per-axis phase offsets; amplitude 0.25*IMU noise std scaled by motor command, assumed diagnostic model",
+          "noise_input_sha256": "a9bf70148654659f10a5cd8cee544cf3e37c2fe72cd7ceff8b2647be2bbe634b",
+          "pid_period_readback_us": 625,
+          "position_feedback": "plant truth",
+          "position_loop_hz": 100,
+          "rc_smoothing": "OFF",
+          "scoring_input_sha256": "f919f678d0cef0cee955938fc38b1a23d49f1c46eaf60ff0e02084634a012717",
+          "seed": 1,
+          "sensor_and_command_ingress": "fresh IMU and latest RC delivered on common 625 us boundaries; BF transport clock ticks at 125 us",
+          "sensor_input_sha256": "a47ac605c44026feb5f017a8bd18e1de43f36a4caff55615c16dc9fb4ae62ff3",
+          "stick_schedule_hz": 250,
+          "trace_format": {
+            "noise_and_sensor": "little-endian u32 tick + six f32 values: gyro FLU rad/s, specific force FLU m/s2",
+            "scoring": "seven little-endian f64: t, x,y,z, ref_x,ref_y,ref_z; 8000 Hz lap samples, inclusive endpoints"
+          },
+          "tuning": {
+            "probe_event": null
+          },
+          "tuning_status": "native_selected_6_per_s_pending_arm_requalification"
+        },
+        "shape": "hover",
+        "simulated_seconds": 53.0,
+        "stack": "betaflight",
+        "stick_updates": 13251,
+        "tilt_clamp_updates": 0,
+        "tracking_max_m": 0.030722607681610784,
+        "tracking_rms_m": 0.025116845284475744,
+        "wall_seconds": 134.274508676
+      }
+    },
+    {
+      "case": {
+        "feedforward": "off",
+        "id": "step-off",
+        "noise": "realistic",
+        "seed": 1,
+        "shape": "step"
+      },
+      "execution_complete": true,
+      "exit_success": true,
+      "id": "step-off",
+      "report": {
+        "armed_observed": true,
+        "arming_flags": 0,
+        "commanded_accel_ff_peak_rad_s2": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "commanded_rate_ff_peak_rad_s": [
+          0.0,
+          0.0
+        ],
+        "error": null,
+        "final_armed": false,
+        "final_motors": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "final_position": [
+          0.503134941614048,
+          0.004663129669212986,
+          0.098365558333341
+        ],
+        "firmware_exchanges": 464000,
+        "grounded_stopped_samples": 54491,
+        "hashes": {
+          "config": "172c59fd94bbb8dc7539499cbae3906e0c52d2cfa81c8ed25f0e1c5fd5813a7c",
+          "firmware": "55ea5bd943ce1b003857b3b1a7affef4008dbf44ebf4d090ba9ae1cc0bc9cc04",
+          "offboard": "220db232fd2cae1744afcfd4eb773d6b2dbe37b97f5f36124849344281ec9a3d",
+          "plant": "284cced3ceec15128886d05753900b8ae47f38570ce0112c50e801356de97654",
+          "plant_description": "fdb12c3379b56d2d18f0ccaab3c62d15d2f97281f55270f37b837ea9c980b91c",
+          "runner": "58e673b9558a88bd755ff41b71a57365af3cf6d4bddb4abf88da4d76a6c581c8"
+        },
+        "lap_end_s": 40.0,
+        "lap_start_s": 25.0,
+        "maximum_tilt_deg": 2.67614038142944,
+        "mode_observed": true,
+        "offboard_updates": 5800,
+        "passed": true,
+        "peak_tilt_lead_rad": [
+          0.0,
+          0.0
+        ],
+        "qualification": "FastDyn/QEMU ARM BIL; shared generated offboard loop and plant; local-source commissioning run, not physical hardware latency",
+        "samples": 464000,
+        "sensor_profile": {
+          "accel_std_m_s2": 0.03,
+          "attitude_estimator_schedule": "BF simulation TASK_ATTITUDE rescheduled to IMU rate; onboard equations unchanged",
+          "attitude_gain_per_s": 6.0,
+          "betaflight_hover_throttle": 0.6885788423153674,
+          "distribution": "12-uniform sum approximation; assumed diagnostic magnitudes, not measured hardware",
+          "execution_backend": "fastdyn-qemu-arm",
+          "feedforward": "off",
+          "feedforward_interface": "offboard tilt lead omega/K; six normal RC channels; no onboard feed-forward modifications",
+          "gyro_std_rad_s": 0.002,
+          "hover_calibration_status": "mean commanded PWM fraction over 30–35 s of closed-loop native Betaflight hover at 2 m in the shared plant",
+          "imu_hz": 1600,
+          "input_matching": {
+            "accel_counts_per_g": 2048,
+            "conversion": "truncate toward zero, symmetric +/-32767 clamp; CG quantized at adapter, BF by existing virtual sensor",
+            "gyro_counts_per_deg_s": 16.4,
+            "innovation": "same seeded additive noise and fixed-hover vibration at every 1600 Hz sample",
+            "scope": "exogenous noise parity; actual IMU values differ with each vehicle response",
+            "vibration_reference_motor": 0.688504390918394
+          },
+          "level": "realistic",
+          "master_tick_hz": 8000,
+          "matched_control_hz": 1600,
+          "measured_counter_names": [
+            "gyro_reads",
+            "accel_reads",
+            "attitude_updates",
+            "motor_writes",
+            "transport_ticks"
+          ],
+          "measured_counts_25_to_26_s": [
+            1600,
+            1600,
+            1600,
+            1600,
+            8000
+          ],
+          "motor_protocol_readback": "DSHOT600",
+          "motor_vibration": "deterministic two-blade harmonic at 2*1100*normalized_motor rad/s; fixed per-motor and per-axis phase offsets; amplitude 0.25*IMU noise std scaled by motor command, assumed diagnostic model",
+          "noise_input_sha256": "de20b0a71b4c30b0ca2adc103a06d7749a7b9e44bde9baf12404526196fbd1df",
+          "pid_period_readback_us": 625,
+          "position_feedback": "plant truth",
+          "position_loop_hz": 100,
+          "rc_smoothing": "OFF",
+          "scoring_input_sha256": "adbb4e82ed909f9d282c31e24ef143293a84b4e4db01790edcacacb0be31ff21",
+          "seed": 1,
+          "sensor_and_command_ingress": "fresh IMU and latest RC delivered on common 625 us boundaries; BF transport clock ticks at 125 us",
+          "sensor_input_sha256": "1fa9168f054ac29b151bcf387c7612ff047aa1786de435cc5ad9d36de4ee842a",
+          "stick_schedule_hz": 250,
+          "trace_format": {
+            "noise_and_sensor": "little-endian u32 tick + six f32 values: gyro FLU rad/s, specific force FLU m/s2",
+            "scoring": "seven little-endian f64: t, x,y,z, ref_x,ref_y,ref_z; 8000 Hz lap samples, inclusive endpoints"
+          },
+          "tuning": {
+            "probe_event": null
+          },
+          "tuning_status": "native_selected_6_per_s_pending_arm_requalification"
+        },
+        "shape": "step",
+        "simulated_seconds": 58.0,
+        "stack": "betaflight",
+        "stick_updates": 14501,
+        "tilt_clamp_updates": 0,
+        "tracking_max_m": 0.4967782017786877,
+        "tracking_rms_m": 0.16584801932976553,
+        "wall_seconds": 228.529125308
+      }
+    },
+    {
+      "case": {
+        "feedforward": "off",
+        "id": "square-off",
+        "noise": "realistic",
+        "seed": 1,
+        "shape": "square"
+      },
+      "execution_complete": true,
+      "exit_success": true,
+      "id": "square-off",
+      "report": {
+        "armed_observed": true,
+        "arming_flags": 0,
+        "commanded_accel_ff_peak_rad_s2": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "commanded_rate_ff_peak_rad_s": [
+          0.0,
+          0.0
+        ],
+        "error": null,
+        "final_armed": false,
+        "final_motors": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "final_position": [
+          0.002951653717664943,
+          0.0021309822211578815,
+          0.0983655583332982
+        ],
+        "firmware_exchanges": 664000,
+        "grounded_stopped_samples": 54651,
+        "hashes": {
+          "config": "172c59fd94bbb8dc7539499cbae3906e0c52d2cfa81c8ed25f0e1c5fd5813a7c",
+          "firmware": "55ea5bd943ce1b003857b3b1a7affef4008dbf44ebf4d090ba9ae1cc0bc9cc04",
+          "offboard": "220db232fd2cae1744afcfd4eb773d6b2dbe37b97f5f36124849344281ec9a3d",
+          "plant": "284cced3ceec15128886d05753900b8ae47f38570ce0112c50e801356de97654",
+          "plant_description": "fdb12c3379b56d2d18f0ccaab3c62d15d2f97281f55270f37b837ea9c980b91c",
+          "runner": "58e673b9558a88bd755ff41b71a57365af3cf6d4bddb4abf88da4d76a6c581c8"
+        },
+        "lap_end_s": 65.0,
+        "lap_start_s": 25.0,
+        "maximum_tilt_deg": 0.4945816356145915,
+        "mode_observed": true,
+        "offboard_updates": 8300,
+        "passed": true,
+        "peak_tilt_lead_rad": [
+          0.0,
+          0.0
+        ],
+        "qualification": "FastDyn/QEMU ARM BIL; shared generated offboard loop and plant; local-source commissioning run, not physical hardware latency",
+        "samples": 664000,
+        "sensor_profile": {
+          "accel_std_m_s2": 0.03,
+          "attitude_estimator_schedule": "BF simulation TASK_ATTITUDE rescheduled to IMU rate; onboard equations unchanged",
+          "attitude_gain_per_s": 6.0,
+          "betaflight_hover_throttle": 0.6885788423153674,
+          "distribution": "12-uniform sum approximation; assumed diagnostic magnitudes, not measured hardware",
+          "execution_backend": "fastdyn-qemu-arm",
+          "feedforward": "off",
+          "feedforward_interface": "offboard tilt lead omega/K; six normal RC channels; no onboard feed-forward modifications",
+          "gyro_std_rad_s": 0.002,
+          "hover_calibration_status": "mean commanded PWM fraction over 30–35 s of closed-loop native Betaflight hover at 2 m in the shared plant",
+          "imu_hz": 1600,
+          "input_matching": {
+            "accel_counts_per_g": 2048,
+            "conversion": "truncate toward zero, symmetric +/-32767 clamp; CG quantized at adapter, BF by existing virtual sensor",
+            "gyro_counts_per_deg_s": 16.4,
+            "innovation": "same seeded additive noise and fixed-hover vibration at every 1600 Hz sample",
+            "scope": "exogenous noise parity; actual IMU values differ with each vehicle response",
+            "vibration_reference_motor": 0.688504390918394
+          },
+          "level": "realistic",
+          "master_tick_hz": 8000,
+          "matched_control_hz": 1600,
+          "measured_counter_names": [
+            "gyro_reads",
+            "accel_reads",
+            "attitude_updates",
+            "motor_writes",
+            "transport_ticks"
+          ],
+          "measured_counts_25_to_26_s": [
+            1600,
+            1600,
+            1600,
+            1600,
+            8000
+          ],
+          "motor_protocol_readback": "DSHOT600",
+          "motor_vibration": "deterministic two-blade harmonic at 2*1100*normalized_motor rad/s; fixed per-motor and per-axis phase offsets; amplitude 0.25*IMU noise std scaled by motor command, assumed diagnostic model",
+          "noise_input_sha256": "131dd17b3af06e05f207f1b9971c4e65fbfc1739ce55ecfb0d030b992412ebc1",
+          "pid_period_readback_us": 625,
+          "position_feedback": "plant truth",
+          "position_loop_hz": 100,
+          "rc_smoothing": "OFF",
+          "scoring_input_sha256": "555975fafb3090a2dec6ced722a1327ce940c9e17cc47383d89c7677fb450453",
+          "seed": 1,
+          "sensor_and_command_ingress": "fresh IMU and latest RC delivered on common 625 us boundaries; BF transport clock ticks at 125 us",
+          "sensor_input_sha256": "7ba4141180cc623ccd489998fa30e8c2b9b0d57df20d5f14be49a05cb4356f31",
+          "stick_schedule_hz": 250,
+          "trace_format": {
+            "noise_and_sensor": "little-endian u32 tick + six f32 values: gyro FLU rad/s, specific force FLU m/s2",
+            "scoring": "seven little-endian f64: t, x,y,z, ref_x,ref_y,ref_z; 8000 Hz lap samples, inclusive endpoints"
+          },
+          "tuning": {
+            "probe_event": null
+          },
+          "tuning_status": "native_selected_6_per_s_pending_arm_requalification"
+        },
+        "shape": "square",
+        "simulated_seconds": 83.0,
+        "stack": "betaflight",
+        "stick_updates": 20751,
+        "tilt_clamp_updates": 0,
+        "tracking_max_m": 0.03663886424194105,
+        "tracking_rms_m": 0.02392954436499811,
+        "wall_seconds": 156.482928239
+      }
+    },
+    {
+      "case": {
+        "feedforward": "off",
+        "id": "figure-eight-off",
+        "noise": "realistic",
+        "seed": 1,
+        "shape": "figure-eight"
+      },
+      "execution_complete": true,
+      "exit_success": true,
+      "id": "figure-eight-off",
+      "report": {
+        "armed_observed": true,
+        "arming_flags": 0,
+        "commanded_accel_ff_peak_rad_s2": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "commanded_rate_ff_peak_rad_s": [
+          0.0,
+          0.0
+        ],
+        "error": null,
+        "final_armed": false,
+        "final_motors": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "final_position": [
+          0.0029535336239070657,
+          -0.0004139184880333765,
+          0.09836555833332264
+        ],
+        "firmware_exchanges": 664000,
+        "grounded_stopped_samples": 54746,
+        "hashes": {
+          "config": "172c59fd94bbb8dc7539499cbae3906e0c52d2cfa81c8ed25f0e1c5fd5813a7c",
+          "firmware": "55ea5bd943ce1b003857b3b1a7affef4008dbf44ebf4d090ba9ae1cc0bc9cc04",
+          "offboard": "220db232fd2cae1744afcfd4eb773d6b2dbe37b97f5f36124849344281ec9a3d",
+          "plant": "284cced3ceec15128886d05753900b8ae47f38570ce0112c50e801356de97654",
+          "plant_description": "fdb12c3379b56d2d18f0ccaab3c62d15d2f97281f55270f37b837ea9c980b91c",
+          "runner": "58e673b9558a88bd755ff41b71a57365af3cf6d4bddb4abf88da4d76a6c581c8"
+        },
+        "lap_end_s": 65.0,
+        "lap_start_s": 25.0,
+        "maximum_tilt_deg": 10.744264719842448,
+        "mode_observed": true,
+        "offboard_updates": 8300,
+        "passed": true,
+        "peak_tilt_lead_rad": [
+          0.0,
+          0.0
+        ],
+        "qualification": "FastDyn/QEMU ARM BIL; shared generated offboard loop and plant; local-source commissioning run, not physical hardware latency",
+        "samples": 664000,
+        "sensor_profile": {
+          "accel_std_m_s2": 0.03,
+          "attitude_estimator_schedule": "BF simulation TASK_ATTITUDE rescheduled to IMU rate; onboard equations unchanged",
+          "attitude_gain_per_s": 6.0,
+          "betaflight_hover_throttle": 0.6885788423153674,
+          "distribution": "12-uniform sum approximation; assumed diagnostic magnitudes, not measured hardware",
+          "execution_backend": "fastdyn-qemu-arm",
+          "feedforward": "off",
+          "feedforward_interface": "offboard tilt lead omega/K; six normal RC channels; no onboard feed-forward modifications",
+          "gyro_std_rad_s": 0.002,
+          "hover_calibration_status": "mean commanded PWM fraction over 30–35 s of closed-loop native Betaflight hover at 2 m in the shared plant",
+          "imu_hz": 1600,
+          "input_matching": {
+            "accel_counts_per_g": 2048,
+            "conversion": "truncate toward zero, symmetric +/-32767 clamp; CG quantized at adapter, BF by existing virtual sensor",
+            "gyro_counts_per_deg_s": 16.4,
+            "innovation": "same seeded additive noise and fixed-hover vibration at every 1600 Hz sample",
+            "scope": "exogenous noise parity; actual IMU values differ with each vehicle response",
+            "vibration_reference_motor": 0.688504390918394
+          },
+          "level": "realistic",
+          "master_tick_hz": 8000,
+          "matched_control_hz": 1600,
+          "measured_counter_names": [
+            "gyro_reads",
+            "accel_reads",
+            "attitude_updates",
+            "motor_writes",
+            "transport_ticks"
+          ],
+          "measured_counts_25_to_26_s": [
+            1600,
+            1600,
+            1600,
+            1600,
+            8000
+          ],
+          "motor_protocol_readback": "DSHOT600",
+          "motor_vibration": "deterministic two-blade harmonic at 2*1100*normalized_motor rad/s; fixed per-motor and per-axis phase offsets; amplitude 0.25*IMU noise std scaled by motor command, assumed diagnostic model",
+          "noise_input_sha256": "131dd17b3af06e05f207f1b9971c4e65fbfc1739ce55ecfb0d030b992412ebc1",
+          "pid_period_readback_us": 625,
+          "position_feedback": "plant truth",
+          "position_loop_hz": 100,
+          "rc_smoothing": "OFF",
+          "scoring_input_sha256": "2ff9c682edc2eb7daa8b6cf99d83e0722178a0ec3fbd450cb2bab77c12e8a281",
+          "seed": 1,
+          "sensor_and_command_ingress": "fresh IMU and latest RC delivered on common 625 us boundaries; BF transport clock ticks at 125 us",
+          "sensor_input_sha256": "b05b516b4f2ab6a06e7aadf0e04500fdb8e0c6b0b073afdd33a48555722d62b0",
+          "stick_schedule_hz": 250,
+          "trace_format": {
+            "noise_and_sensor": "little-endian u32 tick + six f32 values: gyro FLU rad/s, specific force FLU m/s2",
+            "scoring": "seven little-endian f64: t, x,y,z, ref_x,ref_y,ref_z; 8000 Hz lap samples, inclusive endpoints"
+          },
+          "tuning": {
+            "probe_event": null
+          },
+          "tuning_status": "native_selected_6_per_s_pending_arm_requalification"
+        },
+        "shape": "figure-eight",
+        "simulated_seconds": 83.0,
+        "stack": "betaflight",
+        "stick_updates": 20751,
+        "tilt_clamp_updates": 0,
+        "tracking_max_m": 0.501195243549862,
+        "tracking_rms_m": 0.20248068182538695,
+        "wall_seconds": 154.429376757
+      }
+    },
+    {
+      "case": {
+        "feedforward": "omega",
+        "id": "figure-eight-omega",
+        "noise": "realistic",
+        "seed": 1,
+        "shape": "figure-eight"
+      },
+      "execution_complete": true,
+      "exit_success": true,
+      "id": "figure-eight-omega",
+      "report": {
+        "armed_observed": true,
+        "arming_flags": 0,
+        "commanded_accel_ff_peak_rad_s2": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "commanded_rate_ff_peak_rad_s": [
+          0.1075260415673256,
+          0.014574356377124786
+        ],
+        "error": null,
+        "final_armed": false,
+        "final_motors": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "final_position": [
+          0.001686950261911526,
+          -0.001474214857204395,
+          0.09836555833333312
+        ],
+        "firmware_exchanges": 664000,
+        "grounded_stopped_samples": 54651,
+        "hashes": {
+          "config": "ebdaa05c17e7901716c842235daa391dde4d89a9a5ec47c6852039cbad1299d5",
+          "firmware": "55ea5bd943ce1b003857b3b1a7affef4008dbf44ebf4d090ba9ae1cc0bc9cc04",
+          "offboard": "220db232fd2cae1744afcfd4eb773d6b2dbe37b97f5f36124849344281ec9a3d",
+          "plant": "284cced3ceec15128886d05753900b8ae47f38570ce0112c50e801356de97654",
+          "plant_description": "fdb12c3379b56d2d18f0ccaab3c62d15d2f97281f55270f37b837ea9c980b91c",
+          "runner": "58e673b9558a88bd755ff41b71a57365af3cf6d4bddb4abf88da4d76a6c581c8"
+        },
+        "lap_end_s": 65.0,
+        "lap_start_s": 25.0,
+        "maximum_tilt_deg": 10.403875688547956,
+        "mode_observed": true,
+        "offboard_updates": 8300,
+        "passed": true,
+        "peak_tilt_lead_rad": [
+          0.0179210069278876,
+          0.0024290593961874643
+        ],
+        "qualification": "FastDyn/QEMU ARM BIL; shared generated offboard loop and plant; local-source commissioning run, not physical hardware latency",
+        "samples": 664000,
+        "sensor_profile": {
+          "accel_std_m_s2": 0.03,
+          "attitude_estimator_schedule": "BF simulation TASK_ATTITUDE rescheduled to IMU rate; onboard equations unchanged",
+          "attitude_gain_per_s": 6.0,
+          "betaflight_hover_throttle": 0.6885788423153674,
+          "distribution": "12-uniform sum approximation; assumed diagnostic magnitudes, not measured hardware",
+          "execution_backend": "fastdyn-qemu-arm",
+          "feedforward": "omega",
+          "feedforward_interface": "offboard tilt lead omega/K; six normal RC channels; no onboard feed-forward modifications",
+          "gyro_std_rad_s": 0.002,
+          "hover_calibration_status": "mean commanded PWM fraction over 30–35 s of closed-loop native Betaflight hover at 2 m in the shared plant",
+          "imu_hz": 1600,
+          "input_matching": {
+            "accel_counts_per_g": 2048,
+            "conversion": "truncate toward zero, symmetric +/-32767 clamp; CG quantized at adapter, BF by existing virtual sensor",
+            "gyro_counts_per_deg_s": 16.4,
+            "innovation": "same seeded additive noise and fixed-hover vibration at every 1600 Hz sample",
+            "scope": "exogenous noise parity; actual IMU values differ with each vehicle response",
+            "vibration_reference_motor": 0.688504390918394
+          },
+          "level": "realistic",
+          "master_tick_hz": 8000,
+          "matched_control_hz": 1600,
+          "measured_counter_names": [
+            "gyro_reads",
+            "accel_reads",
+            "attitude_updates",
+            "motor_writes",
+            "transport_ticks"
+          ],
+          "measured_counts_25_to_26_s": [
+            1600,
+            1600,
+            1600,
+            1600,
+            8000
+          ],
+          "motor_protocol_readback": "DSHOT600",
+          "motor_vibration": "deterministic two-blade harmonic at 2*1100*normalized_motor rad/s; fixed per-motor and per-axis phase offsets; amplitude 0.25*IMU noise std scaled by motor command, assumed diagnostic model",
+          "noise_input_sha256": "131dd17b3af06e05f207f1b9971c4e65fbfc1739ce55ecfb0d030b992412ebc1",
+          "pid_period_readback_us": 625,
+          "position_feedback": "plant truth",
+          "position_loop_hz": 100,
+          "rc_smoothing": "OFF",
+          "scoring_input_sha256": "47dcf8a9b6f423a3070e591235bc8796fd5f7020268e208f188bf903da0b68a0",
+          "seed": 1,
+          "sensor_and_command_ingress": "fresh IMU and latest RC delivered on common 625 us boundaries; BF transport clock ticks at 125 us",
+          "sensor_input_sha256": "42bc42b756a77d28ab89efbbe9348ff4c5f4aa79e2668d951f3d3a2f58981881",
+          "stick_schedule_hz": 250,
+          "trace_format": {
+            "noise_and_sensor": "little-endian u32 tick + six f32 values: gyro FLU rad/s, specific force FLU m/s2",
+            "scoring": "seven little-endian f64: t, x,y,z, ref_x,ref_y,ref_z; 8000 Hz lap samples, inclusive endpoints"
+          },
+          "tuning": {
+            "probe_event": null
+          },
+          "tuning_status": "native_selected_6_per_s_pending_arm_requalification"
+        },
+        "shape": "figure-eight",
+        "simulated_seconds": 83.0,
+        "stack": "betaflight",
+        "stick_updates": 20751,
+        "tilt_clamp_updates": 0,
+        "tracking_max_m": 0.3424008968637137,
+        "tracking_rms_m": 0.14255173236145446,
+        "wall_seconds": 134.370326825
+      }
+    }
+  ],
+  "scope": "predeclared diagnostic matrix; no performance ranking"
+}

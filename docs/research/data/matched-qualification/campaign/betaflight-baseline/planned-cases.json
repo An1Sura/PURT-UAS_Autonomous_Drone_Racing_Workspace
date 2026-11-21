@@ -1,0 +1,61 @@
+[
+  {
+    "feedforward": "off",
+    "id": "attitude-1",
+    "noise": "realistic",
+    "probe_event": 1,
+    "seed": 1,
+    "shape": "attitude-step"
+  },
+  {
+    "feedforward": "off",
+    "id": "attitude-2",
+    "noise": "realistic",
+    "probe_event": 2,
+    "seed": 1,
+    "shape": "attitude-step"
+  },
+  {
+    "feedforward": "off",
+    "id": "attitude-3",
+    "noise": "realistic",
+    "probe_event": 3,
+    "seed": 1,
+    "shape": "attitude-step"
+  },
+  {
+    "feedforward": "off",
+    "id": "hover-off",
+    "noise": "realistic",
+    "seed": 1,
+    "shape": "hover"
+  },
+  {
+    "feedforward": "off",
+    "id": "step-off",
+    "noise": "realistic",
+    "seed": 1,
+    "shape": "step"
+  },
+  {
+    "feedforward": "off",
+    "id": "square-off",
+    "noise": "realistic",
+    "seed": 1,
+    "shape": "square"
+  },
+  {
+    "feedforward": "off",
+    "id": "figure-eight-off",
+    "noise": "realistic",
+    "seed": 1,
+    "shape": "figure-eight"
+  },
+  {
+    "feedforward": "omega",
+    "id": "figure-eight-omega",
+    "noise": "realistic",
+    "seed": 1,
+    "shape": "figure-eight"
+  }
+]

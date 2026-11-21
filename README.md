@@ -1,16 +1,33 @@
 # PURT-UAS Autonomous Drone Racing
 
+[**CogniPilot for Autonomous Drone Racing — simulation comparison**](https://an1sura.github.io/PURT-UAS_Autonomous_Drone_Racing_Workspace/research/#comparison)
+
+**Simulation only:** recorded TROPIC RT1064 firmware runs in FastDyn/QEMU using a shared Rumoca vehicle model. The website displays recorded results, not live physical flights.
+
 **Our goal is to make CogniPilot fly the same figure-eight course faster than Betaflight while maintaining accurate, reliable flight.**
 
 Betaflight is the performance baseline; CogniPilot is the stack we aim to improve. We plan to fly **two identical drones autonomously** on the same course, using repeatable measurements to determine whether our CogniPilot changes improve performance and ultimately surpass that baseline. Faster flight must still meet the same tracking and completion requirements.
 
 **This repository is the SIL stage before our separate latency tests.** It establishes working autonomous flights, shared physics, command interfaces and recorded baseline behavior. Subsequent latency tests will investigate control, communication and driver timing to guide CogniPilot improvements. The current flight recordings do not isolate those latencies or prove that CogniPilot is already faster. Hardware-in-the-loop (HIL) and physical flights at PURT build on this foundation.
 
-[**Research conference dashboard**](https://an1sura.github.io/PURT-UAS_Autonomous_Drone_Racing_Workspace/research/) · [**Watch the Flight Simulation & Stats page**](https://an1sura.github.io/PURT-UAS_Autonomous_Drone_Racing_Workspace/sim/) · [Open the VM-connected simulation](http://127.0.0.1:8766/sim/) · [Current benchmark integration](docs/arm-benchmark-integration.md) · [Repository source map](docs/repository-map.md) · [Hardware builds and PDF compliance](docs/hardware-readiness.md)
+[**Watch the Flight Simulation & Stats page**](https://an1sura.github.io/PURT-UAS_Autonomous_Drone_Racing_Workspace/sim/) · [Open the VM-connected simulation](http://127.0.0.1:8766/sim/) · [Current benchmark integration](docs/arm-benchmark-integration.md) · [Repository source map](docs/repository-map.md) · [Hardware builds and PDF compliance](docs/hardware-readiness.md)
 
-**Current milestone (November 5):** Betaflight’s proposed NXP support now runs as **MR_VMU_TROPIC / RT1064 / Cortex-M7** firmware in FastDyn/QEMU. Hover, position-step, and the 10 × 10 m figure-eight passed. The new figure-eight measured **0.195 m RMS / 0.507 m maximum error**, with verified landing/disarm and zero final motor commands. The prior STM32F405 regression remains unchanged. [Pinned sources, exact adapter and build/test evidence](docs/betaflight-nxp-integration.md) · [Timing and preintegration experiments](docs/timing-and-preintegration-plan.md). NXP tuning/speed requalification and physical driver timing remain outstanding.
+**Previous milestone (November 5):** Betaflight’s proposed NXP support now runs as **MR_VMU_TROPIC / RT1064 / Cortex-M7** firmware in FastDyn/QEMU. Hover, position-step, and the 10 × 10 m figure-eight passed. The new figure-eight measured **0.195 m RMS / 0.507 m maximum error**, with verified landing/disarm and zero final motor commands. The prior STM32F405 regression remains unchanged. [Pinned sources, exact adapter and build/test evidence](docs/betaflight-nxp-integration.md) · [Timing and preintegration experiments](docs/timing-and-preintegration-plan.md). NXP tuning/speed requalification and physical driver timing remain outstanding.
 
 **Previous milestone (October 22):** both ARM autopilot binaries run through FastDyn/QEMU against the shared Rumoca plant. The updated interface adds rate feed-forward offboard as a normal tilt command; onboard control equations remain upstream. Both stacks selected K = 6/s under the same step-response rule. New ARM recordings and native speed-screening results are published with failed attempts and limitations. [Integration, tasks and qualification](docs/arm-benchmark-integration.md).
+
+## Matched simulation results · November 20–21
+
+**78/78 planned flights passed and landed**, covering 39 paired conditions: eight signed attitude probes, ten baseline flights and sixty repeated figure-eight runs. Both stacks use the same 2 kg / 500 mm diagonal plant, 1,600 Hz sensor/control scheduling, 100 Hz position loop, 250 Hz commands, virtual DShot600 and attitude gain 6/s. Onboard controller equations remain unchanged.
+
+All eight fixed-reference qualification checks passed. Original configuration values, paired noise inputs and shared artifacts match; scores independently reproduce the saved 8 kHz measurements. Five no-noise repetitions per stack and lead setting produce byte-identical trajectories and motor traces.
+
+| 40 s figure-eight · realistic noise · seed 1 | CogniPilot RMS / peak | Betaflight RMS / peak |
+|---|---|---|
+| Tilt lead off | 0.1410 / 0.3473 m | 0.2025 / 0.5012 m |
+| Tilt lead on | 0.1966 / 0.4995 m | 0.1426 / 0.3424 m |
+
+These are fixed-reference simulation results, not a new maximum-speed boundary or a ranking. Broader Acro/yaw qualification, speed sweeps and physical timing remain separate work. [Completion and limitations](web/flight-comparison/IMPLEMENTATION-STATUS.md) · [Website source and reproduction](web/flight-comparison/README.md) · [Raw simulation evidence and SHA-256 checksums](https://github.com/An1Sura/PURT-UAS_Autonomous_Drone_Racing_Workspace/releases/tag/matched-simulation-20261121).
 
 ## What this project does
 

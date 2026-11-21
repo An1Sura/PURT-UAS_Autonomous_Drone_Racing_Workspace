@@ -1,0 +1,43 @@
+{
+  "hashes": {
+    "checker": "367e3e7a7e8d676c0832862ba77a59b7044c2f374c9e0037eda61a72c7d37a6f",
+    "config": "93d1cf9599118c30953429a413c897d33feed5683039455e9b9f026f1489f81e",
+    "library": "220db232fd2cae1744afcfd4eb773d6b2dbe37b97f5f36124849344281ec9a3d"
+  },
+  "metrics": {
+    "alpha_fd_max_error": 1.4094825306898429e-8,
+    "bounds_max_enu_m": [
+      4.999999046325684,
+      4.999999523162842,
+      2.0
+    ],
+    "bounds_min_enu_m": [
+      -4.999999046325684,
+      -4.999999523162842,
+      2.0
+    ],
+    "clock_max_error_s": 2.746582033807954e-6,
+    "exact_reference_repeats": 2,
+    "feedforward_off_and_disengage_zero": true,
+    "guidance_oracle_max_absolute_error": 0.0,
+    "integrated_orientation_max_error_rad": 6.976544803809931e-7,
+    "integrated_orientation_scope": "generated FF, zero position/velocity/orientation state error and fixed heading; reference-force derivatives only; not general closed-loop stability",
+    "integrated_quaternion_norm_max_error": 2.55351295663786e-15,
+    "jerk_fd_max_error": 8.317516893452392e-6,
+    "omega_fd_max_error": 2.5290044031178738e-8,
+    "pending_gates": [
+      "Betaflight packet lockstep",
+      "ideal-attitude common-plant flight",
+      "stock ANGLE/ATTITUDE hover and step tests",
+      "closed-loop takeoff, square, figure eight and landing",
+      "noise and speed campaign"
+    ],
+    "position_velocity_acceleration_max_absolute_error": 0.00004363549354050554,
+    "precision": "generated IEEE float32 versus f64 analytic oracle; not formal floating-point proof",
+    "sample_rate_hz": 100,
+    "samples": 4001,
+    "snap_fd_max_error": 3.18211954919434e-6
+  },
+  "passed": true,
+  "scope": "Numerical validation of the exact supplied compiled flight library; no regeneration or substitution"
+}
