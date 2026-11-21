@@ -1,0 +1,6 @@
+node_modules/
+public/data/
+qa/publication/
+qa/qualification-work/measurements/
+qa/qualification-work/rebuilds/
+.DS_Store

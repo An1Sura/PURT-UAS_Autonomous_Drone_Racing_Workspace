@@ -1,0 +1,75 @@
+{
+  "date": "2026-11-20",
+  "scope": "Independent analytic and numerical audit; no firmware execution or formal proof",
+  "passed": true,
+  "checks": [
+    {
+      "name": "Reference geometry quadrature",
+      "passed": true,
+      "detail": "Path length converges within 10 µm between 10,000 and 20,000 intervals.",
+      "values": {
+        "coarse": 47.147150610890655,
+        "fine": 47.147155016262566
+      }
+    },
+    {
+      "name": "Analytic derivatives through snap",
+      "passed": true,
+      "detail": "Centered finite differences at 3,299 interior times; each derivative residual below 10⁻⁶ in its own SI units.",
+      "values": {
+        "velocity_m_s": 3.2412348360821852e-9,
+        "acceleration_m_s2": 2.3064412602025186e-9,
+        "jerk_m_s3": 2.048879066407494e-9,
+        "snap_m_s4": 1.6742438546657468e-9
+      }
+    },
+    {
+      "name": "Desired-frame orthonormality",
+      "passed": true,
+      "detail": "Axes are unit length and mutually perpendicular throughout the trajectory.",
+      "values": {
+        "maximum_residual": 6.661338147750939e-16
+      }
+    },
+    {
+      "name": "Quaternion integration and refinement",
+      "passed": true,
+      "detail": "Midpoint body-rate exponential integration reproduces the analytic desired axes; halving the step reduces error by approximately four.",
+      "values": {
+        "coarse": {
+          "step_s": 0.01,
+          "samples": 3300,
+          "max_axis_vector_error": 5.49187682077744e-7,
+          "max_quaternion_norm_error": 5.10702591327572e-15
+        },
+        "fine": {
+          "step_s": 0.005,
+          "samples": 6600,
+          "max_axis_vector_error": 1.3729699800162393e-7,
+          "max_quaternion_norm_error": 5.773159728050814e-15
+        }
+      }
+    },
+    {
+      "name": "Size and duration scaling",
+      "passed": true,
+      "detail": "Doubling size doubles distance/speed/acceleration; doubling duration halves speed and quarters acceleration.",
+      "values": {
+        "maximum_residual": 0
+      }
+    }
+  ],
+  "course33": {
+    "duration_s": 33,
+    "length_m": 47.147155016262566,
+    "mean_speed_m_s": 1.4287016671594717,
+    "peak_speed_m_s": 3.99137200627314,
+    "peak_acceleration_m_s2": 2.4298538204928564,
+    "peak_normal_acceleration_m_s2": 2.3907192915081676,
+    "min_radius_m": 0.5967655365093917
+  },
+  "sourceHashes": {
+    "analytic": "727a2a7496518aee03d9cd55ffdff416770fc05a407cfe681e8f0cc91f398bc3",
+    "modelica": "c334b5972744f3cef0f7984b97a64ecfa4d5a8c2859c4f301c3ca705b45ba0d7"
+  }
+}

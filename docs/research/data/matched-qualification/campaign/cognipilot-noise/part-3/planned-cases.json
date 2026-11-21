@@ -1,0 +1,44 @@
+[
+  {
+    "feedforward": "off",
+    "id": "harsh-seed-3-off",
+    "noise": "harsh",
+    "seed": 3,
+    "shape": "figure-eight"
+  },
+  {
+    "feedforward": "omega",
+    "id": "harsh-seed-3-omega",
+    "noise": "harsh",
+    "seed": 3,
+    "shape": "figure-eight"
+  },
+  {
+    "feedforward": "off",
+    "id": "harsh-seed-4-off",
+    "noise": "harsh",
+    "seed": 4,
+    "shape": "figure-eight"
+  },
+  {
+    "feedforward": "omega",
+    "id": "harsh-seed-4-omega",
+    "noise": "harsh",
+    "seed": 4,
+    "shape": "figure-eight"
+  },
+  {
+    "feedforward": "off",
+    "id": "harsh-seed-5-off",
+    "noise": "harsh",
+    "seed": 5,
+    "shape": "figure-eight"
+  },
+  {
+    "feedforward": "omega",
+    "id": "harsh-seed-5-omega",
+    "noise": "harsh",
+    "seed": 5,
+    "shape": "figure-eight"
+  }
+]

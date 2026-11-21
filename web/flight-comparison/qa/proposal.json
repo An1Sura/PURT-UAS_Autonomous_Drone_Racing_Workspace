@@ -1,0 +1,85 @@
+{
+  "status": "proposal_not_executed",
+  "baselinePlant": "284cced3ceec15128886d05753900b8ae47f38570ce0112c50e801356de97654",
+  "parameter": "attitude_gain_per_s",
+  "candidateValues": [
+    "4",
+    "6",
+    "8"
+  ],
+  "modelChange": false,
+  "stacks": [
+    "cognipilot",
+    "betaflight"
+  ],
+  "noise": [
+    "none",
+    "realistic",
+    "harsh"
+  ],
+  "seeds": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "feedforward": [
+    "off",
+    "omega"
+  ],
+  "prerequisites": [
+    {
+      "id": 1,
+      "name": "Simulator fairness",
+      "status": "partial",
+      "evidence": [
+        "steps",
+        "step-method",
+        "cognipilot-repeat-1",
+        "betaflight-repeat-1",
+        "matched-protocol"
+      ],
+      "detail": "New frozen ARM validation matches the 1,600 Hz schedule, shared binaries, IMU resolution and recorded external-noise innovations in 39/39 planned paired conditions. Full Acro/yaw and arbitrary-heading equivalence remain separately scoped."
+    },
+    {
+      "id": 2,
+      "name": "Shared controller validation",
+      "status": "passed",
+      "evidence": [
+        "generated-checks",
+        "fresh-generated-checks",
+        "generated-orientation",
+        "ideal-figure-eight",
+        "math-audit",
+        "orientation-checker-change.patch",
+        "exact-flight-loop-check"
+      ],
+      "detail": "Generated-code oracle and derivative checks passed 4,001 samples. Five ideal-attitude missions passed with identical figure-eight repeats. Integrating generated body-rate FF reproduced desired orientation within 6.98e-7 rad under zero state error and fixed heading. This validates the declared isolated test, not global nonlinear stability. The exact compiled library used by the new flights also passed all numerical checks."
+    },
+    {
+      "id": 3,
+      "name": "Closed-loop campaign",
+      "status": "partial",
+      "evidence": [
+        "cognipilot-campaign",
+        "betaflight-campaign",
+        "native-tuning",
+        "matched-protocol"
+      ],
+      "detail": "New signed ARM attitude qualification: 8/8 probes. Baselines: 10/10. Fixed 40 s noise/lead matrix: 60/60 repetitions. A fresh maximum-speed search is separate from this fixed-reference protocol."
+    },
+    {
+      "id": 4,
+      "name": "Scoring and final comparison",
+      "status": "partial",
+      "evidence": [
+        "qualification-audit",
+        "matched-protocol",
+        "firmware-rebuild-checks"
+      ],
+      "detail": "Fresh reports independently reproduced from raw 8 kHz samples: 78/78. Loaded program reproduced from source: 2/2 stacks. Fixed-reference protocol: passed. Physical CPU timing, estimator/body-rate histories and a fresh maximum-speed boundary are outside this dataset."
+    }
+  ],
+  "results": null
+}

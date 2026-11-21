@@ -1,0 +1,121 @@
+[
+  {
+    "feedforward": "omega",
+    "id": "realistic-seed-2-omega",
+    "noise": "realistic",
+    "seed": 2,
+    "shape": "figure-eight"
+  },
+  {
+    "feedforward": "off",
+    "id": "realistic-seed-3-off",
+    "noise": "realistic",
+    "seed": 3,
+    "shape": "figure-eight"
+  },
+  {
+    "feedforward": "omega",
+    "id": "realistic-seed-3-omega",
+    "noise": "realistic",
+    "seed": 3,
+    "shape": "figure-eight"
+  },
+  {
+    "feedforward": "off",
+    "id": "realistic-seed-4-off",
+    "noise": "realistic",
+    "seed": 4,
+    "shape": "figure-eight"
+  },
+  {
+    "feedforward": "omega",
+    "id": "realistic-seed-4-omega",
+    "noise": "realistic",
+    "seed": 4,
+    "shape": "figure-eight"
+  },
+  {
+    "feedforward": "off",
+    "id": "realistic-seed-5-off",
+    "noise": "realistic",
+    "seed": 5,
+    "shape": "figure-eight"
+  },
+  {
+    "feedforward": "omega",
+    "id": "realistic-seed-5-omega",
+    "noise": "realistic",
+    "seed": 5,
+    "shape": "figure-eight"
+  },
+  {
+    "feedforward": "off",
+    "id": "harsh-seed-1-off",
+    "noise": "harsh",
+    "seed": 1,
+    "shape": "figure-eight"
+  },
+  {
+    "feedforward": "omega",
+    "id": "harsh-seed-1-omega",
+    "noise": "harsh",
+    "seed": 1,
+    "shape": "figure-eight"
+  },
+  {
+    "feedforward": "off",
+    "id": "harsh-seed-2-off",
+    "noise": "harsh",
+    "seed": 2,
+    "shape": "figure-eight"
+  },
+  {
+    "feedforward": "omega",
+    "id": "harsh-seed-2-omega",
+    "noise": "harsh",
+    "seed": 2,
+    "shape": "figure-eight"
+  },
+  {
+    "feedforward": "off",
+    "id": "harsh-seed-3-off",
+    "noise": "harsh",
+    "seed": 3,
+    "shape": "figure-eight"
+  },
+  {
+    "feedforward": "omega",
+    "id": "harsh-seed-3-omega",
+    "noise": "harsh",
+    "seed": 3,
+    "shape": "figure-eight"
+  },
+  {
+    "feedforward": "off",
+    "id": "harsh-seed-4-off",
+    "noise": "harsh",
+    "seed": 4,
+    "shape": "figure-eight"
+  },
+  {
+    "feedforward": "omega",
+    "id": "harsh-seed-4-omega",
+    "noise": "harsh",
+    "seed": 4,
+    "shape": "figure-eight"
+  },
+  {
+    "feedforward": "off",
+    "id": "harsh-seed-5-off",
+    "noise": "harsh",
+    "seed": 5,
+    "shape": "figure-eight"
+  },
+  {
+    "feedforward": "omega",
+    "id": "harsh-seed-5-omega",
+    "noise": "harsh",
+    "seed": 5,
+    "shape": "figure-eight"
+  }
+]

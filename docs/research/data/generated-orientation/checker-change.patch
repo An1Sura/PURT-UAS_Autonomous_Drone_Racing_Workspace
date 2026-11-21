@@ -1,0 +1,77 @@
+--- qa/shared_loop.before.rs	2026-10-13 19:15:48
++++ qa/shared_loop.updated.rs	2026-11-20 19:31:57
+@@ -284,6 +284,54 @@
+             }
+         }
+     }
++    // Integrated orientation gate: zero state error, fixed heading, drag-free
++    // reference force. This isolates generated FF, not changing feedback forces.
++    unsafe { start(d[0], d[1], d[2], d[3]); }
++    let mut orientation_csv = fs::File::create(out.join("orientation-check.csv"))?;
++    writeln!(orientation_csv, "time_s,error_rad,desired_w,desired_x,desired_y,desired_z,integrated_w,integrated_x,integrated_y,integrated_z")?;
++    let mut integrated_q = [1.0f64, 0., 0., 0.];
++    let mut previous_w = [0.0f64; 3];
++    let mut orientation_max_error = 0.0f64;
++    let mut quaternion_norm_error = 0.0f64;
++    for i in 0..=steps {
++        let mut r = [0f32; 17];
++        ensure!(unsafe { reference(i32::from(i != 0), r.as_mut_ptr()) } == 0, "orientation reference failed");
++        let mut input = [0f32; 27];
++        input[0..3].copy_from_slice(&r[1..4]);
++        input[3..6].copy_from_slice(&r[4..7]);
++        input[6] = 1.;
++        input[10..13].copy_from_slice(&r[1..4]);
++        input[13..16].copy_from_slice(&r[4..7]);
++        input[16..19].copy_from_slice(&r[7..10]);
++        input[19] = r[10];
++        input[20..26].copy_from_slice(&r[11..17]);
++        input[26] = 1.;
++        let mut c = [0f32; 26];
++        ensure!(unsafe { control(input.as_ptr(), 1, c.as_mut_ptr()) } == 0, "orientation controller failed");
++        let desired = [c[5] as f64, c[6] as f64, c[7] as f64, c[8] as f64];
++        let desired_norm = desired.iter().map(|v| v*v).sum::<f64>().sqrt();
++        let desired = desired.map(|v| v/desired_norm);
++        let w = [c[20] as f64, c[21] as f64, c[22] as f64];
++        ensure!(w.iter().all(|v| v.is_finite() && v.abs()<3.99), "orientation FF clipped or nonfinite");
++        if i == 0 { integrated_q = desired; } else {
++            let step_w = std::array::from_fn(|k| 0.5*(previous_w[k]+w[k]));
++            let angle = dot(step_w, step_w).sqrt()*0.01;
++            let delta = if angle<1e-14 { [1.,0.,0.,0.] } else {
++                let factor = (angle/2.).sin()*0.01/angle;
++                [(angle/2.).cos(),step_w[0]*factor,step_w[1]*factor,step_w[2]*factor]
++            };
++            integrated_q = quat_product(integrated_q, delta);
++        }
++        previous_w = w;
++        let qnorm = integrated_q.iter().map(|v|v*v).sum::<f64>().sqrt();
++        quaternion_norm_error = quaternion_norm_error.max((qnorm-1.).abs());
++        let cosine = integrated_q.iter().zip(desired).map(|(a,b)|a*b).sum::<f64>().abs()/qnorm;
++        let error = 2.*cosine.clamp(-1.,1.).acos();
++        orientation_max_error = orientation_max_error.max(error);
++        writeln!(orientation_csv,"{},{},{},{},{},{},{},{},{},{}",r[0],error,desired[0],desired[1],desired[2],desired[3],integrated_q[0],integrated_q[1],integrated_q[2],integrated_q[3])?;
++    }
++    ensure!(orientation_max_error < 0.0002, "integrated FF orientation mismatch: {orientation_max_error} rad");
++    ensure!(quaternion_norm_error < 1e-10, "integrated quaternion norm drift");
+     ensure!(
+         jerk_error < 0.0002 && snap_error < 0.0002 && omega_error < 0.0002 && alpha_error < 0.0002,
+         "feedforward derivative mismatch: {jerk_error}, {snap_error}, {omega_error}, {alpha_error}"
+@@ -302,7 +350,7 @@
+         "wrong figure-eight footprint"
+     );
+     Ok(
+-        json!({"jerk_fd_max_error":jerk_error,"snap_fd_max_error":snap_error,"omega_fd_max_error":omega_error,"alpha_fd_max_error":alpha_error,"feedforward_off_and_disengage_zero":true,"samples":steps+1,"exact_reference_repeats":2,"sample_rate_hz":100,
++        json!({"integrated_orientation_max_error_rad":orientation_max_error,"integrated_quaternion_norm_max_error":quaternion_norm_error,"integrated_orientation_scope":"generated FF, zero position/velocity/orientation state error and fixed heading; reference-force derivatives only; not general closed-loop stability", "jerk_fd_max_error":jerk_error,"snap_fd_max_error":snap_error,"omega_fd_max_error":omega_error,"alpha_fd_max_error":alpha_error,"feedforward_off_and_disengage_zero":true,"samples":steps+1,"exact_reference_repeats":2,"sample_rate_hz":100,
+         "position_velocity_acceleration_max_absolute_error":math_error,"clock_max_error_s":time_error,
+         "guidance_oracle_max_absolute_error":controller_error,"bounds_min_enu_m":low,"bounds_max_enu_m":high,
+         "precision":"generated IEEE float32 versus f64 analytic oracle; not formal floating-point proof",
+@@ -339,3 +387,10 @@
+     let dz = std::array::from_fn(|i| (p[2][i] - m[2][i]) / 0.0002);
+     [-dot(a[1], dz), dot(a[0], dz), dot(a[1], dx)]
+ }
++
++fn quat_product(a: [f64;4], b: [f64;4]) -> [f64;4] {
++    [a[0]*b[0]-a[1]*b[1]-a[2]*b[2]-a[3]*b[3],
++     a[0]*b[1]+a[1]*b[0]+a[2]*b[3]-a[3]*b[2],
++     a[0]*b[2]-a[1]*b[3]+a[2]*b[0]+a[3]*b[1],
++     a[0]*b[3]+a[1]*b[2]-a[2]*b[1]+a[3]*b[0]]
++}

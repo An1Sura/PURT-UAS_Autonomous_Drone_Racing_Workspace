@@ -1,0 +1,282 @@
+{
+  "analyzerSha256": "6113c5fa267fbb635874e3341390f8189fcaa3b907545f83c6b22f70248a1385",
+  "scope": "ELF entry point, ARM ABI flags, load-segment bytes, addresses, zero-initialized memory sizes, permissions and alignment. Debug/symbol-only changes are excluded. Does not establish physical board readiness.",
+  "checks": [
+    {
+      "stack": "cognipilot",
+      "frozenElfSha256": "a91c0983f7686c0e449760a75e6081c86a6b14be56e0cbc6869d6199082484e3",
+      "rebuiltElfSha256": "11c8b9d18a4933111d32f0e60eec008960fd78df84dde7983abf1813387eee45",
+      "fullFileIdentical": false,
+      "loadImageIdentical": true,
+      "frozen": {
+        "entry": 1879334481,
+        "abiFlags": 83887104,
+        "segments": [
+          {
+            "virtualAddress": 536870912,
+            "physicalAddress": 536870912,
+            "fileBytes": 0,
+            "memoryBytes": 2976,
+            "flags": 6,
+            "alignment": 32,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          {
+            "virtualAddress": 538970896,
+            "physicalAddress": 538970896,
+            "fileBytes": 0,
+            "memoryBytes": 254532,
+            "flags": 6,
+            "alignment": 128,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          {
+            "virtualAddress": 1879179264,
+            "physicalAddress": 1879179264,
+            "fileBytes": 226492,
+            "memoryBytes": 226492,
+            "flags": 7,
+            "alignment": 64,
+            "sha256": "b4b217ee3a78e2b9c5f6a4b22f3f8a7343a9ec31c5e66643433ea01a87c7e131"
+          },
+          {
+            "virtualAddress": 538968064,
+            "physicalAddress": 1879405756,
+            "fileBytes": 2832,
+            "memoryBytes": 2832,
+            "flags": 6,
+            "alignment": 8,
+            "sha256": "5e9ed4d307e2b38a8b421b34204aba1cbc44dbe5e989834c553aef5ddba8f14b"
+          },
+          {
+            "virtualAddress": 1879408588,
+            "physicalAddress": 1879408588,
+            "fileBytes": 4,
+            "memoryBytes": 4,
+            "flags": 6,
+            "alignment": 4,
+            "sha256": "532935f1dc478a63f4e61ec62f3e24d8dd4104a353779865829d6d88cbdeac80"
+          }
+        ],
+        "imageSha256": "171977547384c0edb0df58b9d44fb42f70c1883cd8640aefb46c6c214d21e278"
+      },
+      "rebuilt": {
+        "entry": 1879334481,
+        "abiFlags": 83887104,
+        "segments": [
+          {
+            "virtualAddress": 536870912,
+            "physicalAddress": 536870912,
+            "fileBytes": 0,
+            "memoryBytes": 2976,
+            "flags": 6,
+            "alignment": 32,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          {
+            "virtualAddress": 538970896,
+            "physicalAddress": 538970896,
+            "fileBytes": 0,
+            "memoryBytes": 254532,
+            "flags": 6,
+            "alignment": 128,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          {
+            "virtualAddress": 1879179264,
+            "physicalAddress": 1879179264,
+            "fileBytes": 226492,
+            "memoryBytes": 226492,
+            "flags": 7,
+            "alignment": 64,
+            "sha256": "b4b217ee3a78e2b9c5f6a4b22f3f8a7343a9ec31c5e66643433ea01a87c7e131"
+          },
+          {
+            "virtualAddress": 538968064,
+            "physicalAddress": 1879405756,
+            "fileBytes": 2832,
+            "memoryBytes": 2832,
+            "flags": 6,
+            "alignment": 8,
+            "sha256": "5e9ed4d307e2b38a8b421b34204aba1cbc44dbe5e989834c553aef5ddba8f14b"
+          },
+          {
+            "virtualAddress": 1879408588,
+            "physicalAddress": 1879408588,
+            "fileBytes": 4,
+            "memoryBytes": 4,
+            "flags": 6,
+            "alignment": 4,
+            "sha256": "532935f1dc478a63f4e61ec62f3e24d8dd4104a353779865829d6d88cbdeac80"
+          }
+        ],
+        "imageSha256": "171977547384c0edb0df58b9d44fb42f70c1883cd8640aefb46c6c214d21e278"
+      }
+    },
+    {
+      "stack": "betaflight",
+      "frozenElfSha256": "55ea5bd943ce1b003857b3b1a7affef4008dbf44ebf4d090ba9ae1cc0bc9cc04",
+      "rebuiltElfSha256": "55ea5bd943ce1b003857b3b1a7affef4008dbf44ebf4d090ba9ae1cc0bc9cc04",
+      "fullFileIdentical": true,
+      "loadImageIdentical": true,
+      "frozen": {
+        "entry": 1879333785,
+        "abiFlags": 83887104,
+        "segments": [
+          {
+            "virtualAddress": 536895488,
+            "physicalAddress": 536895488,
+            "fileBytes": 0,
+            "memoryBytes": 132608,
+            "flags": 6,
+            "alignment": 4096,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          {
+            "virtualAddress": 1879048192,
+            "physicalAddress": 1879048192,
+            "fileBytes": 512,
+            "memoryBytes": 512,
+            "flags": 4,
+            "alignment": 4096,
+            "sha256": "61c84ff16bcd5e6f94c769d31320d3149aeb5b4105df0854279ed3a1286275ca"
+          },
+          {
+            "virtualAddress": 1879052288,
+            "physicalAddress": 1879052288,
+            "fileBytes": 48,
+            "memoryBytes": 48,
+            "flags": 4,
+            "alignment": 4096,
+            "sha256": "eff8835e22ac858a7730a6e65e1e1dde286a6514c81bdd02b94cd6f965f4374c"
+          },
+          {
+            "virtualAddress": 1879056384,
+            "physicalAddress": 1879056384,
+            "fileBytes": 49664,
+            "memoryBytes": 49664,
+            "flags": 5,
+            "alignment": 4096,
+            "sha256": "5f199f9d032c96a90e70932e84f07bb12c65bccbe8e93be116682ac3b4cfab33"
+          },
+          {
+            "virtualAddress": 0,
+            "physicalAddress": 1879106048,
+            "fileBytes": 203296,
+            "memoryBytes": 203296,
+            "flags": 5,
+            "alignment": 4096,
+            "sha256": "c632cc45c3206be6f3041b999f187ca94310cbe0818eceb6baa514e524e9059a"
+          },
+          {
+            "virtualAddress": 536870912,
+            "physicalAddress": 1879309344,
+            "fileBytes": 22504,
+            "memoryBytes": 22504,
+            "flags": 6,
+            "alignment": 4096,
+            "sha256": "b9514b0b9babad0a6b809ec49247a499c471baef11dfa065392b126d30682a29"
+          },
+          {
+            "virtualAddress": 536893440,
+            "physicalAddress": 1879331848,
+            "fileBytes": 832,
+            "memoryBytes": 832,
+            "flags": 6,
+            "alignment": 4096,
+            "sha256": "571bd817b3193610a3441500facd9c3774c611a5faaf621ffea86f97c4295e3c"
+          },
+          {
+            "virtualAddress": 1879332688,
+            "physicalAddress": 1879332688,
+            "fileBytes": 260108,
+            "memoryBytes": 260108,
+            "flags": 5,
+            "alignment": 4096,
+            "sha256": "8a27023c9fbb88d6d8ab432a667bc725a3c426c7a2036fae94e3835f1b6fedd1"
+          }
+        ],
+        "imageSha256": "e213a987bbb3a7f6345d496a768cd967a4ba096d98087e75fd852164b0dba4a2"
+      },
+      "rebuilt": {
+        "entry": 1879333785,
+        "abiFlags": 83887104,
+        "segments": [
+          {
+            "virtualAddress": 536895488,
+            "physicalAddress": 536895488,
+            "fileBytes": 0,
+            "memoryBytes": 132608,
+            "flags": 6,
+            "alignment": 4096,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          {
+            "virtualAddress": 1879048192,
+            "physicalAddress": 1879048192,
+            "fileBytes": 512,
+            "memoryBytes": 512,
+            "flags": 4,
+            "alignment": 4096,
+            "sha256": "61c84ff16bcd5e6f94c769d31320d3149aeb5b4105df0854279ed3a1286275ca"
+          },
+          {
+            "virtualAddress": 1879052288,
+            "physicalAddress": 1879052288,
+            "fileBytes": 48,
+            "memoryBytes": 48,
+            "flags": 4,
+            "alignment": 4096,
+            "sha256": "eff8835e22ac858a7730a6e65e1e1dde286a6514c81bdd02b94cd6f965f4374c"
+          },
+          {
+            "virtualAddress": 1879056384,
+            "physicalAddress": 1879056384,
+            "fileBytes": 49664,
+            "memoryBytes": 49664,
+            "flags": 5,
+            "alignment": 4096,
+            "sha256": "5f199f9d032c96a90e70932e84f07bb12c65bccbe8e93be116682ac3b4cfab33"
+          },
+          {
+            "virtualAddress": 0,
+            "physicalAddress": 1879106048,
+            "fileBytes": 203296,
+            "memoryBytes": 203296,
+            "flags": 5,
+            "alignment": 4096,
+            "sha256": "c632cc45c3206be6f3041b999f187ca94310cbe0818eceb6baa514e524e9059a"
+          },
+          {
+            "virtualAddress": 536870912,
+            "physicalAddress": 1879309344,
+            "fileBytes": 22504,
+            "memoryBytes": 22504,
+            "flags": 6,
+            "alignment": 4096,
+            "sha256": "b9514b0b9babad0a6b809ec49247a499c471baef11dfa065392b126d30682a29"
+          },
+          {
+            "virtualAddress": 536893440,
+            "physicalAddress": 1879331848,
+            "fileBytes": 832,
+            "memoryBytes": 832,
+            "flags": 6,
+            "alignment": 4096,
+            "sha256": "571bd817b3193610a3441500facd9c3774c611a5faaf621ffea86f97c4295e3c"
+          },
+          {
+            "virtualAddress": 1879332688,
+            "physicalAddress": 1879332688,
+            "fileBytes": 260108,
+            "memoryBytes": 260108,
+            "flags": 5,
+            "alignment": 4096,
+            "sha256": "8a27023c9fbb88d6d8ab432a667bc725a3c426c7a2036fae94e3835f1b6fedd1"
+          }
+        ],
+        "imageSha256": "e213a987bbb3a7f6345d496a768cd967a4ba096d98087e75fd852164b0dba4a2"
+      }
+    }
+  ]
+}

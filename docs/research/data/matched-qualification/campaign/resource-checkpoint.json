@@ -1,0 +1,44 @@
+{
+  "reason": "Increase VM resources after current flights completed; campaign supervisors were stopped between launches. All raw flight results retained. Native campaign summaries may omit the last completed child; report files are authoritative.",
+  "completed_reports": [
+    "cognipilot-attitude-0/report.json",
+    "cognipilot-attitude-1/report.json",
+    "betaflight-attitude-0/report.json",
+    "cognipilot-baseline/attitude-3/report.json",
+    "cognipilot-baseline/attitude-2/report.json",
+    "cognipilot-baseline/hover-off/report.json",
+    "cognipilot-baseline/step-off/report.json",
+    "cognipilot-baseline/square-off/report.json",
+    "betaflight-baseline/figure-eight-omega/report.json",
+    "betaflight-baseline/attitude-3/report.json",
+    "betaflight-baseline/attitude-2/report.json",
+    "betaflight-baseline/figure-eight-off/report.json",
+    "betaflight-baseline/attitude-1/report.json",
+    "betaflight-baseline/hover-off/report.json",
+    "betaflight-baseline/step-off/report.json",
+    "betaflight-baseline/square-off/report.json",
+    "betaflight-noise/none-seed-3-off/report.json",
+    "betaflight-noise/none-seed-2-omega/report.json",
+    "betaflight-noise/none-seed-5-omega/report.json",
+    "betaflight-noise/none-seed-4-off/report.json",
+    "betaflight-noise/none-seed-4-omega/report.json",
+    "betaflight-noise/realistic-seed-1-off/report.json",
+    "betaflight-noise/none-seed-2-off/report.json",
+    "betaflight-noise/none-seed-3-omega/report.json",
+    "betaflight-noise/realistic-seed-1-omega/report.json",
+    "betaflight-noise/none-seed-1-off/report.json",
+    "betaflight-noise/realistic-seed-2-off/report.json",
+    "betaflight-noise/none-seed-1-omega/report.json",
+    "betaflight-noise/none-seed-5-off/report.json"
+  ],
+  "resources_before": {
+    "cpus": 4,
+    "memory_gib": 6,
+    "disk_gib": 68
+  },
+  "resources_planned": {
+    "cpus": 8,
+    "memory_gib": 8,
+    "disk_gib": 96
+  }
+}
