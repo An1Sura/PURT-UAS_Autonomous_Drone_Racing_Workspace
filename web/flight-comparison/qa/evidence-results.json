@@ -1,0 +1,97 @@
+{
+  "sections": [
+    {
+      "id": "overview",
+      "missing": [],
+      "charts": 0,
+      "documentedCharts": 0,
+      "claims": 7,
+      "overflow": false
+    },
+    {
+      "id": "comparison",
+      "missing": [],
+      "charts": 16,
+      "documentedCharts": 16,
+      "claims": 9,
+      "overflow": false
+    },
+    {
+      "id": "race",
+      "missing": [],
+      "charts": 0,
+      "documentedCharts": 0,
+      "claims": 2,
+      "overflow": false
+    },
+    {
+      "id": "architecture",
+      "missing": [],
+      "charts": 0,
+      "documentedCharts": 0,
+      "claims": 4,
+      "overflow": false
+    },
+    {
+      "id": "parity",
+      "missing": [],
+      "charts": 0,
+      "documentedCharts": 0,
+      "claims": 4,
+      "overflow": false
+    },
+    {
+      "id": "analytics",
+      "missing": [],
+      "charts": 22,
+      "documentedCharts": 22,
+      "claims": 2,
+      "overflow": false
+    },
+    {
+      "id": "firmware",
+      "missing": [],
+      "charts": 0,
+      "documentedCharts": 0,
+      "claims": 3,
+      "overflow": false
+    },
+    {
+      "id": "math",
+      "missing": [],
+      "charts": 0,
+      "documentedCharts": 0,
+      "claims": 3,
+      "overflow": false
+    },
+    {
+      "id": "sensitivity",
+      "missing": [],
+      "charts": 1,
+      "documentedCharts": 1,
+      "claims": 3,
+      "overflow": false
+    },
+    {
+      "id": "methodology",
+      "missing": [],
+      "charts": 0,
+      "documentedCharts": 0,
+      "claims": 7,
+      "overflow": false
+    },
+    {
+      "id": "references",
+      "missing": [],
+      "charts": 0,
+      "documentedCharts": 0,
+      "claims": 11,
+      "overflow": false
+    }
+  ],
+  "claims": 11,
+  "graphManifest": true,
+  "releaseExtractionPath": true,
+  "expandedEvidenceMobileOverflow": false,
+  "errors": []
+}

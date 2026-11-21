@@ -61,7 +61,7 @@ The matched campaign started November 20 and completed November 21: **78/78 plan
 npm test
 ```
 
-Tests cover evidence integrity, identical selected reference samples, final-sample/landing state, source model identity, RMS discrepancy preservation, frame/sign/lead algebra, step-metric recomputation, gate enforcement, retained failures, and byte-identical original pages.
+The 39 analysis tests pass. Tests cover claim-to-artifact coverage, graph provenance, report-backed counts, evidence integrity, identical selected reference samples, final-sample/landing state, source model identity, RMS discrepancy preservation, frame/sign/lead algebra, step-metric recomputation, gate enforcement, retained failures, and byte-identical original pages.
 
 `qa/browser-results.json` records checks of all eleven sections, desktop/mobile overflow, replay controls, evidence dialogs, CSV/comparison/proposal/protocol exports and external requests. Browser tests use the available local Playwright/Chrome runtime, not a public testing service.
 
@@ -155,3 +155,9 @@ npm run build -- --output ../../docs/research --archive simulation-evidence-2026
 ```
 
 `data/evidence-storage.json` maps every original file to Pages or its exact archive entry. Each evidence dialog retains the individual file hash. `data/SHA256SUMS` verifies the deployed data files; `data/ORIGINAL-SHA256SUMS` preserves the original evidence manifest for the extracted archive. `npm run build` packages recorded data only; it is not a simulation runner.
+
+## Evidence audit · November 21
+
+Every chart has a **Data and calculation** disclosure and a downloadable **Source record** with original paths, SHA-256 digests, experiment family and calculation method. Every section has an evidence summary distinguishing measured simulation results, derived quantities, model assumptions and unmeasured hardware properties. The comparison also exposes every retained matched flight’s input configuration, report, raw traces and logs.
+
+The **References & sources** section exports the site’s claim/source index. It distinguishes the 40 s matched qualification from the historical 33 s recordings and earlier Acro probes. `qa/evidence-results.json` records a browser audit of all eleven sections, every rendered graph’s provenance, missing evidence IDs, archive extraction paths and source-record downloads. The original 896 evidence digests and the 1.35 GB release archive remain unchanged; this update does not alter or rerun the simulations.

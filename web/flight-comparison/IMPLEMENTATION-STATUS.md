@@ -4,7 +4,7 @@ This tracks the master prompt without treating an interface or an old result as 
 
 | Requested deliverable | Implemented now | Remaining scientific work |
 |---|---|---|
-| 1. Separate research page | New sibling project and localhost route; original game/sim bytes preserved | None for separation |
+| 1. Separate research page | Separate comparison published on GitHub Pages; original game/sim bytes preserved | None for separation |
 | 2. Light academic UI | Eleven responsive sections; desktop/mobile QA | Further content review |
 | 3–4. Logos and source access | Official CG/BF artwork; GitHub corner link | Additional institutional marks only from approved originals |
 | 5. Canonical vehicle | Existing 2 kg, 500 mm diagonal plant preserved; exact description and runtime hashes retained | Physical vehicle identification remains outside this simulation task |
@@ -17,7 +17,7 @@ This tracks the master prompt without treating an interface or an old result as 
 | 14. Parity matrix | Compiled defaults, configured values, counter evidence, unknowns | Firmware readbacks and exhaustive command-map validation |
 | 15. Firmware comparison | Both source rebuilds reproduce loaded programs; Betaflight matches the complete ELF; RT1064 target is explicit | Physical memory/CPU timing instrumentation |
 | 16. Mathematical evidence | Model equations, assumptions, numerical tests and limitations | Formal proof and full model/firmware equivalence not established |
-| 17. Evidence inspector | Downloadable originals, SHA-256, source snapshots, matching source-rebuild supplements | Toolchain and submodule downloads still needed when reproducing on another machine |
+| 17. Evidence inspector | Per-graph sources, claim calculations, all 78 flight records, original hashes and matching source-rebuild supplements | Toolchain and submodule downloads still needed when reproducing on another machine |
 | 18. Statistics comparison (replaces visible paper) | Completed 78-flight fixed-reference campaign, paired metrics, definitions, response plots and new replays; paper draft archived | Fresh speed sweep and separately declared optimization experiments |
 | 19. Sensitivity | Actual recorded noise/lap/FF filters; proposal exporter | New controlled parameter sweeps; no fabricated response curves |
 | 20. Reports/exports | Canonical dataset, 78 fresh flight records, source-rebuild supplements, immutable originals, CSV/SVG/JSON/hash exports | Physical measurements and future campaigns remain separate evidence families |
@@ -41,7 +41,7 @@ Physical radio integration, flashing and MoCap procedures are outside this task.
 
 ## Fresh work completed after the audit
 
-The existing Rust/Rumoca generated-code checker was rerun successfully, using memory-backed VM output. It passed 4,001 numerical samples, two identical reference repeats and the oracle/derivative checks. Generated artifacts and hashes are available in the local page. Subsequently, five ideal-attitude checks and four frozen-firmware ARM repeats passed. Their exact evidence and the extended orientation checker are stored separately from the historical library.
+The existing Rust/Rumoca generated-code checker was rerun successfully, using memory-backed VM output. It passed 4,001 numerical samples, two identical reference repeats and the oracle/derivative checks. Generated artifacts and hashes are available on the published comparison page. Subsequently, five ideal-attitude checks and four frozen-firmware ARM repeats passed. Their exact evidence and the extended orientation checker are stored separately from the historical library.
 
 ## Current validation status
 
@@ -66,3 +66,7 @@ Not established by this fixed-reference protocol: a fresh maximum-speed boundary
 CogniPilot was rebuilt through the pinned West/CMake workflow. The executable load segments, addresses, zero-initialized memory, entry point and permissions match the frozen flight ELF; debug metadata differs. Betaflight was rebuilt through its existing Make workflow and matches the complete frozen ELF byte-for-byte. Its original November 13 adapter was recovered from the retained archive, and its 1,600 Hz virtual-sensor constant was verified against the frozen binary. The later diagnostic adapter and initial unsuccessful rebuilds remain recorded. No flight firmware was replaced during the campaign.
 
 Use `qualification-source.tar` together with `cognipilot-source-rebuild.tar.gz` and `betaflight-source-rebuild.tar.gz`. The Betaflight supplement contains the required archived adapter and exact build flags. `firmware-rebuild-checks.json` records the independent ELF analysis. These are simulation artifacts, not a hardware flashing package.
+
+## November 21 evidence-link audit
+
+The website now exposes scoped source references under every graph and a claim/source index for every section. Claim counts come from retained records and are cross-checked against original reports. All matched attempts have report/config/trajectory/raw-input/log access; large originals retain their exact release extraction path. 39 analysis tests passed, including all 896 original evidence hashes. Browser checks cover all eleven sections and source-record exports. These checks improve traceability; they do not upgrade assumptions to measurements, qualify physical hardware, or establish a new speed limit.
