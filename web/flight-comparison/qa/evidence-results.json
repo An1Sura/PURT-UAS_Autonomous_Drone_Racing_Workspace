@@ -17,6 +17,14 @@
       "overflow": false
     },
     {
+      "id": "numbers",
+      "missing": [],
+      "charts": 0,
+      "documentedCharts": 0,
+      "claims": 8,
+      "overflow": false
+    },
+    {
       "id": "race",
       "missing": [],
       "charts": 0,

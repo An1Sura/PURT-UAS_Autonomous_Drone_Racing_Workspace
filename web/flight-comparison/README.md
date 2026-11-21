@@ -14,7 +14,7 @@ The browser renders **recorded firmware trajectories**. It does not run Betaflig
 
 ## What is implemented
 
-- Eleven independent research sections, light layout, official stack logos, persistent project GitHub link.
+- Twelve comparison sections, light layout, official stack logos, persistent project GitHub link.
 - New paired 40 s figure-eight recordings on the comparison page, selectable tilt lead off/on, with recorded takeoff and landing through 83 s. Playback uses actual telemetry timestamps and never substitutes display interpolation for scoring.
 - Historical 33 s recordings remain available separately, with recorded orientations, takeoff/landing, orbit/top/follow cameras, timeline and speed controls.
 - 108 historical campaign attempts (42 CogniPilot and 66 Betaflight PWM), including failures; six matched-rate step diagnostics as a separate family.
@@ -61,9 +61,9 @@ The matched campaign started November 20 and completed November 21: **78/78 plan
 npm test
 ```
 
-The 39 analysis tests pass. Tests cover claim-to-artifact coverage, graph provenance, report-backed counts, evidence integrity, identical selected reference samples, final-sample/landing state, source model identity, RMS discrepancy preservation, frame/sign/lead algebra, step-metric recomputation, gate enforcement, retained failures, and byte-identical original pages.
+The 44 analysis tests pass. Tests cover claim-to-artifact coverage, graph provenance, report-backed counts, evidence integrity, identical selected reference samples, final-sample/landing state, source model identity, RMS discrepancy preservation, frame/sign/lead algebra, step-metric recomputation, gate enforcement, retained failures, and byte-identical original pages.
 
-`qa/browser-results.json` records checks of all eleven sections, desktop/mobile overflow, replay controls, evidence dialogs, CSV/comparison/proposal/protocol exports and external requests. Browser tests use the available local Playwright/Chrome runtime, not a public testing service.
+`qa/browser-results.json` records checks of all twelve sections, desktop/mobile overflow, replay controls, evidence dialogs, CSV/comparison/proposal/protocol exports and external requests. Browser tests use the available local Playwright/Chrome runtime, not a public testing service.
 
 ## Branding and dependencies
 
@@ -160,4 +160,12 @@ npm run build -- --output ../../docs/research --archive simulation-evidence-2026
 
 Every chart has a **Data and calculation** disclosure and a downloadable **Source record** with original paths, SHA-256 digests, experiment family and calculation method. Every section has an evidence summary distinguishing measured simulation results, derived quantities, model assumptions and unmeasured hardware properties. The comparison also exposes every retained matched flight’s input configuration, report, raw traces and logs.
 
-The **References & sources** section exports the site’s claim/source index. It distinguishes the 40 s matched qualification from the historical 33 s recordings and earlier Acro probes. `qa/evidence-results.json` records a browser audit of all eleven sections, every rendered graph’s provenance, missing evidence IDs, archive extraction paths and source-record downloads. The original 896 evidence digests and the 1.35 GB release archive remain unchanged; this update does not alter or rerun the simulations.
+The **References & sources** section exports the site’s claim/source index. It distinguishes the 40 s matched qualification from the historical 33 s recordings and earlier Acro probes. `qa/evidence-results.json` records a browser audit of all twelve sections, every rendered graph’s provenance, missing evidence IDs, archive extraction paths and source-record downloads. The original 896 evidence digests and the 1.35 GB release archive remain unchanged; this update does not alter or rerun the simulations.
+
+## Understanding the current results
+
+The methodology and parameter-parity pages default to the completed **fixed-40 s matched ARM protocol** (8/8 check groups, 78/78 flights, 39 pairs). The broader project gates stay separate: fresh speed limits, full Acro/yaw mapping and physical timing are not marked complete. Original pre-flight configuration labels remain intact; completion is computed from final evidence.
+
+**What do the numbers mean?** (`#numbers`) uses matched realistic-noise/seed-1 baselines, with a shared lead-off/on selector. It explains RMS/peak/altitude error, attitude rise/overshoot/settling, repeatability, motor saturation, planned course speed and why update rate differs from response latency. Values and course demands are computed from the dataset, not filled manually.
+
+Firmware cards now use the current campaign’s frozen binaries. Static flash payload / RAM mapped by ELF are **229,328 / 260,340 bytes for CogniPilot** and **536,964 / 359,240 bytes for Betaflight**. These are unions of ELF load ranges, verified against the original ELF hashes, the archived Betaflight linker map and CogniPilot generated Devicetree. They exclude unrepresented reservations and do not establish runtime high-water memory, CPU utilization or electrical DShot timing. `tests/benchmark-guide.test.mjs` independently checks both archived images and memory maps; `qa/guide-results.json` records UI verification.

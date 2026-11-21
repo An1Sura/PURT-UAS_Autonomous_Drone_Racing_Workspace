@@ -1,0 +1,10 @@
+{
+  "fixedProtocolPassed": true,
+  "broaderGatesPreserved": true,
+  "currentParityDefault": true,
+  "verifiedStaticMemory": true,
+  "leadOffOnPairedValues": true,
+  "referenceGeometry": true,
+  "mobileOverflow": false,
+  "errors": []
+}

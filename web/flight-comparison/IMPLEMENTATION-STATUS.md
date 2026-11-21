@@ -5,17 +5,17 @@ This tracks the master prompt without treating an interface or an old result as 
 | Requested deliverable | Implemented now | Remaining scientific work |
 |---|---|---|
 | 1. Separate research page | Separate comparison published on GitHub Pages; original game/sim bytes preserved | None for separation |
-| 2. Light academic UI | Eleven responsive sections; desktop/mobile QA | Further content review |
+| 2. Light academic UI | Twelve responsive sections; desktop/mobile QA | Further content review |
 | 3–4. Logos and source access | Official CG/BF artwork; GitHub corner link | Additional institutional marks only from approved originals |
 | 5. Canonical vehicle | Existing 2 kg, 500 mm diagonal plant preserved; exact description and runtime hashes retained | Physical vehicle identification remains outside this simulation task |
 | 6–8. Shared loop, mappings, FF | Existing actual Modelica/Rust implementation inspected; generated artifacts and traces linked | Full current-build signs/mode/saturation gates; integrated orientation now passed for the declared scope; optional alpha disabled |
 | 9. Course | Actual 10 × 10 m at 2 m; fixed 40 s matched campaign completed | Fresh maximum-speed boundary |
 | 10. 3D viewer | Synchronized recorded positions/orientations, orbit/top/follow, controls | Browser is a replay/analysis interface; VM execution remains through the existing native runner |
 | 11. Fair/deterministic comparison | 39 paired conditions; original config, artifact, input-noise and observed-counter checks; five identical no-noise repeats per stack/lead setting | Full yaw/Acro mappings remain separate |
-| 12. Four stages | Evidence-linked partial/pending gates, protocol export | Passing all four stages requires execution and missing provenance |
+| 12. Four stages | Completed fixed-reference protocol shown first; broader scope retained separately | Fresh maximum-speed boundary, full Acro/yaw mapping and physical timing |
 | 13. Analytics | Recorded and derived charts; original 250 Hz FF traces; six step probes | Estimator/body-rate histories, CPU timing, energy, designed frequency excitation |
 | 14. Parity matrix | Compiled defaults, configured values, counter evidence, unknowns | Firmware readbacks and exhaustive command-map validation |
-| 15. Firmware comparison | Both source rebuilds reproduce loaded programs; Betaflight matches the complete ELF; RT1064 target is explicit | Physical memory/CPU timing instrumentation |
+| 15. Firmware comparison | Both source rebuilds reproduce loaded programs; Betaflight matches the complete ELF; RT1064 target is explicit | Runtime memory/CPU timing instrumentation |
 | 16. Mathematical evidence | Model equations, assumptions, numerical tests and limitations | Formal proof and full model/firmware equivalence not established |
 | 17. Evidence inspector | Per-graph sources, claim calculations, all 78 flight records, original hashes and matching source-rebuild supplements | Toolchain and submodule downloads still needed when reproducing on another machine |
 | 18. Statistics comparison (replaces visible paper) | Completed 78-flight fixed-reference campaign, paired metrics, definitions, response plots and new replays; paper draft archived | Fresh speed sweep and separately declared optimization experiments |
@@ -69,4 +69,8 @@ Use `qualification-source.tar` together with `cognipilot-source-rebuild.tar.gz` 
 
 ## November 21 evidence-link audit
 
-The website now exposes scoped source references under every graph and a claim/source index for every section. Claim counts come from retained records and are cross-checked against original reports. All matched attempts have report/config/trajectory/raw-input/log access; large originals retain their exact release extraction path. 39 analysis tests passed, including all 896 original evidence hashes. Browser checks cover all eleven sections and source-record exports. These checks improve traceability; they do not upgrade assumptions to measurements, qualify physical hardware, or establish a new speed limit.
+The website now exposes scoped source references under every graph and a claim/source index for every section. Claim counts come from retained records and are cross-checked against original reports. All matched attempts have report/config/trajectory/raw-input/log access; large originals retain their exact release extraction path. 44 analysis tests passed, including all 896 original evidence hashes. Browser checks cover all twelve sections and source-record exports. These checks improve traceability; they do not upgrade assumptions to measurements, qualify physical hardware, or establish a new speed limit.
+
+## Matched status and metric interpretation
+
+The fixed-reference protocol is reported as passed only while all eight required checks, coverage and completed flight records agree. Missing checks or runs cannot be hidden by a “passed” metadata label. Current parity, firmware identity and static memory are shown first; historical 33 s configuration comparisons remain in a labeled disclosure. The metric guide compares the same lead condition for both stacks and distinguishes reference timing, measured response, assumed model parameters and hardware-only measurements. No new firmware flights were needed for this display/analysis change.
